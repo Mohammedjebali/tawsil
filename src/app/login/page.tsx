@@ -170,9 +170,9 @@ export default function LoginPage() {
             </p>
             <div className="border-t border-slate-100 pt-3">
               <p className="text-center text-xs text-slate-400">
-                Livreur?{" "}
+                {t("areYouRider")}{" "}
                 <a href="/register/rider" className="text-blue-600 font-medium hover:underline">
-                  S&apos;inscrire comme livreur
+                  {t("registerAsRiderLink")}
                 </a>
               </p>
             </div>

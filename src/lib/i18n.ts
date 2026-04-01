@@ -155,6 +155,8 @@ const translations: Record<string, Record<Lang, string>> = {
   noAccount: { ar: "ليس لديك حساب؟", fr: "Pas de compte ?", en: "Don't have an account?" },
   haveAccount: { ar: "لديك حساب؟", fr: "Déjà un compte ?", en: "Already have an account?" },
   signUp: { ar: "سجّل الآن", fr: "Inscrivez-vous", en: "Sign up" },
+  areYouRider: { ar: "أنت سائق توصيل؟", fr: "Vous êtes livreur?", en: "Are you a rider?" },
+  registerAsRiderLink: { ar: "سجّل كسائق توصيل", fr: "S'inscrire comme livreur", en: "Register as a rider" },
   signIn: { ar: "سجّل دخولك", fr: "Connectez-vous", en: "Sign in" },
   wrongCredentials: { ar: "بريد إلكتروني أو كلمة مرور خاطئة", fr: "Email ou mot de passe incorrect", en: "Wrong email or password" },
   emailExists: { ar: "هذا البريد مسجل بالفعل", fr: "Cet email est déjà enregistré", en: "This email is already registered" },
