@@ -12,15 +12,15 @@ export async function GET(req: NextRequest) {
 
     const { data, error } = await supabase
       .from("riders")
-      .select("status")
+      .select("id, name, phone, status")
       .eq("phone", phone)
       .single();
 
     if (error || !data) {
-      return NextResponse.json({ status: "not_found" }, { status: 404 });
+      return NextResponse.json({ error: "Rider not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ status: data.status });
+    return NextResponse.json(data);
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
