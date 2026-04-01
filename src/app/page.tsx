@@ -53,7 +53,7 @@ export default function OrderPage() {
     setLoading(true);
     setError(null);
     try {
-      const storeName = selectedStore ? selectedStore.name : customStore;
+      const sName = selectedStore ? selectedStore.name : customStore;
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -64,7 +64,7 @@ export default function OrderPage() {
           customer_lat: customerLat,
           customer_lng: customerLng,
           store_id: selectedStore?.id || null,
-          store_name: storeName,
+          store_name: sName,
           store_address: selectedStore?.address || null,
           store_lat: selectedStore?.lat || null,
           store_lng: selectedStore?.lng || null,
@@ -90,43 +90,43 @@ export default function OrderPage() {
       {/* Step: Pick store */}
       {step === "store" && (
         <div>
-          <div className="mb-5">
-            <h1 className="text-2xl font-bold mb-1">🛵 اطلب توصيل</h1>
-            <p className="text-gray-500 text-sm">اختر المحل أو اكتب اسمه</p>
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-white mb-1">اختر المحل</h1>
+            <p className="text-gray-500 text-sm">من وين تحب تطلب؟</p>
           </div>
 
           {/* Store list */}
-          <div className="space-y-2 mb-4">
+          <div className="space-y-2.5 mb-4">
             {stores.map((store) => (
               <button
                 key={store.id}
                 onClick={() => { setSelectedStore(store); setCustomStore(""); setStep("details"); }}
-                className="w-full card flex items-center gap-3 text-right hover:border-amber-300 hover:shadow-md transition-all"
+                className="w-full card flex items-center gap-3 text-right hover:border-red-500/40 hover:shadow-[0_0_12px_rgba(239,68,68,0.08)] transition-all group"
               >
-                <span className="text-2xl">{CATEGORY_ICONS[store.category] || "📦"}</span>
+                <span className="text-3xl">{CATEGORY_ICONS[store.category] || "📦"}</span>
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-sm">{store.name}</div>
+                  <div className="font-bold text-sm text-white">{store.name}</div>
                   {store.address && <div className="text-xs text-gray-500 truncate">{store.address}</div>}
                 </div>
-                <span className="text-gray-400">←</span>
+                <span className="text-gray-600 group-hover:text-red-400 transition-colors">←</span>
               </button>
             ))}
           </div>
 
-          <div className="relative my-4">
-            <div className="border-t border-gray-200" />
-            <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-gray-50 px-2 text-xs text-gray-500">أو</span>
+          <div className="relative my-5">
+            <div className="border-t border-[#1e2535]" />
+            <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-[#0d1117] px-3 text-xs text-gray-600">أو</span>
           </div>
 
           {/* Custom store */}
           <div className="card">
-            <label className="block text-sm font-medium text-gray-700 mb-2">محل آخر؟ اكتب اسمه</label>
+            <label className="block text-sm font-medium text-gray-400 mb-2">محل آخر؟ اكتب اسمه</label>
             <input
               type="text"
               value={customStore}
               onChange={(e) => { setCustomStore(e.target.value); setSelectedStore(null); }}
               placeholder="مثال: عطار الحاج محمد"
-              className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-400"
+              className="input"
             />
             {customStore.trim() && (
               <button
@@ -143,34 +143,34 @@ export default function OrderPage() {
       {/* Step: Order details */}
       {step === "details" && (
         <div>
-          <button onClick={() => setStep("store")} className="text-amber-600 text-sm mb-4 flex items-center gap-1">
+          <button onClick={() => setStep("store")} className="text-red-400 text-sm mb-4 flex items-center gap-1 hover:text-red-300 transition-colors">
             → رجوع
           </button>
 
-          <div className="card mb-3 flex items-center gap-3">
-            <span className="text-2xl">{selectedStore ? CATEGORY_ICONS[selectedStore.category] || "📦" : "📍"}</span>
-            <div>
-              <div className="text-xs text-gray-500">الطلب من</div>
-              <div className="font-bold">{storeName}</div>
-            </div>
+          {/* Store pill */}
+          <div className="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-full px-4 py-1.5 mb-4">
+            <span className="text-sm">{selectedStore ? CATEGORY_ICONS[selectedStore.category] || "📦" : "📍"}</span>
+            <span className="text-sm text-red-400">من: <span className="font-bold text-white">{storeName}</span></span>
           </div>
 
-          <div className="card space-y-4">
+          <div className="mb-6">
+            <h2 className="text-xl font-bold text-white mb-1">وش تحب تطلب؟</h2>
+          </div>
+
+          <div className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                ماذا تريد؟ <span className="text-red-500">*</span>
-              </label>
               <textarea
                 value={items}
                 onChange={(e) => setItems(e.target.value)}
-                placeholder="اكتب بالتفصيل ما تريد طلبه مثلاً:&#10;- 1 كيلو بطاطا&#10;- زيت زيتون 1 لتر&#10;- خبز 2 حبة"
+                placeholder={"مثال: قهوة كبيرة بحليب، كيك شوكولا...\n- 1 كيلو بطاطا\n- زيت زيتون 1 لتر"}
                 rows={5}
-                className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-400 resize-none"
+                className="input resize-none !text-right"
+                style={{ minHeight: "120px" }}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
                 تقدير سعر البضاعة (اختياري)
               </label>
               <div className="relative">
@@ -179,18 +179,18 @@ export default function OrderPage() {
                   value={estimatedAmount}
                   onChange={(e) => setEstimatedAmount(e.target.value)}
                   placeholder="0.000"
-                  className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-400 pr-12"
+                  className="input pr-4"
                 />
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">DT</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 text-sm">DT</span>
               </div>
-              <p className="text-xs text-gray-400 mt-1">يساعد الراكب على تحضير المبلغ</p>
+              <p className="text-xs text-gray-600 mt-1.5">يساعد الراكب على تحضير المبلغ</p>
             </div>
           </div>
 
           <button
             onClick={() => setStep("confirm")}
             disabled={!items.trim()}
-            className="btn-primary mt-4"
+            className="btn-primary mt-5"
           >
             متابعة ←
           </button>
@@ -200,15 +200,17 @@ export default function OrderPage() {
       {/* Step: Customer info + confirm */}
       {step === "confirm" && (
         <div>
-          <button onClick={() => setStep("details")} className="text-amber-600 text-sm mb-4 flex items-center gap-1">
+          <button onClick={() => setStep("details")} className="text-red-400 text-sm mb-4 flex items-center gap-1 hover:text-red-300 transition-colors">
             → رجوع
           </button>
 
-          <div className="card space-y-4 mb-4">
-            <h2 className="font-bold text-gray-800">معلوماتك</h2>
+          <div className="mb-5">
+            <h2 className="text-xl font-bold text-white mb-1">معلوماتك</h2>
+          </div>
 
+          <div className="space-y-4 mb-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-400 mb-1.5">
                 الاسم <span className="text-red-500">*</span>
               </label>
               <input
@@ -216,12 +218,12 @@ export default function OrderPage() {
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="اسمك الكامل"
-                className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-400"
+                className="input"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-400 mb-1.5">
                 رقم الهاتف <span className="text-red-500">*</span>
               </label>
               <input
@@ -229,7 +231,7 @@ export default function OrderPage() {
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
                 placeholder="2X XXX XXX"
-                className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-400"
+                className="input !text-left"
                 dir="ltr"
               />
             </div>
@@ -251,13 +253,20 @@ export default function OrderPage() {
                   );
                 }}
                 disabled={gpsStatus === "loading"}
-                className="w-full mb-2 py-2.5 rounded-xl text-sm font-medium border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+                className={`w-full mb-3 py-3 rounded-xl text-sm font-medium border transition-all ${
+                  gpsStatus === "done"
+                    ? "border-green-500/40 bg-green-500/10 text-green-400"
+                    : "border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/15"
+                }`}
               >
-                {gpsStatus === "loading" ? "جاري تحديد الموقع..." : "📍 استخدام موقعي الحالي"}
+                {gpsStatus === "loading"
+                  ? "جاري تحديد الموقع..."
+                  : gpsStatus === "done"
+                  ? "✅ تم تحديد موقعك"
+                  : "📍 استخدام موقعي"}
               </button>
-              {gpsStatus === "done" && <p className="text-green-600 text-xs mb-2">✅ تم تحديد موقعك</p>}
-              {gpsStatus === "error" && <p className="text-red-500 text-xs mb-2">تعذر تحديد الموقع، أدخل العنوان يدوياً</p>}
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
+              {gpsStatus === "error" && <p className="text-red-400 text-xs mb-2">تعذر تحديد الموقع، أدخل العنوان يدوياً</p>}
+              <label className="block text-sm font-medium text-gray-400 mb-1.5">
                 عنوانك <span className="text-red-500">*</span>
               </label>
               <input
@@ -265,21 +274,21 @@ export default function OrderPage() {
                 value={customerAddress}
                 onChange={(e) => setCustomerAddress(e.target.value)}
                 placeholder="الشارع / الحي / أقرب معلم"
-                className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-400"
+                className="input"
               />
             </div>
           </div>
 
-          {/* Fee info */}
-          <div className="card bg-amber-50 border-amber-200 mb-4">
-            <div className="text-sm font-semibold text-amber-800 mb-2">💰 تفاصيل الدفع</div>
-            <div className="flex justify-between text-sm text-amber-700">
+          {/* Fee preview card */}
+          <div className="card-active mb-4">
+            <div className="text-sm font-bold text-white mb-3">💰 تفاصيل الدفع</div>
+            <div className="flex justify-between text-sm text-gray-400">
               <span>سعر البضاعة</span>
-              <span>{estimatedAmount ? `~${estimatedAmount} DT` : "يُحدد عند الشراء"}</span>
+              <span className="text-gray-300">{estimatedAmount ? `~${estimatedAmount} DT` : "يُحدد عند الشراء"}</span>
             </div>
-            <div className="flex justify-between text-sm text-amber-700 mt-1">
+            <div className="flex justify-between text-sm text-gray-400 mt-2">
               <span>رسوم التوصيل {customerLat ? "" : "(تُحسب حسب المسافة)"}</span>
-              <span>
+              <span className="text-red-400 font-bold">
                 {customerLat && customerLng
                   ? formatFee(calculateDeliveryFee(getDistanceKm(
                       selectedStore?.lat ?? 36.5333, selectedStore?.lng ?? 10.5167,
@@ -288,19 +297,19 @@ export default function OrderPage() {
                   : `من ${formatFee(2000)}`}
               </span>
             </div>
-            <div className="border-t border-amber-200 mt-2 pt-2 text-xs text-amber-600">
+            <div className="border-t border-[#2a3347] mt-3 pt-3 text-xs text-gray-500">
               الدفع نقداً عند الاستلام 💵
             </div>
           </div>
 
-          {error && <div className="card bg-red-50 border-red-200 text-red-700 text-sm mb-3">{error}</div>}
+          {error && <div className="card border-red-500/30 text-red-400 text-sm mb-3">{error}</div>}
 
           <button
             onClick={submitOrder}
             disabled={loading || !customerName || !customerPhone || !customerAddress}
             className="btn-primary"
           >
-            {loading ? "جاري الإرسال..." : "✅ تأكيد الطلب"}
+            {loading ? "جاري الإرسال..." : "تأكيد الطلب"}
           </button>
         </div>
       )}
@@ -308,23 +317,25 @@ export default function OrderPage() {
       {/* Step: Success */}
       {step === "success" && orderResult && (
         <div className="text-center py-8">
-          <div className="text-6xl mb-4">🎉</div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">تم استقبال طلبك!</h1>
+          <div className="w-20 h-20 bg-green-500/15 border-2 border-green-500/40 rounded-full flex items-center justify-center mx-auto mb-5">
+            <span className="text-4xl">✅</span>
+          </div>
+          <h1 className="text-2xl font-bold text-white mb-2">تم استقبال طلبك!</h1>
           <p className="text-gray-500 mb-6">سيتصل بك الراكب قريباً</p>
 
-          <div className="card bg-amber-50 border-amber-200 mb-6 text-right">
-            <div className="text-sm text-amber-700 mb-1">رقم طلبك</div>
-            <div className="text-2xl font-bold text-amber-800 dir-ltr" dir="ltr">{orderResult.order_number}</div>
-            <div className="text-xs text-amber-600 mt-1">احتفظ بهذا الرقم لتتبع طلبك</div>
+          <div className="card-active mb-5 text-right">
+            <div className="text-sm text-gray-500 mb-1">رقم طلبك</div>
+            <div className="text-2xl font-bold text-red-400" dir="ltr">{orderResult.order_number}</div>
+            <div className="text-xs text-gray-600 mt-1">احتفظ بهذا الرقم لتتبع طلبك</div>
           </div>
 
-          <div className="card text-right mb-6">
-            <div className="text-sm font-semibold text-gray-700 mb-3">ملخص الطلب</div>
-            <div className="flex justify-between text-sm text-gray-600">
-              <span>المحل</span><span className="font-medium">{storeName}</span>
+          <div className="card text-right mb-5">
+            <div className="text-sm font-bold text-white mb-3">ملخص الطلب</div>
+            <div className="flex justify-between text-sm text-gray-400">
+              <span>المحل</span><span className="font-medium text-white">{storeName}</span>
             </div>
-            <div className="flex justify-between text-sm text-gray-600 mt-1">
-              <span>رسوم التوصيل</span><span className="font-medium text-amber-600">{formatFee(orderResult.delivery_fee)}</span>
+            <div className="flex justify-between text-sm text-gray-400 mt-2">
+              <span>رسوم التوصيل</span><span className="font-bold text-red-400">{formatFee(orderResult.delivery_fee)}</span>
             </div>
           </div>
 
@@ -333,7 +344,7 @@ export default function OrderPage() {
           </a>
           <button
             onClick={() => { setStep("store"); setOrderResult(null); setItems(""); setCustomStore(""); setSelectedStore(null); setCustomerName(""); setCustomerPhone(""); setCustomerAddress(""); setEstimatedAmount(""); setCustomerLat(null); setCustomerLng(null); setGpsStatus("idle"); }}
-            className="mt-3 text-sm text-gray-500 w-full"
+            className="btn-secondary mt-3"
           >
             طلب جديد
           </button>

@@ -33,17 +33,17 @@ export default function InstallPrompt() {
 
   return (
     <div className="fixed bottom-4 left-3 right-3 z-50 max-w-lg mx-auto">
-      <div className="bg-amber-400 rounded-xl shadow-lg p-3 flex items-center gap-3">
+      <div className="bg-[#1a1f2e] border border-red-500/30 rounded-xl shadow-lg p-3 flex items-center gap-3">
         <span className="text-2xl">🛵</span>
         <div className="flex-1">
-          <div className="font-bold text-amber-900 text-sm">ثبّت التطبيق</div>
-          <div className="text-xs text-amber-800">وصول سريع من شاشتك الرئيسية</div>
+          <div className="font-bold text-white text-sm">ثبّت التطبيق</div>
+          <div className="text-xs text-gray-400">وصول سريع من شاشتك الرئيسية</div>
         </div>
         <div className="flex gap-2">
-          <button onClick={install} className="bg-amber-900 text-white text-xs px-3 py-1.5 rounded-lg font-bold">
+          <button onClick={install} className="bg-red-500 text-white text-xs px-3 py-1.5 rounded-lg font-bold hover:bg-red-600 transition-colors">
             تثبيت
           </button>
-          <button onClick={() => setVisible(false)} className="text-amber-900 text-xs px-2 py-1.5">
+          <button onClick={() => setVisible(false)} className="text-gray-500 hover:text-gray-300 text-xs px-2 py-1.5 transition-colors">
             ✕
           </button>
         </div>
