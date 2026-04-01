@@ -30,9 +30,19 @@ export default function CustomerRegister() {
     return e;
   }
 
-  function submit() {
+  async function submit() {
     const e = validate();
     if (Object.keys(e).length > 0) { setErrors(e); return; }
+
+    // Save to Supabase
+    try {
+      await fetch("/api/customers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ first_name: firstName, last_name: lastName, email, phone }),
+      });
+    } catch (_) {}
+
     localStorage.setItem("tawsil_user", JSON.stringify({
       name: `${firstName} ${lastName}`,
       firstName,
