@@ -68,13 +68,14 @@ function TrackContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Auto-refresh every 30s if order is active
+  // Auto-refresh: every 5s when rider is active (has location), else every 15s
   useEffect(() => {
     if (!order || ["delivered","cancelled"].includes(order.status)) return;
-    const t = setInterval(() => fetchOrder(order.order_number), 30000);
+    const interval = (order.rider_lat || order.status === "accepted") ? 5000 : 15000;
+    const t = setInterval(() => fetchOrder(order.order_number), interval);
     return () => clearInterval(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [order]);
+  }, [order?.status, order?.rider_lat]);
 
   // Supabase Realtime subscription for live GPS updates
   useEffect(() => {
