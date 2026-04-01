@@ -5,7 +5,6 @@ const STATUS_TIMESTAMPS: Record<string, string> = {
   accepted: "accepted_at",
   picked_up: "picked_up_at",
   delivered: "delivered_at",
-  cancelled: "cancelled_at",
 };
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
