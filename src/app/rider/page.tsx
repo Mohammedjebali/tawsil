@@ -47,6 +47,8 @@ export default function RiderPage() {
   const [notifStatus, setNotifStatus] = useState<"idle" | "granted" | "denied">("idle");
   const [sharing, setSharing] = useState<Record<string, boolean>>({});
   const watchIds = useRef<Record<string, number>>({});
+  const prevOrderCount = useRef(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("tawsil_user");
@@ -72,6 +74,7 @@ export default function RiderPage() {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js");
     }
+    audioRef.current = new Audio("/ding.mp3");
   }, []);
 
   useEffect(() => {
@@ -90,7 +93,12 @@ export default function RiderPage() {
       ]);
       const pendingData = await pendingRes.json();
       const allData = await allRes.json();
-      setOrders(pendingData.orders || []);
+      const newOrders = pendingData.orders || [];
+      if (newOrders.length > prevOrderCount.current && prevOrderCount.current >= 0) {
+        audioRef.current?.play().catch(() => {});
+      }
+      prevOrderCount.current = newOrders.length;
+      setOrders(newOrders);
       if (rider) {
         setMyOrders((allData.orders || []).filter((o: Order) =>
           ["accepted","picked_up"].includes(o.status) &&
