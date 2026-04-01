@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase-server";
 import { calculateDeliveryFee, getDistanceKm } from "@/lib/fees";
+import webpush from "web-push";
+
+if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(
+    process.env.VAPID_EMAIL || "mailto:admin@tawsil.tn",
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
+}
 
 const TOWN_CENTER = { lat: 36.5333, lng: 10.5167 };
 
@@ -46,12 +55,18 @@ export async function POST(req: NextRequest) {
 
     if (error) throw error;
 
-    // Notify riders via push
-    await fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/push/notify`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ order_number: data.order_number, store_name: data.store_name, delivery_fee: data.delivery_fee }),
-    }).catch(() => {});
+    // Notify riders via push directly (avoid localhost HTTP call on Vercel)
+    try {
+      const { data: subs } = await supabase.from("push_subscriptions").select("subscription");
+      if (subs && subs.length > 0 && process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) {
+        const payload = JSON.stringify({
+          title: "🛵 طلب جديد!",
+          body: `من ${data.store_name} — توصيل ${(data.delivery_fee / 1000).toFixed(3)} DT`,
+          data: { order_number: data.order_number },
+        });
+        await Promise.allSettled(subs.map((s) => webpush.sendNotification(s.subscription, payload)));
+      }
+    } catch (_) {}
 
     return NextResponse.json({ order: data });
   } catch (err) {
