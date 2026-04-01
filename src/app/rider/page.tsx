@@ -94,6 +94,25 @@ export default function RiderPage() {
       body: JSON.stringify({ status: "accepted", rider_name: riderName, rider_phone: riderPhone }),
     });
     fetchOrders();
+    // Auto-start location sharing immediately on accept
+    startSharing(orderId);
+  }
+
+  function startSharing(orderId: string) {
+    if (sharing[orderId] || !navigator.geolocation) return;
+    const id = navigator.geolocation.watchPosition(
+      async (pos) => {
+        await fetch(`/api/orders/${orderId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ rider_lat: pos.coords.latitude, rider_lng: pos.coords.longitude }),
+        });
+      },
+      () => {},
+      { enableHighAccuracy: true, maximumAge: 0 }
+    );
+    watchIds.current[orderId] = id;
+    setSharing(prev => ({ ...prev, [orderId]: true }));
   }
 
   async function subscribePush() {
@@ -120,24 +139,8 @@ export default function RiderPage() {
   }
 
   const toggleSharing = (orderId: string) => {
-    if (sharing[orderId]) {
-      if (watchIds.current[orderId]) navigator.geolocation.clearWatch(watchIds.current[orderId]);
-      setSharing(prev => ({ ...prev, [orderId]: false }));
-    } else {
-      const id = navigator.geolocation.watchPosition(
-        async (pos) => {
-          await fetch(`/api/orders/${orderId}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ rider_lat: pos.coords.latitude, rider_lng: pos.coords.longitude }),
-          });
-        },
-        () => {},
-        { enableHighAccuracy: true, maximumAge: 0 }
-      );
-      watchIds.current[orderId] = id;
-      setSharing(prev => ({ ...prev, [orderId]: true }));
-    }
+    // Kept for compatibility but sharing is now auto-started on accept
+    startSharing(orderId);
   };
 
   async function updateStatus(orderId: string, nextStatus: string) {
@@ -311,16 +314,13 @@ export default function RiderPage() {
                   <span className="text-gray-300 font-medium">{order.customer_name}</span>
                 </div>
                 {order.status !== "delivered" && (
-                  <button
-                    onClick={() => toggleSharing(order.id)}
-                    className={`w-full mt-2 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                      sharing[order.id]
-                        ? "bg-green-500/20 text-green-400 border border-green-500/40"
-                        : "bg-[#0d1117] border border-[#2a3347] text-gray-400 hover:border-green-500/40"
-                    }`}
-                  >
-                    {sharing[order.id] ? "🟢 جاري مشاركة موقعك..." : "📍 شارك موقعك مع الزبون"}
-                  </button>
+                  <div className={`w-full mt-2 py-2 px-3 rounded-xl text-sm font-medium text-center ${
+                    sharing[order.id]
+                      ? "bg-green-500/10 text-green-400 border border-green-500/30"
+                      : "bg-red-500/10 text-red-400 border border-red-500/30"
+                  }`}>
+                    {sharing[order.id] ? "🟢 موقعك يُشارك مع الزبون" : "⏳ جاري تفعيل مشاركة الموقع..."}
+                  </div>
                 )}
                 {next && (
                   <button onClick={() => updateStatus(order.id, next.next)}
