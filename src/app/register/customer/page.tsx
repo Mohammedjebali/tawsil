@@ -25,7 +25,7 @@ export default function CustomerRegister() {
     const e: Record<string, string> = {};
     if (!firstName.trim()) e.firstName = t("required");
     if (!lastName.trim()) e.lastName = t("required");
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email = "Email invalide";
+    if (!email.trim() || !email.toLowerCase().endsWith("@gmail.com")) e.email = "Gmail requis (ex: nom@gmail.com)";
     if (!phone.trim() || phone.length < 12) e.phone = t("invalidPhone");
     return e;
   }
@@ -108,7 +108,7 @@ export default function CustomerRegister() {
                 type="email"
                 value={email}
                 onChange={(e) => { setEmail(e.target.value); setErrors(prev => ({ ...prev, email: "" })); }}
-                placeholder="email@example.com"
+                placeholder="nom@gmail.com"
                 className={`input !pl-10 ${errors.email ? "border-red-400 focus:border-red-400" : ""}`}
                 dir="ltr"
               />
