@@ -28,7 +28,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) return NextResponse.json({ error: error.message, details: error.details, hint: error.hint }, { status: 500 });
     return NextResponse.json({ order: data });
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 });
