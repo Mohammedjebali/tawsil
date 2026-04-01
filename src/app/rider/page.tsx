@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { User, Bell, BellOff, Package, MapPin, Phone, Navigation, CheckCircle2 } from "lucide-react";
+import { useLang } from "@/components/LangProvider";
 
 interface Order {
   id: string;
@@ -31,15 +33,10 @@ interface RiderProfile {
 
 function formatFee(m: number) { return `${(m/1000).toFixed(3)} DT`; }
 
-const NEXT_STATUS: Record<string, { label: string; next: string }> = {
-  accepted:  { label: "📦 وصلت للمحل وأخذت الطلب", next: "picked_up" },
-  picked_up: { label: "✅ سلمت للزبون", next: "delivered" },
-};
-
 export default function RiderPage() {
+  const { t } = useLang();
   const [rider, setRider] = useState<RiderProfile | null>(null);
   const [ready, setReady] = useState(false);
-  const [checking, setChecking] = useState(false);
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [myOrders, setMyOrders] = useState<Order[]>([]);
@@ -80,6 +77,7 @@ export default function RiderPage() {
     fetchOrders();
     const interval = setInterval(fetchOrders, 15000);
     return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
 
   async function fetchOrders() {
@@ -163,124 +161,113 @@ export default function RiderPage() {
     fetchOrders();
   }
 
-  async function checkRiderStatus() {
-    if (!rider) return;
-    setChecking(true);
-    try {
-      const res = await fetch(`/api/riders/status?phone=${encodeURIComponent(rider.phone)}`);
-      const data = await res.json();
-      if (data.status !== "active") {
-        const saved = localStorage.getItem("tawsil_user");
-        if (saved) {
-          const user = JSON.parse(saved);
-          user.status = data.status;
-          localStorage.setItem("tawsil_user", JSON.stringify(user));
-        }
-        window.location.href = "/register/rider";
-      }
-    } finally {
-      setChecking(false);
-    }
-  }
-
-  function logout() {
-    localStorage.removeItem("tawsil_user");
-    window.location.href = "/";
-  }
-
   if (!ready || !rider) return null;
 
   return (
     <div>
-      {/* Rider header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 bg-red-500/15 border border-red-500/30 rounded-full flex items-center justify-center text-lg">
-            🛵
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-white">{rider.name}</h1>
-            <p className="text-xs text-gray-500" dir="ltr">{rider.phone}</p>
-          </div>
+      {/* Welcome card */}
+      <div className="card flex items-center gap-3 mb-4">
+        <div className="w-12 h-12 bg-blue-50 border border-blue-200 rounded-full flex items-center justify-center">
+          <User className="w-6 h-6 text-blue-700" />
         </div>
-        <button onClick={logout}
-          className="text-xs text-red-400 hover:text-red-300 border border-red-500/20 px-3 py-1.5 rounded-lg transition-colors">خروج</button>
+        <div className="flex-1">
+          <div className="text-sm text-slate-500">{t("hi")}</div>
+          <h1 className="text-lg font-bold text-slate-900">{rider.name}</h1>
+        </div>
       </div>
 
-      {/* Push notification */}
+      {/* Notification toggle */}
       {notifStatus === "granted" ? (
-        <div className="text-green-400 text-xs mb-3 text-center bg-green-500/10 border border-green-500/20 rounded-lg py-2">✅ الإشعارات مفعلة</div>
+        <div className="flex items-center gap-2 text-emerald-700 text-xs mb-4 bg-emerald-50 border border-emerald-200 rounded-xl py-2.5 px-4 font-medium">
+          <Bell className="w-4 h-4" />
+          {t("notificationEnabled")}
+        </div>
       ) : (
         <button
           onClick={subscribePush}
-          className="w-full mb-3 py-2.5 rounded-xl text-sm font-medium border border-blue-500/30 bg-blue-500/10 text-blue-400 hover:bg-blue-500/15 transition-colors"
+          className="w-full mb-4 py-2.5 rounded-xl text-sm font-semibold border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors flex items-center justify-center gap-2"
         >
-          🔔 تفعيل الإشعارات
+          <Bell className="w-4 h-4" />
+          {t("notificationEnable")}
         </button>
       )}
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-4">
-        <button onClick={() => setTab("available")}
-          className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${
+      <div className="flex bg-slate-100 rounded-xl p-1 mb-4">
+        <button
+          onClick={() => setTab("available")}
+          className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-1.5 ${
             tab === "available"
-              ? "bg-red-500 text-white"
-              : "bg-[#161b27] text-gray-400 border border-[#1e2535]"
-          }`}>
-          متاح
+              ? "bg-white text-blue-700 shadow-sm"
+              : "text-slate-500"
+          }`}
+        >
+          {t("availableOrders")}
           {orders.length > 0 && (
-            <span className={`mr-1.5 inline-flex items-center justify-center min-w-[20px] h-5 rounded-full text-xs font-bold px-1.5 ${
-              tab === "available" ? "bg-white/20 text-white" : "bg-red-500/20 text-red-400"
+            <span className={`inline-flex items-center justify-center min-w-[20px] h-5 rounded-full text-xs font-bold px-1.5 ${
+              tab === "available" ? "bg-blue-100 text-blue-700" : "bg-slate-200 text-slate-600"
             }`}>{orders.length}</span>
           )}
         </button>
-        <button onClick={() => setTab("mine")}
-          className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${
+        <button
+          onClick={() => setTab("mine")}
+          className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-1.5 ${
             tab === "mine"
-              ? "bg-blue-500 text-white"
-              : "bg-[#161b27] text-gray-400 border border-[#1e2535]"
-          }`}>
-          طلباتي ({myOrders.length})
+              ? "bg-white text-blue-700 shadow-sm"
+              : "text-slate-500"
+          }`}
+        >
+          {t("myOrders")} ({myOrders.length})
         </button>
       </div>
 
-      {loading && <div className="text-center text-gray-500 py-8">جاري التحميل...</div>}
+      {loading && <div className="text-center text-slate-500 py-8">{t("loading")}</div>}
 
       {tab === "available" && (
         <div className="space-y-3">
           {orders.length === 0 && !loading && (
-            <div className="card text-center text-gray-500 py-8">لا توجد طلبات جديدة الآن</div>
+            <div className="card text-center text-slate-500 py-8">{t("noOrders")}</div>
           )}
           {orders.map((order) => (
-            <div key={order.id} className="card border-r-4 border-r-red-500 text-right">
-              <div className="flex justify-between items-start mb-2">
-                <span className="text-xs text-gray-600" dir="ltr">{order.order_number}</span>
-                <span className="font-bold text-red-400 text-lg">{formatFee(order.delivery_fee)}</span>
+            <div key={order.id} className="card">
+              <div className="flex justify-between items-start mb-3">
+                <span className="text-xs text-slate-400 font-mono" dir="ltr">{order.order_number}</span>
+                <span className="font-bold text-blue-700 text-lg">{formatFee(order.delivery_fee)}</span>
               </div>
-              <div className="text-sm font-bold text-white mb-1">📍 من: {order.store_name}</div>
-              {order.store_address && <div className="text-xs text-gray-500 mb-2">{order.store_address}</div>}
-              <div className="text-sm font-bold text-white mb-1">
-                🏠 إلى:{" "}
-                {order.customer_lat && order.customer_lng ? (
-                  <a
-                    href={`https://www.google.com/maps?q=${order.customer_lat},${order.customer_lng}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 bg-blue-500/15 text-blue-400 px-2.5 py-1 rounded-full text-xs font-medium border border-blue-500/25"
-                  >
-                    📍 عرض على الخريطة
-                  </a>
-                ) : (
-                  <span className="text-gray-300">{order.customer_address}</span>
-                )}
+
+              <div className="flex items-center gap-2 text-sm text-slate-700 mb-1.5">
+                <Package className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                <span className="font-semibold">{t("from")}: {order.store_name}</span>
               </div>
-              {order.distance_km && <div className="text-xs text-gray-500 mb-2">{order.distance_km} كم</div>}
-              <div className="bg-[#0d1117] rounded-xl p-3 mb-3 border border-[#1e2535]">
-                <div className="text-xs text-gray-500 mb-1">الطلب:</div>
-                <div className="text-sm text-gray-300 whitespace-pre-wrap">{order.items_description}</div>
+              {order.store_address && <div className="text-xs text-slate-500 mb-2 pl-6">{order.store_address}</div>}
+
+              <div className="flex items-center gap-2 text-sm text-slate-700 mb-1.5">
+                <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                <span className="font-semibold">{t("to")}:{" "}
+                  {order.customer_lat && order.customer_lng ? (
+                    <a
+                      href={`https://www.google.com/maps?q=${order.customer_lat},${order.customer_lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full text-xs font-medium border border-blue-200"
+                    >
+                      <MapPin className="w-3 h-3" />
+                      {t("viewOnMap")}
+                    </a>
+                  ) : (
+                    <span>{order.customer_address}</span>
+                  )}
+                </span>
               </div>
+              {order.distance_km && <div className="text-xs text-slate-500 mb-2 pl-6">{order.distance_km} {t("km")}</div>}
+
+              <div className="bg-slate-50 rounded-xl p-3 mb-3 border border-slate-100">
+                <div className="text-xs text-slate-400 mb-1">{t("whatYouOrdered")}:</div>
+                <div className="text-sm text-slate-700 whitespace-pre-wrap">{order.items_description}</div>
+              </div>
+
               <button onClick={() => acceptOrder(order.id)} className="btn-primary">
-                قبول الطلب
+                {t("acceptOrder")}
               </button>
             </div>
           ))}
@@ -290,66 +277,91 @@ export default function RiderPage() {
       {tab === "mine" && (
         <div className="space-y-3">
           {myOrders.length === 0 && !loading && (
-            <div className="card text-center text-gray-500 py-8">ليس لديك طلبات نشطة</div>
+            <div className="card text-center text-slate-500 py-8">{t("noActiveOrders")}</div>
           )}
           {myOrders.map((order) => {
-            const next = NEXT_STATUS[order.status];
+            const isAccepted = order.status === "accepted";
+            const isPickedUp = order.status === "picked_up";
             return (
-              <div key={order.id} className="card border-r-4 border-r-blue-500 text-right">
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs text-gray-600" dir="ltr">{order.order_number}</span>
-                  <span className="font-bold text-red-400">{formatFee(order.delivery_fee)}</span>
+              <div key={order.id} className="card">
+                <div className="flex justify-between items-start mb-3">
+                  <span className="text-xs text-slate-400 font-mono" dir="ltr">{order.order_number}</span>
+                  <span className="font-bold text-blue-700">{formatFee(order.delivery_fee)}</span>
                 </div>
-                <div className="text-sm font-bold text-white mb-1">📍 {order.store_name}</div>
-                <div className="text-sm font-bold text-white mb-1">
-                  🏠{" "}
+
+                <div className="flex items-center gap-2 text-sm text-slate-700 mb-1.5">
+                  <Package className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                  <span className="font-semibold">{order.store_name}</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm text-slate-700 mb-2">
+                  <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0" />
                   {order.customer_lat && order.customer_lng ? (
                     <a
                       href={`https://www.google.com/maps?q=${order.customer_lat},${order.customer_lng}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 bg-blue-500/15 text-blue-400 px-2.5 py-1 rounded-full text-xs font-medium border border-blue-500/25"
+                      className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full text-xs font-medium border border-blue-200"
                     >
-                      📍 عرض على الخريطة
+                      <MapPin className="w-3 h-3" />
+                      {t("viewOnMap")}
                     </a>
                   ) : (
-                    <span className="text-gray-300">{order.customer_address}</span>
+                    <span>{order.customer_address}</span>
                   )}
                 </div>
-                <div className="bg-[#0d1117] rounded-xl p-3 mb-2 border border-[#1e2535]">
-                  <div className="text-sm text-gray-300 whitespace-pre-wrap">{order.items_description}</div>
+
+                <div className="bg-slate-50 rounded-xl p-3 mb-3 border border-slate-100">
+                  <div className="text-sm text-slate-700 whitespace-pre-wrap">{order.items_description}</div>
                 </div>
-                <div className="flex justify-between text-sm mb-3 items-center">
-                  <a href={`tel:${order.customer_phone}`} className="inline-flex items-center gap-1 bg-blue-500/15 text-blue-400 px-3 py-1.5 rounded-full text-xs font-medium border border-blue-500/25" dir="ltr">
-                    📞 {order.customer_phone}
+
+                <div className="flex justify-between items-center mb-3">
+                  <a
+                    href={`tel:${order.customer_phone}`}
+                    className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-2 rounded-xl text-xs font-semibold border border-blue-200 no-underline"
+                    dir="ltr"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    {order.customer_phone}
                   </a>
-                  <span className="text-gray-300 font-medium">{order.customer_name}</span>
+                  <span className="text-sm font-medium text-slate-700">{order.customer_name}</span>
                 </div>
+
+                {/* Location sharing status */}
                 {order.status !== "delivered" && (
-                  <div className={`w-full mt-2 py-2 px-3 rounded-xl text-sm font-medium text-center ${
+                  <div className={`flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-xl text-sm font-medium ${
                     sharing[order.id]
-                      ? "bg-green-500/10 text-green-400 border border-green-500/30"
-                      : "bg-red-500/10 text-red-400 border border-red-500/30"
+                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                      : "bg-amber-50 text-amber-700 border border-amber-200"
                   }`}>
-                    {sharing[order.id] ? "🟢 موقعك يُشارك مع الزبون" : "⏳ جاري تفعيل مشاركة الموقع..."}
+                    <Navigation className="w-4 h-4" />
+                    {sharing[order.id] ? t("sharingLocation") : t("locating")}
                   </div>
                 )}
-                {next && (
-                  <button onClick={() => updateStatus(order.id, next.next)}
-                    className="btn-primary mt-2">
-                    {next.label}
+
+                {isAccepted && (
+                  <button
+                    onClick={() => updateStatus(order.id, "picked_up")}
+                    className="btn-primary mt-3"
+                  >
+                    <Package className="w-4 h-4" />
+                    {t("pickedUp")}
                   </button>
                 )}
-                {order.status === "delivered" && (
-                  <div className="text-center text-green-400 font-bold py-2">✅ تم التسليم!</div>
+                {isPickedUp && (
+                  <button
+                    onClick={() => updateStatus(order.id, "delivered")}
+                    className="btn-primary mt-3"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    {t("delivered")}
+                  </button>
                 )}
               </div>
             );
           })}
         </div>
       )}
-
-      <p className="text-xs text-center text-gray-600 mt-4">يتحدث تلقائياً كل 15 ثانية</p>
     </div>
   );
 }

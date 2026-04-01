@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Bike, User, Phone, Clock, XCircle, RefreshCw } from "lucide-react";
+import { useLang } from "@/components/LangProvider";
 
 export default function RiderRegister() {
+  const { t } = useLang();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
@@ -96,16 +99,16 @@ export default function RiderRegister() {
     return (
       <div className="min-h-[80vh] flex items-center justify-center">
         <div className="w-full max-w-md text-center">
-          <div className="w-20 h-20 bg-red-500/15 border-2 border-red-500/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-4xl">❌</span>
+          <div className="w-20 h-20 bg-red-50 border-2 border-red-200 rounded-full flex items-center justify-center mx-auto mb-4">
+            <XCircle className="w-10 h-10 text-red-500" />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">تم رفض طلبك</h1>
-          <p className="text-gray-500 text-sm mb-6">للأسف، لم تتم الموافقة على طلبك. تواصل مع الإدارة لمزيد من المعلومات.</p>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">{t("rejected")}</h1>
+          <p className="text-slate-500 text-sm mb-6">{t("rejectedDesc")}</p>
           <button
             onClick={() => { localStorage.removeItem("tawsil_user"); window.location.href = "/"; }}
             className="btn-secondary"
           >
-            العودة للرئيسية
+            {t("backToHome")}
           </button>
         </div>
       </div>
@@ -116,24 +119,25 @@ export default function RiderRegister() {
     return (
       <div className="min-h-[80vh] flex items-center justify-center">
         <div className="w-full max-w-md text-center">
-          <div className="w-20 h-20 bg-yellow-500/15 border-2 border-yellow-500/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-4xl">⏳</span>
+          <div className="w-20 h-20 bg-amber-50 border-2 border-amber-200 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Clock className="w-10 h-10 text-amber-600" />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">طلبك قيد المراجعة</h1>
-          <p className="text-gray-500 text-sm mb-6">سيتم إخطارك عند التفعيل</p>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">{t("pendingApproval")}</h1>
+          <p className="text-slate-500 text-sm mb-6">{t("pendingDesc")}</p>
 
           <button
             onClick={checkStatus}
             disabled={checking}
             className="btn-primary mb-3"
           >
-            {checking ? "جاري التحقق..." : "🔄 تحقق من الحالة"}
+            <RefreshCw className={`w-4 h-4 ${checking ? "animate-spin" : ""}`} />
+            {checking ? t("checking") : t("checkStatus")}
           </button>
           <button
             onClick={() => { localStorage.removeItem("tawsil_user"); window.location.href = "/"; }}
             className="btn-secondary"
           >
-            خروج
+            {t("logout")}
           </button>
         </div>
       </div>
@@ -144,44 +148,50 @@ export default function RiderRegister() {
     <div className="min-h-[80vh] flex items-center justify-center">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-red-500/15 border-2 border-red-500/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-4xl">🛵</span>
+          <div className="w-20 h-20 bg-blue-50 border-2 border-blue-200 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Bike className="w-10 h-10 text-blue-700" />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">تسجيل كراكب</h1>
-          <p className="text-gray-500 text-sm">أدخل معلوماتك للتسجيل كراكب توصيل</p>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">{t("registerAsRider")}</h1>
+          <p className="text-slate-500 text-sm">{t("enterInfoToDeliver")}</p>
         </div>
 
         <div className="card space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1.5">
-              الاسم <span className="text-red-500">*</span>
+            <label className="label">
+              {t("name")} <span className="text-red-500">*</span>
             </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="اسمك الكامل"
-              className="input"
-            />
+            <div className="relative">
+              <User className="absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" style={{ left: '14px' }} />
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={t("fullName")}
+                className="input !pl-10"
+              />
+            </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1.5">
-              رقم الهاتف <span className="text-red-500">*</span>
+            <label className="label">
+              {t("phone")} <span className="text-red-500">*</span>
             </label>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="2X XXX XXX"
-              className="input !text-left"
-              dir="ltr"
-            />
+            <div className="relative">
+              <Phone className="absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" style={{ left: '14px' }} />
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="2X XXX XXX"
+                className="input !pl-10"
+                dir="ltr"
+              />
+            </div>
           </div>
 
-          <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3">
-            <p className="text-yellow-400 text-xs">
-              ⚠️ سيتم مراجعة طلبك من قبل الإدارة قبل التفعيل
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+            <p className="text-amber-700 text-xs font-medium">
+              {t("reviewWarning")}
             </p>
           </div>
 
@@ -190,7 +200,7 @@ export default function RiderRegister() {
             disabled={loading || !name.trim() || !phone.trim()}
             className="btn-primary"
           >
-            {loading ? "جاري التسجيل..." : "تسجيل ←"}
+            {loading ? t("registering") : t("register")}
           </button>
         </div>
       </div>

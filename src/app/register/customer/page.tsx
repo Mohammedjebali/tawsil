@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { User, Phone } from "lucide-react";
+import { useLang } from "@/components/LangProvider";
 
 export default function CustomerRegister() {
+  const { t } = useLang();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
 
@@ -26,39 +29,45 @@ export default function CustomerRegister() {
     <div className="min-h-[80vh] flex items-center justify-center">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-red-500/15 border-2 border-red-500/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-4xl">🛒</span>
+          <div className="w-20 h-20 bg-blue-50 border-2 border-blue-200 rounded-full flex items-center justify-center mx-auto mb-4">
+            <User className="w-10 h-10 text-blue-700" />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">تسجيل كزبون</h1>
-          <p className="text-gray-500 text-sm">أدخل معلوماتك لتبدأ الطلب</p>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">{t("registerAsCustomer")}</h1>
+          <p className="text-slate-500 text-sm">{t("enterInfoToOrder")}</p>
         </div>
 
         <div className="card space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1.5">
-              الاسم <span className="text-red-500">*</span>
+            <label className="label">
+              {t("name")} <span className="text-red-500">*</span>
             </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="اسمك الكامل"
-              className="input"
-            />
+            <div className="relative">
+              <User className="absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" style={{ left: '14px' }} />
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={t("fullName")}
+                className="input !pl-10"
+              />
+            </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1.5">
-              رقم الهاتف <span className="text-red-500">*</span>
+            <label className="label">
+              {t("phone")} <span className="text-red-500">*</span>
             </label>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="2X XXX XXX"
-              className="input !text-left"
-              dir="ltr"
-            />
+            <div className="relative">
+              <Phone className="absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" style={{ left: '14px' }} />
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="2X XXX XXX"
+                className="input !pl-10"
+                dir="ltr"
+              />
+            </div>
           </div>
 
           <button
@@ -66,7 +75,7 @@ export default function CustomerRegister() {
             disabled={!name.trim() || !phone.trim()}
             className="btn-primary"
           >
-            متابعة ←
+            {t("continue")}
           </button>
         </div>
       </div>

@@ -3,6 +3,8 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
+import { Search, Phone, MapPin, Package, CheckCircle2 } from "lucide-react";
+import { useLang } from "@/components/LangProvider";
 import MapView from "./MapView";
 
 interface Order {
@@ -25,24 +27,25 @@ interface Order {
   delivered_at: string | null;
 }
 
-const STATUS_LABELS: Record<string, { label: string; icon: string }> = {
-  pending:   { label: "في الانتظار",   icon: "⏳" },
-  accepted:  { label: "قبله الراكب",   icon: "✅" },
-  picked_up: { label: "جاري التوصيل",  icon: "🛵" },
-  delivered: { label: "تم التسليم 🎉", icon: "🎉" },
-  cancelled: { label: "ملغى",          icon: "❌" },
-};
-
 const STEPS = ["pending", "accepted", "picked_up", "delivered"];
 
 function formatFee(m: number) { return `${(m/1000).toFixed(3)} DT`; }
 
 function TrackContent() {
+  const { t } = useLang();
   const searchParams = useSearchParams();
   const [orderNum, setOrderNum] = useState(searchParams.get("order") || "");
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const STATUS_LABELS: Record<string, string> = {
+    pending: t("status_pending"),
+    accepted: t("status_accepted"),
+    picked_up: t("status_picked_up"),
+    delivered: t("status_delivered"),
+    cancelled: t("status_cancelled"),
+  };
 
   async function fetchOrder(num?: string) {
     const n = num || orderNum;
@@ -53,7 +56,7 @@ function TrackContent() {
       const res = await fetch(`/api/orders?order_number=${encodeURIComponent(n.trim())}`);
       const data = await res.json();
       const o = data.orders?.[0];
-      if (!o) throw new Error("الطلب غير موجود");
+      if (!o) throw new Error(t("orderNotFound"));
       setOrder(o);
     } catch (e) {
       setError(String(e));
@@ -68,16 +71,14 @@ function TrackContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Auto-refresh: every 5s when rider is active (has location), else every 15s
   useEffect(() => {
     if (!order || ["delivered","cancelled"].includes(order.status)) return;
     const interval = (order.rider_lat || order.status === "accepted") ? 5000 : 15000;
-    const t = setInterval(() => fetchOrder(order.order_number), interval);
-    return () => clearInterval(t);
+    const timer = setInterval(() => fetchOrder(order.order_number), interval);
+    return () => clearInterval(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [order?.status, order?.rider_lat]);
 
-  // Supabase Realtime subscription for live GPS updates
   useEffect(() => {
     if (!order) return;
     const supabase = createClient(
@@ -103,52 +104,66 @@ function TrackContent() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-xl font-bold text-white mb-1">تتبع طلبي</h1>
-        <p className="text-gray-500 text-sm">أدخل رقم الطلب</p>
+      <div className="mb-5">
+        <h1 className="text-xl font-bold text-slate-900 mb-1">{t("trackTitle")}</h1>
+        <p className="text-slate-500 text-sm">{t("enterOrderNumber")}</p>
       </div>
 
+      {/* Search */}
       <div className="card mb-5">
         <div className="flex gap-2">
-          <input
-            type="text"
-            value={orderNum}
-            onChange={(e) => setOrderNum(e.target.value.toUpperCase())}
-            placeholder="TW-XXXXXX-XXXX"
-            className="input flex-1 !text-left"
-            dir="ltr"
-          />
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              value={orderNum}
+              onChange={(e) => setOrderNum(e.target.value.toUpperCase())}
+              placeholder="TW-XXXXXX-XXXX"
+              className="input !pl-10"
+              dir="ltr"
+            />
+          </div>
           <button
             onClick={() => fetchOrder()}
             disabled={loading}
-            className="bg-red-500 hover:bg-red-600 text-white font-bold px-5 py-2.5 rounded-xl text-sm disabled:opacity-50 transition-colors"
+            className="bg-blue-700 hover:bg-blue-800 text-white font-semibold px-5 py-2.5 rounded-xl text-sm disabled:opacity-50 transition-colors"
           >
-            {loading ? "..." : "بحث"}
+            {loading ? "..." : t("search")}
           </button>
         </div>
       </div>
 
-      {error && <div className="card border-red-500/30 text-red-400 text-sm mb-4">{error}</div>}
+      {error && <div className="card border-red-200 text-red-600 text-sm mb-4">{error}</div>}
 
       {order && (
         <div className="space-y-4">
           {/* Status badge */}
-          <div className="card-active flex items-center gap-3">
-            <span className="text-3xl">{STATUS_LABELS[order.status]?.icon}</span>
-            <div>
-              <div className="font-bold text-white text-lg">{STATUS_LABELS[order.status]?.label}</div>
-              <div className="text-xs text-gray-500" dir="ltr">{order.order_number}</div>
-            </div>
-            <div className="mr-auto">
+          <div className="card border-blue-200 bg-blue-50/50">
+            <div className="flex items-center gap-3">
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                order.status === "delivered" ? "bg-emerald-100" : order.status === "cancelled" ? "bg-red-100" : "bg-blue-100"
+              }`}>
+                {order.status === "delivered" ? (
+                  <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+                ) : order.status === "cancelled" ? (
+                  <Package className="w-6 h-6 text-red-500" />
+                ) : (
+                  <Package className="w-6 h-6 text-blue-700" />
+                )}
+              </div>
+              <div className="flex-1">
+                <div className="font-bold text-slate-900 text-lg">{STATUS_LABELS[order.status]}</div>
+                <div className="text-xs text-slate-500" dir="ltr">{order.order_number}</div>
+              </div>
               <span className={`badge badge-${order.status}`}>
-                {STATUS_LABELS[order.status]?.label.split(" ")[0]}
+                {STATUS_LABELS[order.status]}
               </span>
             </div>
           </div>
 
           {/* Live map */}
           {order.customer_lat && order.customer_lng && order.status !== "delivered" && (
-            <div className="card mb-0 p-0 overflow-hidden">
+            <div className="card !p-0 overflow-hidden">
               <MapView
                 customerLat={order.customer_lat}
                 customerLng={order.customer_lng}
@@ -156,8 +171,8 @@ function TrackContent() {
                 riderLng={order.rider_lng}
               />
               {!order.rider_lat && (
-                <div className="p-3 text-center text-xs text-gray-500">
-                  في انتظار تفعيل موقع السائق...
+                <div className="p-3 text-center text-xs text-slate-500">
+                  {t("waitingForRiderLocation")}
                 </div>
               )}
             </div>
@@ -169,31 +184,28 @@ function TrackContent() {
               {STEPS.map((s, i) => {
                 const isCompleted = i < currentStep;
                 const isCurrent = i === currentStep;
-                const isFuture = i > currentStep;
                 return (
                   <div key={s} className="flex items-start gap-3">
-                    {/* Line + circle */}
                     <div className="flex flex-col items-center">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all ${
                         isCompleted
-                          ? "bg-green-500/20 border-green-500 text-green-400"
+                          ? "bg-emerald-50 border-emerald-400 text-emerald-600"
                           : isCurrent
-                          ? "bg-red-500/20 border-red-500 text-red-400 shadow-[0_0_10px_rgba(239,68,68,0.3)]"
-                          : "bg-[#1e2535] border-[#2a3347] text-gray-600"
+                          ? "bg-blue-100 border-blue-600 text-blue-700 pulse-dot"
+                          : "bg-slate-100 border-slate-200 text-slate-400"
                       }`}>
-                        {isCompleted ? "✓" : i + 1}
+                        {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
                       </div>
                       {i < STEPS.length - 1 && (
                         <div className={`w-0.5 h-8 ${
-                          isCompleted ? "bg-green-500/40" : isFuture ? "bg-[#1e2535]" : "bg-red-500/30"
+                          isCompleted ? "bg-emerald-300" : "bg-slate-200"
                         }`} />
                       )}
                     </div>
-                    {/* Label */}
                     <div className={`pt-1.5 text-sm font-medium ${
-                      isCompleted ? "text-green-400" : isCurrent ? "text-white" : "text-gray-600"
+                      isCompleted ? "text-emerald-600" : isCurrent ? "text-slate-900" : "text-slate-400"
                     }`}>
-                      {STATUS_LABELS[s]?.label}
+                      {STATUS_LABELS[s]}
                     </div>
                   </div>
                 );
@@ -202,38 +214,51 @@ function TrackContent() {
           </div>
 
           {/* Order info */}
-          <div className="card text-right space-y-3">
-            <div className="font-bold text-white mb-2">تفاصيل الطلب</div>
+          <div className="card space-y-3">
+            <div className="font-bold text-slate-900 mb-2">{t("orderDetails")}</div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-500">المحل</span>
-              <span className="font-medium text-white">{order.store_name}</span>
+              <span className="text-slate-500">{t("store")}</span>
+              <span className="font-medium text-slate-900">{order.store_name}</span>
             </div>
-            <div className="border-t border-[#1e2535] pt-3">
-              <div className="text-xs text-gray-500 mb-1">ما طلبته</div>
-              <div className="text-sm text-gray-300 whitespace-pre-wrap">{order.items_description}</div>
+            <div className="border-t border-slate-100 pt-3">
+              <div className="text-xs text-slate-500 mb-1">{t("whatYouOrdered")}</div>
+              <div className="text-sm text-slate-700 whitespace-pre-wrap">{order.items_description}</div>
             </div>
-            <div className="flex justify-between text-sm border-t border-[#1e2535] pt-3">
-              <span className="text-gray-500">رسوم التوصيل</span>
-              <span className="font-bold text-red-400">{formatFee(order.delivery_fee)}</span>
+            {order.distance_km && (
+              <div className="flex justify-between text-sm border-t border-slate-100 pt-3">
+                <span className="text-slate-500">{t("distance")}</span>
+                <span className="font-medium text-slate-900">{order.distance_km} {t("km")}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-sm border-t border-slate-100 pt-3">
+              <span className="text-slate-500">{t("deliveryFee")}</span>
+              <span className="font-bold text-blue-700">{formatFee(order.delivery_fee)}</span>
             </div>
           </div>
 
           {/* Rider info */}
           {order.rider_name && (
-            <div className="card border-blue-500/30">
-              <div className="text-sm font-bold text-blue-400 mb-2">🛵 الراكب</div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-300">{order.rider_name}</span>
+            <div className="card border-blue-200">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
+                  <Package className="w-5 h-5 text-blue-700" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm font-bold text-slate-900">{t("rider")}</div>
+                  <div className="text-sm text-slate-600">{order.rider_name}</div>
+                </div>
                 {order.rider_phone && (
-                  <a href={`tel:${order.rider_phone}`} className="font-medium text-blue-400 underline" dir="ltr">
-                    {order.rider_phone}
+                  <a
+                    href={`tel:${order.rider_phone}`}
+                    className="flex items-center gap-1.5 bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-blue-800 transition-colors no-underline"
+                  >
+                    <Phone className="w-4 h-4" />
+                    {t("callRider")}
                   </a>
                 )}
               </div>
             </div>
           )}
-
-          <p className="text-xs text-center text-gray-600">يتحدث الصفحة كل 30 ثانية تلقائياً</p>
         </div>
       )}
     </div>
