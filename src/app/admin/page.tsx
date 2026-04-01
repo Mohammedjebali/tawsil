@@ -21,6 +21,14 @@ interface Order {
   created_at: string;
 }
 
+interface Rider {
+  id: string;
+  name: string;
+  phone: string;
+  status: string;
+  created_at: string;
+}
+
 const CATEGORY_ICONS: Record<string, string> = {
   restaurant: "🍽️",
   supermarket: "🛒",
@@ -49,10 +57,16 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: "bg-red-100 text-red-800",
 };
 
+const RIDER_STATUS_COLORS: Record<string, { bg: string; text: string }> = {
+  pending: { bg: "#fef3c7", text: "#92400e" },
+  active: { bg: "#d1fae5", text: "#065f46" },
+  rejected: { bg: "#fee2e2", text: "#991b1b" },
+};
+
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [password, setPassword] = useState("");
-  const [tab, setTab] = useState<"stores" | "orders">("stores");
+  const [tab, setTab] = useState<"stores" | "orders" | "riders">("stores");
 
   // Stores state
   const [stores, setStores] = useState<Store[]>([]);
@@ -64,6 +78,10 @@ export default function AdminPage() {
   // Orders state
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
+
+  // Riders state
+  const [riders, setRiders] = useState<Rider[]>([]);
+  const [ridersLoading, setRidersLoading] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("adminAuth");
@@ -92,12 +110,24 @@ export default function AdminPage() {
     }
   }, []);
 
+  const fetchRiders = useCallback(async () => {
+    setRidersLoading(true);
+    try {
+      const res = await fetch("/api/admin/riders");
+      const data = await res.json();
+      setRiders(data.riders || []);
+    } finally {
+      setRidersLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (authed) {
       fetchStores();
       fetchOrders();
+      fetchRiders();
     }
-  }, [authed, fetchStores, fetchOrders]);
+  }, [authed, fetchStores, fetchOrders, fetchRiders]);
 
   function login() {
     if (password === "tawsil2024admin") {
@@ -125,10 +155,6 @@ export default function AdminPage() {
   }
 
   async function toggleStore(id: string, currentActive: boolean) {
-    // Toggle via direct supabase isn't available here, use a simple approach:
-    // We'll call PATCH or use a workaround — for now, update via the admin stores API
-    // Since we don't have a PATCH endpoint, we toggle by updating the store
-    // Let's add this inline
     await fetch("/api/admin/stores", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -144,6 +170,15 @@ export default function AdminPage() {
       body: JSON.stringify({ status: "cancelled" }),
     });
     fetchOrders();
+  }
+
+  async function updateRiderStatus(id: string, status: "active" | "rejected") {
+    await fetch(`/api/admin/riders/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    fetchRiders();
   }
 
   if (!authed) {
@@ -168,6 +203,10 @@ export default function AdminPage() {
     );
   }
 
+  const pendingRiders = riders.filter(r => r.status === "pending");
+  const approvedRiders = riders.filter(r => r.status === "active");
+  const rejectedRiders = riders.filter(r => r.status === "rejected");
+
   return (
     <div dir="ltr" style={{ maxWidth: 900, margin: "0 auto", padding: "20px 16px", textAlign: "left" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
@@ -182,32 +221,33 @@ export default function AdminPage() {
 
       {/* Tabs */}
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        <button
-          onClick={() => setTab("stores")}
-          style={{
-            flex: 1, padding: "10px", borderRadius: 12, border: "none", cursor: "pointer", fontWeight: 600, fontSize: 14,
-            backgroundColor: tab === "stores" ? "#f59e0b" : "#f3f4f6",
-            color: tab === "stores" ? "#78350f" : "#6b7280",
-          }}
-        >
-          Stores
-        </button>
-        <button
-          onClick={() => setTab("orders")}
-          style={{
-            flex: 1, padding: "10px", borderRadius: 12, border: "none", cursor: "pointer", fontWeight: 600, fontSize: 14,
-            backgroundColor: tab === "orders" ? "#f59e0b" : "#f3f4f6",
-            color: tab === "orders" ? "#78350f" : "#6b7280",
-          }}
-        >
-          Orders
-        </button>
+        {(["stores", "orders", "riders"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            style={{
+              flex: 1, padding: "10px", borderRadius: 12, border: "none", cursor: "pointer", fontWeight: 600, fontSize: 14,
+              backgroundColor: tab === t ? "#f59e0b" : "#f3f4f6",
+              color: tab === t ? "#78350f" : "#6b7280",
+              position: "relative",
+            }}
+          >
+            {t === "stores" ? "Stores" : t === "orders" ? "Orders" : "Riders"}
+            {t === "riders" && pendingRiders.length > 0 && (
+              <span style={{
+                position: "absolute", top: -4, right: -4,
+                background: "#ef4444", color: "white", borderRadius: "50%",
+                width: 20, height: 20, fontSize: 11, fontWeight: 700,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>{pendingRiders.length}</span>
+            )}
+          </button>
+        ))}
       </div>
 
       {/* Stores Tab */}
       {tab === "stores" && (
         <div>
-          {/* Add Store Form */}
           <form onSubmit={addStore} style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 16, padding: 16, marginBottom: 20 }}>
             <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>Add Store</h2>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -243,7 +283,6 @@ export default function AdminPage() {
             </div>
           </form>
 
-          {/* Stores List */}
           {storeLoading && <p style={{ color: "#9ca3af", textAlign: "center", padding: 20 }}>Loading...</p>}
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {stores.map((store) => (
@@ -311,6 +350,102 @@ export default function AdminPage() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Riders Tab */}
+      {tab === "riders" && (
+        <div>
+          <button
+            onClick={fetchRiders}
+            style={{ marginBottom: 12, padding: "6px 16px", borderRadius: 8, border: "1px solid #d1d5db", cursor: "pointer", fontSize: 13, backgroundColor: "#f9fafb" }}
+          >
+            Refresh
+          </button>
+          {ridersLoading && <p style={{ color: "#9ca3af", textAlign: "center", padding: 20 }}>Loading...</p>}
+
+          {/* Pending riders */}
+          {pendingRiders.length > 0 && (
+            <div style={{ marginBottom: 24 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 8, color: "#92400e" }}>Pending Approval ({pendingRiders.length})</h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {pendingRiders.map((rider) => (
+                  <div key={rider.id} style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ fontSize: 24 }}>🛵</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>{rider.name}</div>
+                      <div style={{ fontSize: 12, color: "#6b7280", fontFamily: "monospace" }}>{rider.phone}</div>
+                      <div style={{ fontSize: 11, color: "#9ca3af" }}>{formatTime(rider.created_at)}</div>
+                    </div>
+                    <button
+                      onClick={() => updateRiderStatus(rider.id, "active")}
+                      style={{ padding: "6px 16px", borderRadius: 8, border: "none", backgroundColor: "#10b981", color: "white", cursor: "pointer", fontSize: 13, fontWeight: 600 }}
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => updateRiderStatus(rider.id, "rejected")}
+                      style={{ padding: "6px 16px", borderRadius: 8, border: "1px solid #fca5a5", backgroundColor: "#fef2f2", color: "#dc2626", cursor: "pointer", fontSize: 13, fontWeight: 500 }}
+                    >
+                      Reject
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Approved riders */}
+          {approvedRiders.length > 0 && (
+            <div style={{ marginBottom: 24 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 8, color: "#065f46" }}>Approved Riders ({approvedRiders.length})</h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {approvedRiders.map((rider) => (
+                  <div key={rider.id} style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ fontSize: 24 }}>🛵</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>{rider.name}</div>
+                      <div style={{ fontSize: 12, color: "#6b7280", fontFamily: "monospace" }}>{rider.phone}</div>
+                    </div>
+                    <span style={{ padding: "4px 12px", borderRadius: 8, fontSize: 12, fontWeight: 500, backgroundColor: RIDER_STATUS_COLORS.active.bg, color: RIDER_STATUS_COLORS.active.text }}>
+                      Active
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Rejected riders */}
+          {rejectedRiders.length > 0 && (
+            <div>
+              <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 8, color: "#991b1b" }}>Rejected ({rejectedRiders.length})</h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {rejectedRiders.map((rider) => (
+                  <div key={rider.id} style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ fontSize: 24 }}>🛵</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>{rider.name}</div>
+                      <div style={{ fontSize: 12, color: "#6b7280", fontFamily: "monospace" }}>{rider.phone}</div>
+                    </div>
+                    <span style={{ padding: "4px 12px", borderRadius: 8, fontSize: 12, fontWeight: 500, backgroundColor: RIDER_STATUS_COLORS.rejected.bg, color: RIDER_STATUS_COLORS.rejected.text }}>
+                      Rejected
+                    </span>
+                    <button
+                      onClick={() => updateRiderStatus(rider.id, "active")}
+                      style={{ padding: "4px 12px", borderRadius: 8, border: "1px solid #d1d5db", backgroundColor: "#f9fafb", color: "#374151", cursor: "pointer", fontSize: 12, fontWeight: 500 }}
+                    >
+                      Re-approve
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {riders.length === 0 && !ridersLoading && (
+            <p style={{ color: "#9ca3af", textAlign: "center", padding: 20 }}>No riders registered yet</p>
+          )}
         </div>
       )}
     </div>

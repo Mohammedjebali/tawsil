@@ -12,6 +12,12 @@ interface Store {
   lng: number | null;
 }
 
+interface UserProfile {
+  name: string;
+  phone: string;
+  role: string;
+}
+
 const CATEGORY_ICONS: Record<string, string> = {
   restaurant: "🍽️",
   supermarket: "🛒",
@@ -22,7 +28,58 @@ const CATEGORY_ICONS: Record<string, string> = {
   other: "📦",
 };
 
+function LandingPage() {
+  return (
+    <div className="min-h-[80vh] flex items-center justify-center">
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-10">
+          <div className="w-24 h-24 bg-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(239,68,68,0.3)]">
+            <span className="text-5xl">🛵</span>
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-1">Tawsil</h1>
+          <p className="text-gray-500 text-sm">منزل النور</p>
+        </div>
+
+        {/* Role cards */}
+        <div className="space-y-3">
+          <a
+            href="/register/customer"
+            className="card flex items-center gap-4 hover:border-red-500/40 hover:shadow-[0_0_20px_rgba(239,68,68,0.1)] transition-all group no-underline"
+          >
+            <div className="w-16 h-16 bg-red-500/15 border border-red-500/30 rounded-2xl flex items-center justify-center text-3xl">
+              🛒
+            </div>
+            <div className="flex-1">
+              <div className="text-lg font-bold text-white">أنا زبون</div>
+              <div className="text-sm text-gray-500">أريد الطلب</div>
+            </div>
+            <span className="text-gray-600 group-hover:text-red-400 transition-colors text-xl">←</span>
+          </a>
+
+          <a
+            href="/register/rider"
+            className="card flex items-center gap-4 hover:border-red-500/40 hover:shadow-[0_0_20px_rgba(239,68,68,0.1)] transition-all group no-underline"
+          >
+            <div className="w-16 h-16 bg-red-500/15 border border-red-500/30 rounded-2xl flex items-center justify-center text-3xl">
+              🛵
+            </div>
+            <div className="flex-1">
+              <div className="text-lg font-bold text-white">أنا راكب</div>
+              <div className="text-sm text-gray-500">أريد التوصيل</div>
+            </div>
+            <span className="text-gray-600 group-hover:text-red-400 transition-colors text-xl">←</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function OrderPage() {
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [ready, setReady] = useState(false);
+
   const [stores, setStores] = useState<Store[]>([]);
   const [step, setStep] = useState<"store" | "details" | "confirm" | "success">("store");
 
@@ -31,8 +88,6 @@ export default function OrderPage() {
   const [customStore, setCustomStore] = useState("");
   const [items, setItems] = useState("");
   const [estimatedAmount, setEstimatedAmount] = useState("");
-  const [customerName, setCustomerName] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
 
   const [customerLat, setCustomerLat] = useState<number | null>(null);
@@ -44,12 +99,29 @@ export default function OrderPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/stores")
-      .then((r) => r.json())
-      .then((d) => setStores(d.stores || []));
+    const saved = localStorage.getItem("tawsil_user");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.role === "customer") {
+        setUser(parsed);
+      } else if (parsed.role === "rider") {
+        window.location.href = "/rider";
+        return;
+      }
+    }
+    setReady(true);
   }, []);
 
+  useEffect(() => {
+    if (user) {
+      fetch("/api/stores")
+        .then((r) => r.json())
+        .then((d) => setStores(d.stores || []));
+    }
+  }, [user]);
+
   async function submitOrder() {
+    if (!user) return;
     setLoading(true);
     setError(null);
     try {
@@ -58,8 +130,8 @@ export default function OrderPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customer_name: customerName,
-          customer_phone: customerPhone,
+          customer_name: user.name,
+          customer_phone: user.phone,
           customer_address: customerAddress,
           customer_lat: customerLat,
           customer_lng: customerLng,
@@ -82,6 +154,11 @@ export default function OrderPage() {
       setLoading(false);
     }
   }
+
+  if (!ready) return null;
+
+  // No profile — show landing
+  if (!user) return <LandingPage />;
 
   const storeName = selectedStore ? selectedStore.name : customStore;
 
@@ -197,7 +274,7 @@ export default function OrderPage() {
         </div>
       )}
 
-      {/* Step: Customer info + confirm */}
+      {/* Step: Address + confirm */}
       {step === "confirm" && (
         <div>
           <button onClick={() => setStep("details")} className="text-red-400 text-sm mb-4 flex items-center gap-1 hover:text-red-300 transition-colors">
@@ -205,37 +282,10 @@ export default function OrderPage() {
           </button>
 
           <div className="mb-5">
-            <h2 className="text-xl font-bold text-white mb-1">معلوماتك</h2>
+            <h2 className="text-xl font-bold text-white mb-1">عنوان التوصيل</h2>
           </div>
 
           <div className="space-y-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1.5">
-                الاسم <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="اسمك الكامل"
-                className="input"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1.5">
-                رقم الهاتف <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="tel"
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                placeholder="2X XXX XXX"
-                className="input !text-left"
-                dir="ltr"
-              />
-            </div>
-
             <div>
               <button
                 type="button"
@@ -306,7 +356,7 @@ export default function OrderPage() {
 
           <button
             onClick={submitOrder}
-            disabled={loading || !customerName || !customerPhone || !customerAddress}
+            disabled={loading || !customerAddress}
             className="btn-primary"
           >
             {loading ? "جاري الإرسال..." : "تأكيد الطلب"}
@@ -343,7 +393,7 @@ export default function OrderPage() {
             🔍 تتبع طلبي
           </a>
           <button
-            onClick={() => { setStep("store"); setOrderResult(null); setItems(""); setCustomStore(""); setSelectedStore(null); setCustomerName(""); setCustomerPhone(""); setCustomerAddress(""); setEstimatedAmount(""); setCustomerLat(null); setCustomerLng(null); setGpsStatus("idle"); }}
+            onClick={() => { setStep("store"); setOrderResult(null); setItems(""); setCustomStore(""); setSelectedStore(null); setCustomerAddress(""); setEstimatedAmount(""); setCustomerLat(null); setCustomerLng(null); setGpsStatus("idle"); }}
             className="btn-secondary mt-3"
           >
             طلب جديد

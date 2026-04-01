@@ -21,6 +21,14 @@ interface Order {
   created_at: string;
 }
 
+interface RiderProfile {
+  name: string;
+  phone: string;
+  role: string;
+  status: string;
+  rider_id?: string;
+}
+
 function formatFee(m: number) { return `${(m/1000).toFixed(3)} DT`; }
 
 const NEXT_STATUS: Record<string, { label: string; next: string }> = {
@@ -29,35 +37,50 @@ const NEXT_STATUS: Record<string, { label: string; next: string }> = {
 };
 
 export default function RiderPage() {
+  const [rider, setRider] = useState<RiderProfile | null>(null);
+  const [ready, setReady] = useState(false);
+  const [checking, setChecking] = useState(false);
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [myOrders, setMyOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [riderName, setRiderName] = useState("");
-  const [riderPhone, setRiderPhone] = useState("");
-  const [registered, setRegistered] = useState(false);
   const [tab, setTab] = useState<"available" | "mine">("available");
   const [notifStatus, setNotifStatus] = useState<"idle" | "granted" | "denied">("idle");
   const [sharing, setSharing] = useState<Record<string, boolean>>({});
   const watchIds = useRef<Record<string, number>>({});
 
   useEffect(() => {
-    const saved = localStorage.getItem("rider");
-    if (saved) {
-      const r = JSON.parse(saved);
-      setRiderName(r.name);
-      setRiderPhone(r.phone);
-      setRegistered(true);
+    const saved = localStorage.getItem("tawsil_user");
+    if (!saved) {
+      window.location.href = "/register/rider";
+      return;
     }
+    const user = JSON.parse(saved);
+    if (user.role !== "rider") {
+      window.location.href = "/";
+      return;
+    }
+    if (user.status === "pending" || user.status === "rejected") {
+      window.location.href = "/register/rider";
+      return;
+    }
+    setRider(user);
+    setReady(true);
+
     if (typeof Notification !== "undefined" && Notification.permission === "granted") {
       setNotifStatus("granted");
     }
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js");
     }
+  }, []);
+
+  useEffect(() => {
+    if (!ready) return;
     fetchOrders();
     const interval = setInterval(fetchOrders, 15000);
     return () => clearInterval(interval);
-  }, []);
+  }, [ready]);
 
   async function fetchOrders() {
     try {
@@ -68,12 +91,10 @@ export default function RiderPage() {
       const pendingData = await pendingRes.json();
       const allData = await allRes.json();
       setOrders(pendingData.orders || []);
-      // My orders = accepted or picked_up
-      const saved = localStorage.getItem("rider");
-      if (saved) {
+      if (rider) {
         setMyOrders((allData.orders || []).filter((o: Order) =>
           ["accepted","picked_up"].includes(o.status) &&
-          o.customer_phone // basic filter — in real app would use rider ID
+          o.customer_phone
         ));
       }
     } finally {
@@ -81,20 +102,14 @@ export default function RiderPage() {
     }
   }
 
-  function register() {
-    if (!riderName || !riderPhone) return;
-    localStorage.setItem("rider", JSON.stringify({ name: riderName, phone: riderPhone }));
-    setRegistered(true);
-  }
-
   async function acceptOrder(orderId: string) {
+    if (!rider) return;
     await fetch(`/api/orders/${orderId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "accepted", rider_name: riderName, rider_phone: riderPhone }),
+      body: JSON.stringify({ status: "accepted", rider_name: rider.name, rider_phone: rider.phone }),
     });
     fetchOrders();
-    // Auto-start location sharing immediately on accept
     startSharing(orderId);
   }
 
@@ -116,6 +131,7 @@ export default function RiderPage() {
   }
 
   async function subscribePush() {
+    if (!rider) return;
     try {
       const perm = await Notification.requestPermission();
       if (perm !== "granted") {
@@ -130,18 +146,13 @@ export default function RiderPage() {
       await fetch("/api/push/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subscription: sub.toJSON(), rider_name: riderName, rider_phone: riderPhone }),
+        body: JSON.stringify({ subscription: sub.toJSON(), rider_name: rider.name, rider_phone: rider.phone }),
       });
       setNotifStatus("granted");
     } catch {
       setNotifStatus("denied");
     }
   }
-
-  const toggleSharing = (orderId: string) => {
-    // Kept for compatibility but sharing is now auto-started on accept
-    startSharing(orderId);
-  };
 
   async function updateStatus(orderId: string, nextStatus: string) {
     await fetch(`/api/orders/${orderId}`, {
@@ -152,31 +163,32 @@ export default function RiderPage() {
     fetchOrders();
   }
 
-  if (!registered) {
-    return (
-      <div>
-        <h1 className="text-xl font-bold text-white mb-5">🛵 لوحة الراكب</h1>
-        <div className="card space-y-4">
-          <p className="text-sm text-gray-400">أدخل معلوماتك لتبدأ استقبال الطلبات</p>
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1.5">اسمك</label>
-            <input type="text" value={riderName} onChange={(e) => setRiderName(e.target.value)}
-              placeholder="اسمك الكامل"
-              className="input" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1.5">رقم هاتفك</label>
-            <input type="tel" value={riderPhone} onChange={(e) => setRiderPhone(e.target.value)}
-              placeholder="2X XXX XXX" dir="ltr"
-              className="input !text-left" />
-          </div>
-          <button onClick={register} disabled={!riderName || !riderPhone} className="btn-primary">
-            دخول
-          </button>
-        </div>
-      </div>
-    );
+  async function checkRiderStatus() {
+    if (!rider) return;
+    setChecking(true);
+    try {
+      const res = await fetch(`/api/riders/status?phone=${encodeURIComponent(rider.phone)}`);
+      const data = await res.json();
+      if (data.status !== "active") {
+        const saved = localStorage.getItem("tawsil_user");
+        if (saved) {
+          const user = JSON.parse(saved);
+          user.status = data.status;
+          localStorage.setItem("tawsil_user", JSON.stringify(user));
+        }
+        window.location.href = "/register/rider";
+      }
+    } finally {
+      setChecking(false);
+    }
   }
+
+  function logout() {
+    localStorage.removeItem("tawsil_user");
+    window.location.href = "/";
+  }
+
+  if (!ready || !rider) return null;
 
   return (
     <div>
@@ -187,11 +199,11 @@ export default function RiderPage() {
             🛵
           </div>
           <div>
-            <h1 className="text-lg font-bold text-white">{riderName}</h1>
-            <p className="text-xs text-gray-500" dir="ltr">{riderPhone}</p>
+            <h1 className="text-lg font-bold text-white">{rider.name}</h1>
+            <p className="text-xs text-gray-500" dir="ltr">{rider.phone}</p>
           </div>
         </div>
-        <button onClick={() => { localStorage.removeItem("rider"); setRegistered(false); }}
+        <button onClick={logout}
           className="text-xs text-red-400 hover:text-red-300 border border-red-500/20 px-3 py-1.5 rounded-lg transition-colors">خروج</button>
       </div>
 
