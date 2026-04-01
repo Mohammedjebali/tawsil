@@ -92,9 +92,3 @@ CREATE POLICY "Anyone can view orders" ON orders
 CREATE POLICY "Riders can update orders" ON orders
   FOR UPDATE USING (auth.uid() IS NOT NULL);
 
--- Insert some sample stores for Manzel Ennour
-INSERT INTO stores (name, category, address) VALUES
-  ('Supermarché Central', 'supermarket', 'Manzel Ennour Centre'),
-  ('Pharmacie El Amal', 'pharmacy', 'Manzel Ennour'),
-  ('Boulangerie Sidi Ahmed', 'bakery', 'Rue Principale, Manzel Ennour'),
-  ('Épicerie Mounir', 'grocery', 'Manzel Ennour');
