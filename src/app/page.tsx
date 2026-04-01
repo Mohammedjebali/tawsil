@@ -387,7 +387,12 @@ export default function OrderPage() {
                 ? t("locationGranted")
                 : t("useMyLocation")}
             </button>
-            {gpsStatus === "error" && <p className="text-red-500 text-xs">{t("locationError")}</p>}
+            {gpsStatus === "error" && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                <p className="text-amber-700 text-xs font-medium">{t("locationError")}</p>
+                <p className="text-amber-600 text-xs mt-1">{t("locationErrorFallback")}</p>
+              </div>
+            )}
 
             {/* Address */}
             <div>
