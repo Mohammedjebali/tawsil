@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Package, MapPin, Clock, CheckCircle2, XCircle, Loader2, ChevronRight, AlertTriangle } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
-import AppShell from "@/components/AppShell";
 
 interface Order {
   id: string;
@@ -85,8 +84,7 @@ export default function OrdersPage() {
   }
 
   return (
-    <AppShell>
-      <div className="max-w-lg mx-auto px-4 py-6">
+    <div className="max-w-lg mx-auto px-4 py-6">
         <h1 className="text-xl font-bold text-slate-900 mb-5">{t("myOrders")}</h1>
 
         {loading && (
@@ -181,7 +179,6 @@ export default function OrdersPage() {
             );
           })}
         </div>
-      </div>
-    </AppShell>
+    </div>
   );
 }
