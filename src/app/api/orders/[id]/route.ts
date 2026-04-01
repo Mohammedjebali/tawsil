@@ -12,13 +12,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const supabase = getSupabase();
     const { id } = await params;
     const body = await req.json();
-    const { status, rider_name, rider_phone } = body;
-
-    const update: Record<string, unknown> = { status };
-    if (rider_name) update.rider_name = rider_name;
-    if (rider_phone) update.rider_phone = rider_phone;
-    if (STATUS_TIMESTAMPS[status]) {
-      update[STATUS_TIMESTAMPS[status]] = new Date().toISOString();
+    const allowedFields = ["status", "rider_name", "rider_phone", "rider_lat", "rider_lng"];
+    const update: Record<string, unknown> = {};
+    for (const key of allowedFields) {
+      if (body[key] !== undefined) update[key] = body[key];
+    }
+    if (body.status && STATUS_TIMESTAMPS[body.status]) {
+      update[STATUS_TIMESTAMPS[body.status]] = new Date().toISOString();
     }
 
     const { data, error } = await supabase

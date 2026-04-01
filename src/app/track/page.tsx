@@ -2,6 +2,8 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { createClient } from "@supabase/supabase-js";
+import MapView from "./MapView";
 
 interface Order {
   id: string;
@@ -13,6 +15,10 @@ interface Order {
   distance_km: number;
   rider_name: string | null;
   rider_phone: string | null;
+  rider_lat: number | null;
+  rider_lng: number | null;
+  customer_lat: number | null;
+  customer_lng: number | null;
   created_at: string;
   accepted_at: string | null;
   picked_up_at: string | null;
@@ -70,6 +76,28 @@ function TrackContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [order]);
 
+  // Supabase Realtime subscription for live GPS updates
+  useEffect(() => {
+    if (!order) return;
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    const channel = supabase
+      .channel("order-tracking")
+      .on("postgres_changes", {
+        event: "UPDATE",
+        schema: "public",
+        table: "orders",
+        filter: `id=eq.${order.id}`,
+      }, (payload) => {
+        setOrder(prev => prev ? { ...prev, ...payload.new as Partial<Order> } : prev);
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [order?.id]);
+
   const currentStep = order ? STEPS.indexOf(order.status) : -1;
 
   return (
@@ -116,6 +144,23 @@ function TrackContent() {
               </span>
             </div>
           </div>
+
+          {/* Live map */}
+          {order.customer_lat && order.customer_lng && order.status !== "delivered" && (
+            <div className="card mb-0 p-0 overflow-hidden">
+              <MapView
+                customerLat={order.customer_lat}
+                customerLng={order.customer_lng}
+                riderLat={order.rider_lat}
+                riderLng={order.rider_lng}
+              />
+              {!order.rider_lat && (
+                <div className="p-3 text-center text-xs text-gray-500">
+                  في انتظار تفعيل موقع السائق...
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Vertical timeline */}
           <div className="card">
