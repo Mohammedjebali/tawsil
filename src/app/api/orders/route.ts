@@ -80,11 +80,14 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const order_number = searchParams.get("order_number");
     const status = searchParams.get("status");
+    const phone = searchParams.get("phone");
 
     let query = supabase.from("orders").select("*");
 
     if (order_number) {
       query = query.eq("order_number", order_number);
+    } else if (phone) {
+      query = query.eq("customer_phone", phone).order("created_at", { ascending: false }).limit(50);
     } else if (status === "pending") {
       query = query.eq("status", "pending").order("created_at", { ascending: true });
     } else {
