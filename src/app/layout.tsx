@@ -13,6 +13,10 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "Tawsil",
   },
+  icons: {
+    apple: "/icon-192.png",
+    icon: "/icon-512.png",
+  },
 };
 
 export const viewport: Viewport = {
