@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import InstallPrompt from "@/components/InstallPrompt";
 
 export const metadata: Metadata = {
   title: "Tawsil 🛵 — توصيل منزل النور",
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="max-w-lg mx-auto px-3 py-4 sm:px-4 sm:py-6">
           {children}
         </main>
+        <InstallPrompt />
       </body>
     </html>
   );

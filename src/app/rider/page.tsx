@@ -9,6 +9,8 @@ interface Order {
   customer_name: string;
   customer_phone: string;
   customer_address: string;
+  customer_lat: number | null;
+  customer_lng: number | null;
   store_name: string;
   store_address: string | null;
   items_description: string;
@@ -199,7 +201,21 @@ export default function RiderPage() {
               </div>
               <div className="text-sm font-semibold mb-1">📍 من: {order.store_name}</div>
               {order.store_address && <div className="text-xs text-gray-500 mb-2">{order.store_address}</div>}
-              <div className="text-sm font-semibold mb-1">🏠 إلى: {order.customer_address}</div>
+              <div className="text-sm font-semibold mb-1">
+                🏠 إلى:{" "}
+                {order.customer_lat && order.customer_lng ? (
+                  <a
+                    href={`https://www.google.com/maps?q=${order.customer_lat},${order.customer_lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline"
+                  >
+                    📍 عرض على الخريطة
+                  </a>
+                ) : (
+                  order.customer_address
+                )}
+              </div>
               {order.distance_km && <div className="text-xs text-gray-500 mb-2">{order.distance_km} كم</div>}
               <div className="bg-gray-50 rounded-lg p-2 mb-3">
                 <div className="text-xs text-gray-500 mb-1">الطلب:</div>
@@ -227,7 +243,21 @@ export default function RiderPage() {
                   <span className="font-bold text-amber-600">{formatFee(order.delivery_fee)}</span>
                 </div>
                 <div className="text-sm font-semibold mb-1">📍 {order.store_name}</div>
-                <div className="text-sm font-semibold mb-1">🏠 {order.customer_address}</div>
+                <div className="text-sm font-semibold mb-1">
+                  🏠{" "}
+                  {order.customer_lat && order.customer_lng ? (
+                    <a
+                      href={`https://www.google.com/maps?q=${order.customer_lat},${order.customer_lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline"
+                    >
+                      📍 عرض على الخريطة
+                    </a>
+                  ) : (
+                    order.customer_address
+                  )}
+                </div>
                 <div className="bg-gray-50 rounded-lg p-2 mb-2">
                   <div className="text-sm whitespace-pre-wrap">{order.items_description}</div>
                 </div>
