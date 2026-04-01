@@ -85,7 +85,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     const saved = localStorage.getItem("adminAuth");
-    if (saved === "tawsil2024admin") setAuthed(true);
+    if (saved === "zerba-321") setAuthed(true);
   }, []);
 
   const fetchStores = useCallback(async () => {
@@ -130,7 +130,7 @@ export default function AdminPage() {
   }, [authed, fetchStores, fetchOrders, fetchRiders]);
 
   function login() {
-    if (password === "tawsil2024admin") {
+    if (password === "zerba-321") {
       localStorage.setItem("adminAuth", password);
       setAuthed(true);
     }
