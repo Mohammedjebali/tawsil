@@ -370,7 +370,7 @@ export default function OrderPage() {
                     setGpsStatus("done");
                   },
                   () => setGpsStatus("error"),
-                  { enableHighAccuracy: true, timeout: 10000 }
+                  { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }
                 );
               }}
               disabled={gpsStatus === "loading"}

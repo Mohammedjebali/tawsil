@@ -107,7 +107,7 @@ const translations: Record<string, Record<Lang, string>> = {
   otherStorePlaceholder: { ar: "مثال: عطار الحاج محمد", fr: "Ex: \u00c9picerie Hajj Mohamed", en: "E.g.: Hajj Mohamed's shop" },
   or: { ar: "أو", fr: "ou", en: "or" },
   locating: { ar: "جاري تحديد الموقع...", fr: "Localisation en cours...", en: "Locating..." },
-  locationError: { ar: "تعذر تحديد الموقع، أدخل العنوان يدوياً", fr: "Impossible de localiser, entrez l'adresse manuellement", en: "Could not locate, enter address manually" },
+  locationError: { ar: "تعذر تحديد الموقع — iPhone: اذهب لـ Réglages > Safari > Localisation > Autoriser", fr: "Localisation refusée — iPhone: Réglages > Safari > Localisation > Autoriser", en: "Location denied — iPhone: Settings > Safari > Location > Allow" },
   paymentDetails: { ar: "تفاصيل الدفع", fr: "D\u00e9tails du paiement", en: "Payment details" },
   fromPrice: { ar: "من", fr: "\u00c0 partir de", en: "From" },
   calculatedByDistance: { ar: "تُحسب حسب المسافة", fr: "Calcul\u00e9 selon la distance", en: "Calculated by distance" },
