@@ -146,6 +146,10 @@ export default function OrderPage() {
         window.location.href = "/rider";
         return;
       }
+    } else {
+      // No user — redirect to login
+      window.location.href = "/login";
+      return;
     }
     setReady(true);
   }, []);

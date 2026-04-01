@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Package, Globe, LogOut, ShoppingBag, MapPin } from "lucide-react";
 import { useLang } from "./LangProvider";
+import { supabaseClient } from "@/lib/supabase-client";
 import type { Lang } from "@/lib/i18n";
 
 const LANGS: { code: Lang; label: string }[] = [
@@ -12,19 +13,83 @@ const LANGS: { code: Lang; label: string }[] = [
   { code: "en", label: "EN" },
 ];
 
+// Pages that don't require auth
+const PUBLIC_PATHS = ["/login", "/register", "/forgot-password", "/reset-password", "/auth/callback", "/admin", "/rider"];
+
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const { lang, setLang, t, isRtl } = useLang();
   const pathname = usePathname();
   const [role, setRole] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>("");
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem("tawsil_user");
-    if (saved) {
-      setRole(JSON.parse(saved).role);
+    async function initAuth() {
+      // Check Supabase session
+      const { data: { session } } = await supabaseClient.auth.getSession();
+
+      if (session?.user) {
+        const user = session.user;
+        const meta = user.user_metadata || {};
+        const firstName = meta.first_name || "";
+        const lastName = meta.last_name || "";
+
+        const profile = {
+          name: `${firstName} ${lastName}`.trim(),
+          firstName,
+          lastName,
+          email: user.email,
+          phone: meta.phone || "",
+          role: "customer",
+        };
+
+        localStorage.setItem("tawsil_user", JSON.stringify(profile));
+        setRole("customer");
+        setUserName(firstName);
+
+        // Upsert customer record
+        try {
+          await fetch("/api/customers", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_id: user.id,
+              first_name: firstName,
+              last_name: lastName,
+              email: user.email,
+              phone: meta.phone || "",
+            }),
+          });
+        } catch (_) {}
+      } else {
+        // No session — check localStorage for rider/admin
+        const saved = localStorage.getItem("tawsil_user");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.role === "rider" || parsed.role === "admin") {
+            setRole(parsed.role);
+            setUserName(parsed.firstName || parsed.name || "");
+          } else {
+            // Customer without session — clear stale data
+            localStorage.removeItem("tawsil_user");
+            // Redirect to login if on a protected page
+            const isPublic = PUBLIC_PATHS.some((p) => pathname?.startsWith(p));
+            if (!isPublic && pathname !== "/") {
+              window.location.href = "/login";
+            }
+          }
+        } else {
+          // No user at all — redirect to login for protected pages
+          const isPublic = PUBLIC_PATHS.some((p) => pathname?.startsWith(p));
+          if (!isPublic && pathname !== "/") {
+            window.location.href = "/login";
+          }
+        }
+      }
+      setReady(true);
     }
-    setReady(true);
-  }, []);
+    initAuth();
+  }, [pathname]);
 
   // Admin pages: skip header/nav, just render children in ltr div
   if (pathname?.startsWith("/admin")) {
@@ -33,9 +98,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const dir = isRtl ? "rtl" : "ltr";
 
-  function logout() {
+  async function logout() {
+    await supabaseClient.auth.signOut();
     localStorage.removeItem("tawsil_user");
-    window.location.href = "/";
+    window.location.href = "/login";
   }
 
   return (
@@ -50,6 +116,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </a>
 
         <div className="flex items-center gap-2">
+          {/* Greeting */}
+          {ready && role === "customer" && userName && (
+            <span className="text-sm text-slate-600 font-medium hidden sm:inline">
+              {t("greeting")}, {userName}
+            </span>
+          )}
+
           {/* Language switcher */}
           <div className="flex bg-slate-100 rounded-lg p-0.5">
             {LANGS.map((l) => (

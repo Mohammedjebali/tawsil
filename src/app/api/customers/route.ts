@@ -4,19 +4,19 @@ import { getSupabase } from "@/lib/supabase-server";
 export async function POST(req: NextRequest) {
   try {
     const supabase = getSupabase();
-    const { first_name, last_name, email, phone } = await req.json();
+    const { first_name, last_name, email, phone, user_id } = await req.json();
 
     if (!first_name || !last_name || !email || !phone) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Upsert by email — if email exists, update phone/name
+    // Upsert by email — if email exists, update phone/name/user_id
+    const row: Record<string, string> = { first_name, last_name, email, phone };
+    if (user_id) row.user_id = user_id;
+
     const { data, error } = await supabase
       .from("customers")
-      .upsert(
-        { first_name, last_name, email, phone },
-        { onConflict: "email" }
-      )
+      .upsert(row, { onConflict: "email" })
       .select()
       .single();
 
