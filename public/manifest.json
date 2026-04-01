@@ -1,11 +1,11 @@
 {
-  "name": "Tawsil — توصيل",
+  "name": "Tawsil — توصيل منزل النور",
   "short_name": "Tawsil",
-  "description": "خدمة توصيل لمنزل النور",
+  "description": "Service de livraison — Manzel Ennour",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0d1117",
-  "theme_color": "#0d1117",
+  "background_color": "#ffffff",
+  "theme_color": "#1e40af",
   "orientation": "portrait",
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
