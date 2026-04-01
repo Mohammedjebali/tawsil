@@ -1,5 +1,5 @@
 // Cache for offline support
-const CACHE_NAME = "tawsil-v4";
+const CACHE_NAME = "tawsil-v5";
 const CACHED_URLS = ["/", "/track", "/rider", "/manifest.json", "/icon-192.png"];
 
 self.addEventListener("install", function(event) {

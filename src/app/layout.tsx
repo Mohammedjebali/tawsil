@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import LangProvider from "@/components/LangProvider";
+import UpdateNotifier from "@/components/UpdateNotifier";
 import AppShell from "@/components/AppShell";
 import InstallPrompt from "@/components/InstallPrompt";
 
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ar">
       <body className="bg-white">
         <LangProvider>
+          <UpdateNotifier />
           <AppShell>{children}</AppShell>
           <InstallPrompt />
         </LangProvider>
