@@ -161,15 +161,22 @@ export default function LoginPage() {
             {loading ? t("signingIn") : t("login")}
           </button>
 
-          <p className="text-center text-sm text-slate-500 mt-3">
-            {t("noAccount")}{" "}
-            <a
-              href="/register/customer"
-              className="text-blue-700 font-medium hover:underline"
-            >
-              {t("signUp")}
-            </a>
-          </p>
+          <div className="mt-4 space-y-2">
+            <p className="text-center text-sm text-slate-500">
+              {t("noAccount")}{" "}
+              <a href="/register/customer" className="text-blue-700 font-medium hover:underline">
+                {t("signUp")}
+              </a>
+            </p>
+            <div className="border-t border-slate-100 pt-3">
+              <p className="text-center text-xs text-slate-400">
+                Livreur?{" "}
+                <a href="/register/rider" className="text-blue-600 font-medium hover:underline">
+                  S&apos;inscrire comme livreur
+                </a>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
