@@ -32,6 +32,7 @@ export default function RiderPage() {
   const [riderPhone, setRiderPhone] = useState("");
   const [registered, setRegistered] = useState(false);
   const [tab, setTab] = useState<"available" | "mine">("available");
+  const [notifStatus, setNotifStatus] = useState<"idle" | "granted" | "denied">("idle");
 
   useEffect(() => {
     const saved = localStorage.getItem("rider");
@@ -40,6 +41,12 @@ export default function RiderPage() {
       setRiderName(r.name);
       setRiderPhone(r.phone);
       setRegistered(true);
+    }
+    if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+      setNotifStatus("granted");
+    }
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js");
     }
     fetchOrders();
     const interval = setInterval(fetchOrders, 15000);
@@ -82,6 +89,29 @@ export default function RiderPage() {
       body: JSON.stringify({ status: "accepted", rider_name: riderName, rider_phone: riderPhone }),
     });
     fetchOrders();
+  }
+
+  async function subscribePush() {
+    try {
+      const perm = await Notification.requestPermission();
+      if (perm !== "granted") {
+        setNotifStatus("denied");
+        return;
+      }
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+      });
+      await fetch("/api/push/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subscription: sub.toJSON(), rider_name: riderName, rider_phone: riderPhone }),
+      });
+      setNotifStatus("granted");
+    } catch {
+      setNotifStatus("denied");
+    }
   }
 
   async function updateStatus(orderId: string, nextStatus: string) {
@@ -129,6 +159,18 @@ export default function RiderPage() {
         <button onClick={() => { localStorage.removeItem("rider"); setRegistered(false); }}
           className="text-xs text-red-400">خروج</button>
       </div>
+
+      {/* Push notification */}
+      {notifStatus === "granted" ? (
+        <div className="text-green-600 text-xs mb-3 text-center">✅ الإشعارات مفعلة</div>
+      ) : (
+        <button
+          onClick={subscribePush}
+          className="w-full mb-3 py-2 rounded-xl text-sm font-medium border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+        >
+          🔔 تفعيل الإشعارات
+        </button>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-2 mb-4">

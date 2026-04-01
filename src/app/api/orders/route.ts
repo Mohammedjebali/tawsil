@@ -45,6 +45,14 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (error) throw error;
+
+    // Notify riders via push
+    await fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/push/notify`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ order_number: data.order_number, store_name: data.store_name, delivery_fee: data.delivery_fee }),
+    }).catch(() => {});
+
     return NextResponse.json({ order: data });
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 });

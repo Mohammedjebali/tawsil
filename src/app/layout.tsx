@@ -4,6 +4,15 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Tawsil 🛵 — توصيل منزل النور",
   description: "اطلب من أي محل وسيصلك في أسرع وقت",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "توصيل",
+  },
+  other: {
+    "theme-color": "#f59e0b",
+  },
 };
 
 export const viewport: Viewport = {

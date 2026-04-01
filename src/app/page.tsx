@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { formatFee } from "@/lib/fees";
+import { formatFee, calculateDeliveryFee, getDistanceKm } from "@/lib/fees";
 
 interface Store {
   id: string;
   name: string;
   category: string;
   address: string | null;
+  lat: number | null;
+  lng: number | null;
 }
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -33,6 +35,10 @@ export default function OrderPage() {
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
 
+  const [customerLat, setCustomerLat] = useState<number | null>(null);
+  const [customerLng, setCustomerLng] = useState<number | null>(null);
+  const [gpsStatus, setGpsStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+
   const [loading, setLoading] = useState(false);
   const [orderResult, setOrderResult] = useState<{ order_number: string; delivery_fee: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -55,9 +61,13 @@ export default function OrderPage() {
           customer_name: customerName,
           customer_phone: customerPhone,
           customer_address: customerAddress,
+          customer_lat: customerLat,
+          customer_lng: customerLng,
           store_id: selectedStore?.id || null,
           store_name: storeName,
           store_address: selectedStore?.address || null,
+          store_lat: selectedStore?.lat || null,
+          store_lng: selectedStore?.lng || null,
           items_description: items,
           estimated_amount: estimatedAmount ? parseFloat(estimatedAmount) : null,
         }),
@@ -225,6 +235,28 @@ export default function OrderPage() {
             </div>
 
             <div>
+              <button
+                type="button"
+                onClick={() => {
+                  setGpsStatus("loading");
+                  navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                      setCustomerLat(pos.coords.latitude);
+                      setCustomerLng(pos.coords.longitude);
+                      setCustomerAddress("موقعي الحالي 📍");
+                      setGpsStatus("done");
+                    },
+                    () => setGpsStatus("error"),
+                    { enableHighAccuracy: true, timeout: 10000 }
+                  );
+                }}
+                disabled={gpsStatus === "loading"}
+                className="w-full mb-2 py-2.5 rounded-xl text-sm font-medium border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+              >
+                {gpsStatus === "loading" ? "جاري تحديد الموقع..." : "📍 استخدام موقعي الحالي"}
+              </button>
+              {gpsStatus === "done" && <p className="text-green-600 text-xs mb-2">✅ تم تحديد موقعك</p>}
+              {gpsStatus === "error" && <p className="text-red-500 text-xs mb-2">تعذر تحديد الموقع، أدخل العنوان يدوياً</p>}
               <label className="block text-sm font-semibold text-gray-700 mb-1">
                 عنوانك <span className="text-red-500">*</span>
               </label>
@@ -246,8 +278,15 @@ export default function OrderPage() {
               <span>{estimatedAmount ? `~${estimatedAmount} DT` : "يُحدد عند الشراء"}</span>
             </div>
             <div className="flex justify-between text-sm text-amber-700 mt-1">
-              <span>رسوم التوصيل (تُحسب حسب المسافة)</span>
-              <span>من {formatFee(2000)}</span>
+              <span>رسوم التوصيل {customerLat ? "" : "(تُحسب حسب المسافة)"}</span>
+              <span>
+                {customerLat && customerLng
+                  ? formatFee(calculateDeliveryFee(getDistanceKm(
+                      selectedStore?.lat ?? 36.5333, selectedStore?.lng ?? 10.5167,
+                      customerLat, customerLng
+                    )))
+                  : `من ${formatFee(2000)}`}
+              </span>
             </div>
             <div className="border-t border-amber-200 mt-2 pt-2 text-xs text-amber-600">
               الدفع نقداً عند الاستلام 💵
@@ -293,7 +332,7 @@ export default function OrderPage() {
             🔍 تتبع طلبي
           </a>
           <button
-            onClick={() => { setStep("store"); setOrderResult(null); setItems(""); setCustomStore(""); setSelectedStore(null); setCustomerName(""); setCustomerPhone(""); setCustomerAddress(""); setEstimatedAmount(""); }}
+            onClick={() => { setStep("store"); setOrderResult(null); setItems(""); setCustomStore(""); setSelectedStore(null); setCustomerName(""); setCustomerPhone(""); setCustomerAddress(""); setEstimatedAmount(""); setCustomerLat(null); setCustomerLng(null); setGpsStatus("idle"); }}
             className="mt-3 text-sm text-gray-500 w-full"
           >
             طلب جديد
