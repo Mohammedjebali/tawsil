@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { User, Bell, BellOff, Package, MapPin, Phone, Navigation, CheckCircle2 } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
+import dynamic from "next/dynamic";
+const RiderMapView = dynamic(() => import("@/components/RiderMapView"), { ssr: false });
 
 interface Order {
   id: string;
@@ -314,6 +316,17 @@ export default function RiderPage() {
                 <div className="bg-slate-50 rounded-xl p-3 mb-3 border border-slate-100">
                   <div className="text-sm text-slate-700 whitespace-pre-wrap">{order.items_description}</div>
                 </div>
+
+                {order.customer_lat && order.customer_lng && (
+                  <div className="mb-3">
+                    <RiderMapView
+                      customerLat={order.customer_lat}
+                      customerLng={order.customer_lng}
+                      riderLat={order.rider_lat}
+                      riderLng={order.rider_lng}
+                    />
+                  </div>
+                )}
 
                 <div className="flex justify-between items-center mb-3">
                   <a
