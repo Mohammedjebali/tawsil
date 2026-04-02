@@ -29,6 +29,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    // Check if customer is blocked
+    const { data: customer } = await supabase
+      .from("customers")
+      .select("is_blocked")
+      .eq("phone", customer_phone)
+      .maybeSingle();
+    if (customer?.is_blocked) {
+      return NextResponse.json(
+        { error: "account_blocked", message: "Your account has been blocked. Contact support." },
+        { status: 403 }
+      );
+    }
+
     const cLat = customer_lat || TOWN_CENTER.lat;
     const cLng = customer_lng || TOWN_CENTER.lng;
     const sLat = store_lat || TOWN_CENTER.lat;

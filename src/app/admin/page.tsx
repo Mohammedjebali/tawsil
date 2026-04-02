@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Store, Package, Users, Plus, Trash2, RefreshCw, XCircle, CheckCircle2, ShoppingCart, Coffee, Pill, UtensilsCrossed, Bike, UserCheck, Search, Star, LayoutDashboard, TrendingUp, Clock } from "lucide-react";
+import { Store, Package, Users, Plus, Trash2, RefreshCw, XCircle, CheckCircle2, ShoppingCart, Coffee, Pill, UtensilsCrossed, Bike, UserCheck, Search, Star, LayoutDashboard, TrendingUp, Clock, Download, Pencil } from "lucide-react";
 
 interface DashboardData {
   today: { total: number; delivered: number; cancelled: number; active: number; revenue: number; flagged: number };
@@ -26,6 +26,9 @@ interface Order {
   customer_name: string;
   customer_phone: string;
   delivery_fee: number;
+  actual_goods_price?: number;
+  items_description?: string;
+  rider_name?: string;
   created_at: string;
   flagged?: boolean;
 }
@@ -36,7 +39,41 @@ interface Rider {
   phone: string;
   status: string;
   is_online?: boolean;
+  is_blocked?: boolean;
   created_at: string;
+}
+
+interface Customer {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  points?: number;
+  is_blocked?: boolean;
+  created_at: string;
+  referred_by?: string;
+  successful_referrals_count?: number;
+}
+
+interface CustomerStats {
+  phone: string;
+  total_orders: number;
+  delivered_orders: number;
+  total_spent_millimes: number;
+  last_order_at: string | null;
+}
+
+interface RiderStats {
+  phone: string;
+  total_deliveries: number;
+  total_earned: number;
+  last_delivery_at: string | null;
+}
+
+interface StoreStats {
+  store_name: string;
+  order_count: number;
 }
 
 const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -54,6 +91,7 @@ const CATEGORIES = ["restaurant", "supermarket", "pharmacy", "bakery", "grocery"
 
 function formatFee(m: number) { return `${(m / 1000).toFixed(3)} DT`; }
 function formatTime(iso: string) { return new Date(iso).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true }); }
+function formatDate(iso: string) { return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" }); }
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
@@ -71,16 +109,30 @@ export default function AdminPage() {
 
   const [riders, setRiders] = useState<Rider[]>([]);
   const [ridersLoading, setRidersLoading] = useState(false);
+  const [riderStats, setRiderStats] = useState<Record<string, RiderStats>>({});
 
-  const [customers, setCustomers] = useState<{ id: string; first_name: string; last_name: string; email: string; phone: string; points?: number; created_at: string; referred_by?: string; successful_referrals_count?: number }[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [customersLoading, setCustomersLoading] = useState(false);
   const [customerSearch, setCustomerSearch] = useState("");
   const [pointsDelta, setPointsDelta] = useState<Record<string, string>>({});
   const [pointsUpdating, setPointsUpdating] = useState<string | null>(null);
+  const [customerStats, setCustomerStats] = useState<Record<string, CustomerStats>>({});
+
+  const [storeStats, setStoreStats] = useState<Record<string, number>>({});
 
   const [dash, setDash] = useState<DashboardData | null>(null);
   const [dashLoading, setDashLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+  // Orders tab filters
+  const [filterStore, setFilterStore] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterDate, setFilterDate] = useState("");
+
+  // Rider inline edit
+  const [editingRider, setEditingRider] = useState<string | null>(null);
+  const [editRiderName, setEditRiderName] = useState("");
+  const [editRiderPhone, setEditRiderPhone] = useState("");
 
   useEffect(() => {
     const saved = localStorage.getItem("adminAuth");
@@ -133,9 +185,42 @@ export default function AdminPage() {
     } finally { setDashLoading(false); }
   }, []);
 
+  const fetchCustomerStats = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/customers/stats");
+      const data = await res.json();
+      const map: Record<string, CustomerStats> = {};
+      for (const s of data.stats || []) map[s.phone] = s;
+      setCustomerStats(map);
+    } catch {}
+  }, []);
+
+  const fetchRiderStats = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/riders/stats");
+      const data = await res.json();
+      const map: Record<string, RiderStats> = {};
+      for (const s of data.stats || []) map[s.phone] = s;
+      setRiderStats(map);
+    } catch {}
+  }, []);
+
+  const fetchStoreStats = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/stores/stats");
+      const data = await res.json();
+      const map: Record<string, number> = {};
+      for (const s of data.stats || []) map[s.store_name] = s.order_count;
+      setStoreStats(map);
+    } catch {}
+  }, []);
+
   useEffect(() => {
-    if (authed) { fetchStores(); fetchOrders(); fetchRiders(); fetchCustomers(); fetchDashboard(); }
-  }, [authed, fetchStores, fetchOrders, fetchRiders, fetchCustomers, fetchDashboard]);
+    if (authed) {
+      fetchStores(); fetchOrders(); fetchRiders(); fetchCustomers(); fetchDashboard();
+      fetchCustomerStats(); fetchRiderStats(); fetchStoreStats();
+    }
+  }, [authed, fetchStores, fetchOrders, fetchRiders, fetchCustomers, fetchDashboard, fetchCustomerStats, fetchRiderStats, fetchStoreStats]);
 
   // Auto-refresh dashboard every 30s
   useEffect(() => {
@@ -202,6 +287,34 @@ export default function AdminPage() {
     } finally { setPointsUpdating(null); }
   }
 
+  async function toggleBlockCustomer(email: string, currentBlocked: boolean) {
+    await fetch("/api/customers", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, is_blocked: !currentBlocked }),
+    });
+    fetchCustomers();
+  }
+
+  async function toggleBlockRider(id: string, currentBlocked: boolean) {
+    await fetch(`/api/riders/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ is_blocked: !currentBlocked }),
+    });
+    fetchRiders();
+  }
+
+  async function saveRiderEdit(id: string) {
+    await fetch(`/api/riders/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: editRiderName, phone: editRiderPhone }),
+    });
+    setEditingRider(null);
+    fetchRiders();
+  }
+
   async function updateRiderStatus(id: string, status: "active" | "rejected") {
     await fetch(`/api/admin/riders/${id}`, {
       method: "PATCH",
@@ -209,6 +322,53 @@ export default function AdminPage() {
       body: JSON.stringify({ status }),
     });
     fetchRiders();
+  }
+
+  // Orders filtering
+  const filteredOrders = orders.filter((o) => {
+    if (filterStore && o.store_name !== filterStore) return false;
+    if (filterStatus && o.status !== filterStatus) return false;
+    if (filterDate) {
+      const d = new Date(o.created_at);
+      const now = new Date();
+      if (filterDate === "today") {
+        if (d.toDateString() !== now.toDateString()) return false;
+      } else if (filterDate === "week") {
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        if (d < weekAgo) return false;
+      } else if (filterDate === "month") {
+        if (d.getMonth() !== now.getMonth() || d.getFullYear() !== now.getFullYear()) return false;
+      }
+    }
+    return true;
+  });
+
+  const uniqueStoreNames = [...new Set(orders.map((o) => o.store_name))].sort();
+
+  function exportCsv() {
+    const headers = ["order_number", "created_at", "store_name", "customer_name", "customer_phone", "items_description", "delivery_fee", "actual_goods_price", "status", "rider_name"];
+    const rows = filteredOrders.map((o) =>
+      [
+        o.order_number,
+        o.created_at,
+        o.store_name,
+        o.customer_name,
+        o.customer_phone,
+        (o.items_description || "").replace(/[\n\r,]/g, " "),
+        (o.delivery_fee / 1000).toFixed(3),
+        o.actual_goods_price ? (o.actual_goods_price / 1000).toFixed(3) : "",
+        o.status,
+        o.rider_name || "",
+      ].map((v) => `"${v}"`).join(",")
+    );
+    const csv = [headers.join(","), ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `tawsil-orders-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   // Login screen
@@ -450,6 +610,7 @@ export default function AdminPage() {
             <div className="space-y-2">
               {stores.map((store) => {
                 const IconComp = CATEGORY_ICONS[store.category] || Package;
+                const orderCount = storeStats[store.name] || 0;
                 return (
                   <div key={store.id} className="card flex items-center gap-3 !py-3">
                     <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
@@ -458,6 +619,7 @@ export default function AdminPage() {
                     <div className="flex-1 min-w-0">
                       <div className="font-semibold text-sm text-slate-900">{store.name}</div>
                       {store.address && <div className="text-xs text-slate-500 truncate">{store.address}</div>}
+                      <div className="text-xs text-slate-400">{orderCount} orders</div>
                     </div>
                     <button
                       onClick={() => toggleStore(store.id, store.is_active)}
@@ -485,12 +647,53 @@ export default function AdminPage() {
         {/* Orders Tab */}
         {tab === "orders" && (
           <div>
-            <button onClick={fetchOrders} className="btn-secondary !w-auto mb-4 !py-2 !px-4 !text-sm">
-              <RefreshCw className="w-4 h-4" /> Refresh
-            </button>
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
+              <button onClick={fetchOrders} className="btn-secondary !w-auto !py-2 !px-4 !text-sm">
+                <RefreshCw className="w-4 h-4" /> Refresh
+              </button>
+              <select
+                value={filterStore}
+                onChange={(e) => setFilterStore(e.target.value)}
+                className="input !w-auto !py-2 !text-sm min-w-[140px]"
+              >
+                <option value="">All stores</option>
+                {uniqueStoreNames.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="input !w-auto !py-2 !text-sm min-w-[130px]"
+              >
+                <option value="">All statuses</option>
+                <option value="pending">Pending</option>
+                <option value="accepted">Accepted</option>
+                <option value="picked_up">Picked up</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+              <select
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+                className="input !w-auto !py-2 !text-sm min-w-[120px]"
+              >
+                <option value="">All time</option>
+                <option value="today">Today</option>
+                <option value="week">This week</option>
+                <option value="month">This month</option>
+              </select>
+              <button
+                onClick={exportCsv}
+                className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                <Download className="w-3.5 h-3.5" /> Export CSV
+              </button>
+            </div>
             {ordersLoading && <p className="text-slate-500 text-center py-5">Loading...</p>}
+            <div className="text-xs text-slate-400 mb-2">{filteredOrders.length} orders</div>
             <div className="space-y-2">
-              {orders.map((order) => (
+              {filteredOrders.map((order) => (
                 <div key={order.id} className={`card flex items-center gap-3 flex-wrap !py-3 ${order.flagged ? "border-l-4 border-red-500" : ""}`}>
                   <span className="font-mono text-sm font-semibold text-slate-700 min-w-[130px]">{order.order_number}</span>
                   {order.flagged && (
@@ -519,7 +722,7 @@ export default function AdminPage() {
         {/* Riders Tab */}
         {tab === "riders" && (
           <div>
-            <button onClick={fetchRiders} className="btn-secondary !w-auto mb-4 !py-2 !px-4 !text-sm">
+            <button onClick={() => { fetchRiders(); fetchRiderStats(); }} className="btn-secondary !w-auto mb-4 !py-2 !px-4 !text-sm">
               <RefreshCw className="w-4 h-4" /> Refresh
             </button>
             {ridersLoading && <p className="text-slate-500 text-center py-5">Loading...</p>}
@@ -562,27 +765,97 @@ export default function AdminPage() {
               <div className="mb-6">
                 <h3 className="text-sm font-semibold text-emerald-700 mb-3">Approved Riders ({approvedRiders.length})</h3>
                 <div className="space-y-2">
-                  {approvedRiders.map((rider) => (
-                    <div key={rider.id} className="card flex items-center gap-3 !py-3">
-                      <div className="relative w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
-                        <Bike className="w-5 h-5 text-blue-700" />
-                        {rider.is_online && (
-                          <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white" />
-                        )}
+                  {approvedRiders.map((rider) => {
+                    const stats = riderStats[rider.phone];
+                    const isEditing = editingRider === rider.id;
+                    return (
+                      <div key={rider.id} className="card !py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="relative w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
+                            <Bike className="w-5 h-5 text-blue-700" />
+                            {rider.is_online && (
+                              <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white" />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            {isEditing ? (
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <input
+                                  type="text"
+                                  value={editRiderName}
+                                  onChange={(e) => setEditRiderName(e.target.value)}
+                                  className="input !py-1 !text-sm !w-auto flex-1 min-w-[100px]"
+                                  placeholder="Name"
+                                />
+                                <input
+                                  type="text"
+                                  value={editRiderPhone}
+                                  onChange={(e) => setEditRiderPhone(e.target.value)}
+                                  className="input !py-1 !text-sm !w-auto flex-1 min-w-[100px]"
+                                  placeholder="Phone"
+                                />
+                                <button
+                                  onClick={() => saveRiderEdit(rider.id)}
+                                  className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-700 text-white hover:bg-blue-800"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  onClick={() => setEditingRider(null)}
+                                  className="text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            ) : (
+                              <>
+                                <div className="font-semibold text-sm text-slate-900 flex items-center gap-2">
+                                  {rider.name}
+                                  {rider.is_blocked && (
+                                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-red-50 text-red-600 border border-red-200">Blocked</span>
+                                  )}
+                                </div>
+                                <div className="text-xs text-slate-500 font-mono">{rider.phone}</div>
+                                {stats && (
+                                  <div className="text-xs text-slate-400 mt-0.5">
+                                    {stats.total_deliveries} deliveries · {formatFee(stats.total_earned)} earned
+                                    {stats.last_delivery_at && <> · Last: {formatDate(stats.last_delivery_at)}</>}
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </div>
+                          {!isEditing && (
+                            <div className="flex items-center gap-2">
+                              <span className={`text-xs font-semibold px-3 py-1.5 rounded-lg border ${
+                                rider.is_online
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                  : "bg-slate-50 text-slate-500 border-slate-200"
+                              }`}>
+                                {rider.is_online ? "Online" : "Offline"}
+                              </span>
+                              <button
+                                onClick={() => { setEditingRider(rider.id); setEditRiderName(rider.name); setEditRiderPhone(rider.phone); }}
+                                className="p-2 text-slate-400 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => toggleBlockRider(rider.id, !!rider.is_blocked)}
+                                className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${
+                                  rider.is_blocked
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                                    : "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+                                }`}
+                              >
+                                {rider.is_blocked ? "Unblock" : "Block"}
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <div className="font-semibold text-sm text-slate-900">{rider.name}</div>
-                        <div className="text-xs text-slate-500 font-mono">{rider.phone}</div>
-                      </div>
-                      <span className={`text-xs font-semibold px-3 py-1.5 rounded-lg border ${
-                        rider.is_online
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          : "bg-slate-50 text-slate-500 border-slate-200"
-                      }`}>
-                        {rider.is_online ? "Online" : "Offline"}
-                      </span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -627,7 +900,7 @@ export default function AdminPage() {
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <button onClick={fetchCustomers} className="btn-secondary !w-auto !py-2 !px-4 !text-sm">
+                <button onClick={() => { fetchCustomers(); fetchCustomerStats(); }} className="btn-secondary !w-auto !py-2 !px-4 !text-sm">
                   <RefreshCw className="w-4 h-4" /> Refresh
                 </button>
                 <span className="text-sm font-semibold text-slate-600">
@@ -657,55 +930,77 @@ export default function AdminPage() {
                   const fullName = `${c.first_name} ${c.last_name}`.toLowerCase();
                   return fullName.includes(q) || c.phone.includes(q);
                 })
-                .map((c) => (
-                  <div key={c.id} className="card !py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
-                        <UserCheck className="w-5 h-5 text-blue-700" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-sm text-slate-900">
-                          {c.first_name} {c.last_name}
-                          <span className="inline-flex items-center gap-1 ml-2 text-xs font-semibold text-yellow-600">
-                            <Star className="w-3.5 h-3.5 fill-yellow-500 text-yellow-500" />
-                            {c.points || 0} pts
-                          </span>
+                .map((c) => {
+                  const stats = customerStats[c.phone];
+                  return (
+                    <div key={c.id} className="card !py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
+                          <UserCheck className="w-5 h-5 text-blue-700" />
                         </div>
-                        <div className="text-xs text-slate-500">{c.email}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-mono text-slate-600" dir="ltr">{c.phone}</div>
-                        {c.referred_by && (
-                          <div className="text-xs text-blue-600">Referred by: {c.referred_by}</div>
-                        )}
-                        <div className="flex items-center justify-end gap-2">
-                          <div className="text-xs text-slate-400">{new Date(c.created_at).toLocaleDateString()}</div>
-                          {(c.successful_referrals_count || 0) > 0 && (
-                            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
-                              {c.successful_referrals_count} referrals
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-sm text-slate-900 flex items-center gap-2">
+                            {c.first_name} {c.last_name}
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-yellow-600">
+                              <Star className="w-3.5 h-3.5 fill-yellow-500 text-yellow-500" />
+                              {c.points || 0} pts
                             </span>
+                            {c.is_blocked && (
+                              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-red-50 text-red-600 border border-red-200">Blocked</span>
+                            )}
+                          </div>
+                          <div className="text-xs text-slate-500">{c.email}</div>
+                          {stats && (
+                            <div className="text-xs text-slate-400 mt-0.5">
+                              {stats.total_orders} orders · {stats.delivered_orders} delivered · {formatFee(stats.total_spent_millimes)} spent
+                              {stats.last_order_at && <> · Last: {formatDate(stats.last_order_at)}</>}
+                            </div>
                           )}
                         </div>
+                        <div className="text-right">
+                          <div className="text-sm font-mono text-slate-600" dir="ltr">{c.phone}</div>
+                          {c.referred_by && (
+                            <div className="text-xs text-blue-600">Referred by: {c.referred_by}</div>
+                          )}
+                          <div className="flex items-center justify-end gap-2">
+                            <div className="text-xs text-slate-400">{new Date(c.created_at).toLocaleDateString()}</div>
+                            {(c.successful_referrals_count || 0) > 0 && (
+                              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                                {c.successful_referrals_count} referrals
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 mt-2 pt-2 border-t border-slate-100">
+                        <input
+                          type="number"
+                          value={pointsDelta[c.email] || ""}
+                          onChange={(e) => setPointsDelta((prev) => ({ ...prev, [c.email]: e.target.value }))}
+                          placeholder="e.g. 10 or -10"
+                          className="input !py-1.5 !text-sm flex-1"
+                        />
+                        <button
+                          onClick={() => addPoints(c.email)}
+                          disabled={pointsUpdating === c.email}
+                          className="text-xs font-semibold px-3 py-2 rounded-lg bg-blue-700 text-white hover:bg-blue-800 transition-colors disabled:opacity-50"
+                        >
+                          {pointsUpdating === c.email ? "..." : "+/- pts"}
+                        </button>
+                        <button
+                          onClick={() => toggleBlockCustomer(c.email, !!c.is_blocked)}
+                          className={`text-xs font-semibold px-3 py-2 rounded-lg border transition-colors ${
+                            c.is_blocked
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                              : "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+                          }`}
+                        >
+                          {c.is_blocked ? "Unblock" : "Block"}
+                        </button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 mt-2 pt-2 border-t border-slate-100">
-                      <input
-                        type="number"
-                        value={pointsDelta[c.email] || ""}
-                        onChange={(e) => setPointsDelta((prev) => ({ ...prev, [c.email]: e.target.value }))}
-                        placeholder="e.g. 10 or -10"
-                        className="input !py-1.5 !text-sm flex-1"
-                      />
-                      <button
-                        onClick={() => addPoints(c.email)}
-                        disabled={pointsUpdating === c.email}
-                        className="text-xs font-semibold px-3 py-2 rounded-lg bg-blue-700 text-white hover:bg-blue-800 transition-colors disabled:opacity-50"
-                      >
-                        {pointsUpdating === c.email ? "..." : "+/- pts"}
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
             </div>
             {customers.length === 0 && !customersLoading && (
               <p className="text-slate-500 text-center py-8">No customers registered yet</p>

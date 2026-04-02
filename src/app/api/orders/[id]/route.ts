@@ -21,6 +21,21 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       update[STATUS_TIMESTAMPS[body.status]] = new Date().toISOString();
     }
 
+    // Check if rider is blocked
+    if (body.status === "accepted" && body.rider_phone) {
+      const { data: riderData } = await supabase
+        .from("riders")
+        .select("is_blocked")
+        .eq("phone", body.rider_phone)
+        .maybeSingle();
+      if (riderData?.is_blocked) {
+        return NextResponse.json(
+          { error: "account_blocked", message: "Your account has been blocked. Contact support." },
+          { status: 403 }
+        );
+      }
+    }
+
     // Rider capacity check — max 1 active order at a time
     if (body.status === "accepted" && body.rider_phone) {
       const { data: activeOrders } = await supabase

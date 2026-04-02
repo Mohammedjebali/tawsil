@@ -191,6 +191,10 @@ export default function OrderPage() {
         }),
       });
       const data = await res.json();
+      if (data.error === "account_blocked") {
+        setError(t("accountBlocked"));
+        return;
+      }
       if (data.error) throw new Error(data.error);
       setOrderResult({ order_number: data.order.order_number, delivery_fee: data.order.delivery_fee });
       setStep("success");

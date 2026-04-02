@@ -110,7 +110,8 @@ export async function GET(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const supabase = getSupabase();
-    const { email, first_name, last_name, points_delta, claim_referral_bonus } = await req.json();
+    const body = await req.json();
+    const { email, first_name, last_name, points_delta, claim_referral_bonus } = body;
 
     if (!email) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
@@ -167,9 +168,10 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ customer: data });
     }
 
-    const update: Record<string, string> = {};
+    const update: Record<string, unknown> = {};
     if (first_name !== undefined) update.first_name = first_name;
     if (last_name !== undefined) update.last_name = last_name;
+    if (body.is_blocked !== undefined) update.is_blocked = body.is_blocked;
 
     const { data, error } = await supabase
       .from("customers")
