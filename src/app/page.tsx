@@ -12,6 +12,7 @@ interface StoreItem {
   address: string | null;
   lat: number | null;
   lng: number | null;
+  image_url?: string | null;
 }
 
 interface UserProfile {
@@ -241,8 +242,10 @@ export default function OrderPage() {
                   onClick={() => { setSelectedStore(store); setCustomStore(""); setStep("details"); }}
                   className="card-hover flex flex-col items-center gap-2 text-center !p-4"
                 >
-                  <div className="w-12 h-12 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-center">
-                    <IconComp className="w-6 h-6 text-blue-700" />
+                  <div className="w-12 h-12 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-center overflow-hidden">
+                    {store.image_url
+                      ? <img src={store.image_url} alt={store.name} className="w-12 h-12 object-cover rounded-xl" />
+                      : <IconComp className="w-6 h-6 text-blue-700" />}
                   </div>
                   <div className="font-semibold text-sm text-slate-900 leading-tight">{store.name}</div>
                   {store.address && <div className="text-xs text-slate-400 truncate w-full">{store.address}</div>}
