@@ -153,8 +153,12 @@ export default function RiderPage() {
       body: JSON.stringify({ status: "accepted", rider_name: rider.name, rider_phone: rider.phone }),
     });
     if (res.status === 409) {
-      // Someone else was faster — refresh orders to remove this one
-      alert(t("orderTaken"));
+      const err = await res.json();
+      if (err.error === "rider_busy") {
+        alert(t("riderBusy"));
+      } else {
+        alert(t("orderTaken"));
+      }
       fetchOrders();
       return;
     }

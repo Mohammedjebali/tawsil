@@ -21,6 +21,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       update[STATUS_TIMESTAMPS[body.status]] = new Date().toISOString();
     }
 
+    // Rider capacity check — max 1 active order at a time
+    if (body.status === "accepted" && body.rider_phone) {
+      const { data: activeOrders } = await supabase
+        .from("orders")
+        .select("id")
+        .eq("rider_phone", body.rider_phone)
+        .in("status", ["accepted", "picked_up"]);
+      if (activeOrders && activeOrders.length > 0) {
+        return NextResponse.json({ error: "rider_busy", message: "You already have an active order. Deliver it first before accepting a new one." }, { status: 409 });
+      }
+    }
+
     // Atomic "first click wins" lock for accept
     // If status is being set to 'accepted', only update if current status is still 'pending'
     let query = supabase.from("orders").update(update).eq("id", id);
