@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Mail, Lock, Eye, EyeOff, Package, Phone, Bike } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
 import { supabaseClient } from "@/lib/supabase-client";
 import { useSearchParams } from "next/navigation";
@@ -115,114 +115,146 @@ export default function LoginPage() {
     }
   }
 
-  return (
-    <div className="min-h-[80vh] flex items-center justify-center">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
-            <Package className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-1">{t("loginTitle")}</h1>
-          <p className="text-slate-500 text-sm">{t("loginSubtitle")}</p>
-        </div>
+  const inputStyle: React.CSSProperties = {
+    width: "100%", padding: "14px 16px", borderRadius: 14,
+    border: "1.5px solid #e2e8f0", fontSize: "0.9rem", outline: "none",
+    background: "#f8fafc", transition: "border-color 0.2s",
+  };
 
+  const tabStyle = (active: boolean): React.CSSProperties => ({
+    flex: 1, padding: "10px", borderRadius: 10, fontSize: "0.875rem", fontWeight: 600,
+    background: active ? "white" : "transparent",
+    color: active ? "#6366f1" : "#94a3b8",
+    boxShadow: active ? "0 1px 4px rgba(0,0,0,0.1)" : "none",
+    transition: "all 0.2s", border: "none", cursor: "pointer",
+  });
+
+  return (
+    <div style={{
+      minHeight: "100dvh",
+      background: "linear-gradient(160deg, #4338ca 0%, #6366f1 40%, #7c3aed 100%)",
+      position: "relative", overflow: "hidden",
+    }}>
+      {/* Decorative circles */}
+      <div style={{ position: "absolute", top: "-60px", right: "-60px", width: "200px", height: "200px", borderRadius: "50%", background: "rgba(255,255,255,0.07)" }} />
+      <div style={{ position: "absolute", top: "80px", left: "-40px", width: "120px", height: "120px", borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
+
+      {/* Top section */}
+      <div style={{ padding: "60px 24px 32px", textAlign: "center" }}>
+        <div style={{ fontSize: "3rem", marginBottom: 12 }}>🛵</div>
+        <div style={{ color: "white", fontSize: "1.75rem", fontWeight: 800, letterSpacing: "-0.04em" }}>Tawsil</div>
+        <div style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.875rem", marginTop: 6 }}>مرحباً بعودتك</div>
+      </div>
+
+      {/* White card */}
+      <div style={{
+        background: "white", borderRadius: "28px 28px 0 0",
+        padding: "32px 24px", minHeight: "60vh",
+        boxShadow: "0 -20px 60px rgba(0,0,0,0.15)",
+      }}>
+        {/* Confirmed banner */}
         {confirmed && (
-          <div className="card border-emerald-200 bg-emerald-50 text-emerald-700 text-sm text-center mb-4">
+          <div style={{
+            background: "#ecfdf5", border: "1.5px solid #a7f3d0", borderRadius: 14,
+            padding: "12px 16px", marginBottom: 20, textAlign: "center",
+            color: "#059669", fontSize: "0.875rem", fontWeight: 600,
+          }}>
             {t("emailConfirmed")}
           </div>
         )}
 
-        {/* Tabs */}
-        <div className="flex bg-slate-100 rounded-2xl p-1 mb-4">
-          <button
-            onClick={() => setTab("customer")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-              tab === "customer" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500"
-            }`}
-          >
-            <Mail className="w-4 h-4" />
+        {/* Tab switcher */}
+        <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 12, padding: 4, marginBottom: 24 }}>
+          <button style={tabStyle(tab === "customer")} onClick={() => setTab("customer")}>
             {t("customer")}
           </button>
-          <button
-            onClick={() => setTab("rider")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-              tab === "rider" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500"
-            }`}
-          >
-            <Bike className="w-4 h-4" />
+          <button style={tabStyle(tab === "rider")} onClick={() => setTab("rider")}>
             {t("rider")}
           </button>
         </div>
 
         {/* Customer login */}
         {tab === "customer" && (
-          <div className="card space-y-4">
-            <div className="input-group">
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                placeholder=" " className="input-floating" dir="ltr" />
-              <label className="input-floating-label">{t("email")}</label>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div>
+              <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: 4, display: "block" }}>{t("email")}</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} dir="ltr" style={inputStyle} />
             </div>
 
             <div>
-              <div className="flex items-center justify-end mb-1">
-                <a href="/forgot-password" className="text-xs text-indigo-600 hover:underline font-medium">
+              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 4 }}>
+                <a href="/forgot-password" style={{ fontSize: "0.75rem", color: "#6366f1", fontWeight: 600, textDecoration: "none" }}>
                   {t("forgotPassword")}
                 </a>
               </div>
-              <div className="input-group">
-                <input type={showPw ? "text" : "password"} value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder=" " className="input-floating" dir="ltr"
-                  style={{ paddingRight: "40px" }} />
-                <label className="input-floating-label">{t("password")}</label>
+              <div style={{ position: "relative" }}>
+                <input
+                  type={showPw ? "text" : "password"} value={password}
+                  onChange={(e) => setPassword(e.target.value)} dir="ltr"
+                  style={{ ...inputStyle, paddingRight: 44 }}
+                />
                 <button type="button" onClick={() => setShowPw(!showPw)}
-                  className="absolute top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                  style={{ right: "14px" }}>
-                  {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#94a3b8" }}>
+                  {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
 
-            {custError && <p className="text-red-500 text-sm text-center">{custError}</p>}
+            {custError && <p style={{ color: "#ef4444", fontSize: "0.875rem", textAlign: "center" }}>{custError}</p>}
 
-            <button onClick={submitCustomer} disabled={custLoading} className="btn-primary mt-2">
+            <button
+              onClick={submitCustomer} disabled={custLoading}
+              style={{
+                width: "100%", padding: "14px", borderRadius: 16, border: "none",
+                background: "linear-gradient(135deg, #6366f1, #4338ca)",
+                color: "white", fontSize: "1rem", fontWeight: 700, cursor: "pointer",
+                opacity: custLoading ? 0.6 : 1,
+                boxShadow: "0 8px 24px rgba(99,102,241,0.35)",
+              }}
+            >
               {custLoading ? t("signingIn") : t("login")}
             </button>
 
-            <p className="text-center text-sm text-slate-500">
+            <p style={{ textAlign: "center", fontSize: "0.875rem", color: "#64748b" }}>
               {t("noAccount")}{" "}
-              <a href="/register/customer" className="text-indigo-600 font-medium hover:underline">
-                {t("signUp")}
-              </a>
+              <a href="/register/customer" style={{ color: "#6366f1", fontWeight: 600, textDecoration: "none" }}>{t("signUp")}</a>
             </p>
           </div>
         )}
 
         {/* Rider login */}
         {tab === "rider" && (
-          <div className="card space-y-4">
-            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 text-center">
-              <p className="text-indigo-600 text-sm font-medium">{t("riderLoginInfo")}</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div style={{
+              background: "#eef2ff", border: "1.5px solid #c7d2fe", borderRadius: 14,
+              padding: "12px 16px", textAlign: "center",
+            }}>
+              <p style={{ color: "#4338ca", fontSize: "0.85rem", fontWeight: 500 }}>{t("riderLoginInfo")}</p>
             </div>
 
-            <div className="input-group">
-              <input type="tel" value={riderPhone} onChange={(e) => setRiderPhone(e.target.value)}
-                placeholder=" " className="input-floating" dir="ltr" />
-              <label className="input-floating-label">{t("phone")}</label>
+            <div>
+              <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: 4, display: "block" }}>{t("phone")}</label>
+              <input type="tel" value={riderPhone} onChange={(e) => setRiderPhone(e.target.value)} dir="ltr" style={inputStyle} />
             </div>
 
-            {riderError && <p className="text-red-500 text-sm text-center">{riderError}</p>}
+            {riderError && <p style={{ color: "#ef4444", fontSize: "0.875rem", textAlign: "center" }}>{riderError}</p>}
 
-            <button onClick={submitRider} disabled={riderLoading} className="btn-primary">
+            <button
+              onClick={submitRider} disabled={riderLoading}
+              style={{
+                width: "100%", padding: "14px", borderRadius: 16, border: "none",
+                background: "linear-gradient(135deg, #6366f1, #4338ca)",
+                color: "white", fontSize: "1rem", fontWeight: 700, cursor: "pointer",
+                opacity: riderLoading ? 0.6 : 1,
+                boxShadow: "0 8px 24px rgba(99,102,241,0.35)",
+              }}
+            >
               {riderLoading ? t("signingIn") : t("login")}
             </button>
 
-            <p className="text-center text-sm text-slate-500">
+            <p style={{ textAlign: "center", fontSize: "0.875rem", color: "#64748b" }}>
               {t("areYouRider")}{" "}
-              <a href="/register/rider" className="text-indigo-600 font-medium hover:underline">
-                {t("registerAsRiderLink")}
-              </a>
+              <a href="/register/rider" style={{ color: "#6366f1", fontWeight: 600, textDecoration: "none" }}>{t("registerAsRiderLink")}</a>
             </p>
           </div>
         )}

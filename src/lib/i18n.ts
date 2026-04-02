@@ -40,6 +40,7 @@ const translations: Record<string, Record<Lang, string>> = {
   trackTitle: { ar: "تتبع طلبي", fr: "Suivre ma commande", en: "Track my order" },
   enterOrderNumber: { ar: "أدخل رقم الطلب", fr: "Entrez le num\u00e9ro de commande", en: "Enter order number" },
   search: { ar: "بحث", fr: "Rechercher", en: "Search" },
+  searchStores: { ar: "ابحث عن محل...", fr: "Rechercher un magasin...", en: "Search stores..." },
   orderStatus: { ar: "حالة الطلب", fr: "Statut de commande", en: "Order status" },
   from: { ar: "من", fr: "De", en: "From" },
   to: { ar: "إلى", fr: "\u00c0", en: "To" },

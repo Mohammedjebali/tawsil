@@ -5,6 +5,7 @@ import LangProvider from "@/components/LangProvider";
 import UpdateNotifier from "@/components/UpdateNotifier";
 import AppShell from "@/components/AppShell";
 import InstallPrompt from "@/components/InstallPrompt";
+import { AppWrapper } from "@/components/AppWrapper";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -35,9 +36,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ar" className={inter.variable}>
       <body>
         <LangProvider>
-          <UpdateNotifier />
-          <AppShell>{children}</AppShell>
-          <InstallPrompt />
+          <AppWrapper>
+            <UpdateNotifier />
+            <AppShell>{children}</AppShell>
+            <InstallPrompt />
+          </AppWrapper>
         </LangProvider>
       </body>
     </html>

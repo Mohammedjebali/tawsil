@@ -21,7 +21,7 @@ interface UserProfile {
   role: string;
 }
 
-const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string; size?: number; style?: React.CSSProperties }>> = {
   restaurant: UtensilsCrossed,
   supermarket: ShoppingCart,
   pharmacy: Pill,
@@ -30,6 +30,28 @@ const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>
   shop: Store,
   cafe: Coffee,
   other: Package,
+};
+
+const CATEGORY_COLORS: Record<string, string> = {
+  restaurant: "#fef3c7",
+  supermarket: "#dcfce7",
+  pharmacy: "#ede9fe",
+  bakery: "#fce7f3",
+  grocery: "#d1fae5",
+  shop: "#e0e7ff",
+  cafe: "#fef9c3",
+  other: "#eef2ff",
+};
+
+const CATEGORY_ICON_COLORS: Record<string, string> = {
+  restaurant: "#d97706",
+  supermarket: "#16a34a",
+  pharmacy: "#7c3aed",
+  bakery: "#db2777",
+  grocery: "#059669",
+  shop: "#4f46e5",
+  cafe: "#ca8a04",
+  other: "#6366f1",
 };
 
 function LandingPage() {
@@ -56,10 +78,7 @@ function LandingPage() {
 
         {/* Role cards */}
         <div className="space-y-3">
-          <a
-            href="/register/customer"
-            className="card-hover flex items-center gap-4 no-underline"
-          >
+          <a href="/register/customer" className="card-hover flex items-center gap-4 no-underline">
             <div className="w-14 h-14 bg-indigo-50 border border-indigo-200 rounded-2xl flex items-center justify-center">
               <ShoppingBag className="w-7 h-7 text-indigo-600" />
             </div>
@@ -70,10 +89,7 @@ function LandingPage() {
             <Chevron className="w-5 h-5 text-slate-400" />
           </a>
 
-          <a
-            href="/register/rider"
-            className="card-hover flex items-center gap-4 no-underline"
-          >
+          <a href="/register/rider" className="card-hover flex items-center gap-4 no-underline">
             <div className="w-14 h-14 bg-indigo-50 border border-indigo-200 rounded-2xl flex items-center justify-center">
               <Bike className="w-7 h-7 text-indigo-600" />
             </div>
@@ -88,7 +104,7 @@ function LandingPage() {
         {/* Language indicator */}
         <div className="flex items-center justify-center gap-2 mt-8 text-slate-400 text-xs">
           <Globe className="w-3.5 h-3.5" />
-          <span>{lang === "ar" ? "العربية" : lang === "fr" ? "Fran\u00e7ais" : "English"}</span>
+          <span>{lang === "ar" ? "العربية" : lang === "fr" ? "Français" : "English"}</span>
         </div>
       </div>
     </div>
@@ -156,7 +172,6 @@ export default function OrderPage() {
         return;
       }
     } else {
-      // No user — redirect to login
       window.location.href = "/login";
       return;
     }
@@ -269,7 +284,7 @@ export default function OrderPage() {
       {/* Step 1: Pick store */}
       {step === "store" && (
         <div>
-          {/* Gradient header */}
+          {/* Personal greeting card */}
           <div style={{
             background: "linear-gradient(135deg, #6366f1 0%, #4338ca 50%, #7c3aed 100%)",
             borderRadius: "1.5rem", padding: "1.5rem", marginBottom: "1.5rem", color: "white",
@@ -286,67 +301,81 @@ export default function OrderPage() {
               width: "80px", height: "80px", borderRadius: "50%",
               background: "rgba(255,255,255,0.05)",
             }} />
-            <div style={{ fontSize: "11px", fontWeight: 600, opacity: 0.7, marginBottom: 6, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-              {t("appTagline")}
-            </div>
-            <div style={{ fontSize: "2rem", fontWeight: 800, letterSpacing: "-0.04em", lineHeight: 1 }}>Tawsil</div>
-            <div style={{ fontSize: "1.25rem", marginTop: 2 }}>🛵</div>
-            {user && <div style={{ fontSize: "0.875rem", opacity: 0.85, marginTop: 8, fontWeight: 500 }}>{t("hi")} {user.name?.split(" ")[0]} 👋</div>}
+            <div style={{ fontSize: "1.25rem", marginBottom: 4 }}>🛵</div>
+            {user && <div style={{ fontSize: "1.25rem", fontWeight: 800, letterSpacing: "-0.02em" }}>{t("hi")} {user.name?.split(" ")[0]} 👋</div>}
+            <div style={{ fontSize: "0.8rem", opacity: 0.7, marginTop: 4 }}>{t("storeSubtitle")}</div>
           </div>
 
           <StepProgress current={1} total={4} />
-          <div className="mb-5">
-            <h1 className="text-xl font-bold text-slate-900 mb-1">{t("selectStore")}</h1>
-            <p className="text-slate-500 text-sm">{t("storeSubtitle")}</p>
-          </div>
 
-          {/* Search */}
-          <div className="relative mb-4">
-            <Search className="absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" style={isRtl ? { right: '14px' } : { left: '14px' }} />
+          {/* Search bar */}
+          <div style={{ position: "relative", marginBottom: 16 }}>
+            <Search size={16} style={{ position: "absolute", left: isRtl ? "auto" : 14, right: isRtl ? 14 : "auto", top: "50%", transform: "translateY(-50%)", color: "#94a3b8" }} />
             <input
-              type="text"
+              style={{
+                width: "100%", paddingLeft: isRtl ? 16 : 40, paddingRight: isRtl ? 40 : 16,
+                paddingTop: 12, paddingBottom: 12,
+                background: "rgba(255,255,255,0.8)", border: "1.5px solid rgba(203,213,225,0.6)",
+                borderRadius: 999, fontSize: 14, outline: "none",
+              }}
+              placeholder={t("searchStores")}
               value={storeSearch}
-              onChange={(e) => setStoreSearch(e.target.value)}
-              placeholder={t("search")}
-              className="input"
-              style={isRtl ? { paddingRight: '40px' } : { paddingLeft: '40px' }}
+              onChange={e => setStoreSearch(e.target.value)}
             />
           </div>
 
           {/* Skeleton loaders */}
           {storesLoading && (
-            <div className="grid grid-cols-2 gap-3 mb-4">
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="card">
-                  <div className="skeleton w-12 h-12 rounded-xl mb-3" />
-                  <div className="skeleton h-4 w-3/4 mb-2" />
-                  <div className="skeleton h-3 w-1/2" />
+                <div key={i} className="card" style={{ display: "flex", alignItems: "center", gap: 16, padding: 16 }}>
+                  <div className="skeleton" style={{ width: 56, height: 56, borderRadius: 16, flexShrink: 0 }} />
+                  <div style={{ flex: 1 }}>
+                    <div className="skeleton" style={{ height: 16, width: "60%", marginBottom: 8 }} />
+                    <div className="skeleton" style={{ height: 12, width: "40%" }} />
+                  </div>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Store grid */}
-          {!storesLoading && <div className="grid grid-cols-2 gap-2.5 mb-4">
-            {filteredStores.map((store) => {
-              const IconComp = CATEGORY_ICONS[store.category] || Package;
-              return (
-                <button
-                  key={store.id}
-                  onClick={() => { setSelectedStore(store); setCustomStore(""); setStep("details"); }}
-                  className="card-hover flex flex-col items-center gap-2 text-center !p-4"
-                >
-                  <div className="w-12 h-12 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center overflow-hidden">
-                    {store.image_url
-                      ? <img src={store.image_url} alt={store.name} className="w-12 h-12 object-cover rounded-xl" />
-                      : <IconComp className="w-6 h-6 text-indigo-600" />}
-                  </div>
-                  <div className="font-semibold text-sm text-slate-900 leading-tight">{store.name}</div>
-                  {store.address && <div className="text-xs text-slate-400 truncate w-full">{store.address}</div>}
-                </button>
-              );
-            })}
-          </div>}
+          {/* Store list - full width cards */}
+          {!storesLoading && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+              {filteredStores.map((store) => {
+                const IconComp = CATEGORY_ICONS[store.category] || Package;
+                const bgColor = CATEGORY_COLORS[store.category] || "#eef2ff";
+                const iconColor = CATEGORY_ICON_COLORS[store.category] || "#6366f1";
+                return (
+                  <button
+                    key={store.id}
+                    onClick={() => { setSelectedStore(store); setCustomStore(""); setStep("details"); }}
+                    className="card-hover"
+                    style={{ display: "flex", alignItems: "center", gap: 16, padding: 16, width: "100%", textAlign: isRtl ? "right" : "left", cursor: "pointer", background: "white", border: "none" }}
+                  >
+                    {/* Category icon square */}
+                    <div style={{
+                      width: 56, height: 56, borderRadius: 16, flexShrink: 0,
+                      background: bgColor,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      {store.image_url
+                        ? <img src={store.image_url} style={{ width: 40, height: 40, borderRadius: 10, objectFit: "cover" }} alt="" />
+                        : <IconComp size={24} style={{ color: iconColor }} />}
+                    </div>
+                    {/* Info */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: "1rem", color: "#0f172a" }}>{store.name}</div>
+                      <div style={{ fontSize: "0.8rem", color: "#64748b", marginTop: 2 }}>{t(store.category)}</div>
+                      <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 4 }}>⏱ ~15-25 min</div>
+                    </div>
+                    {/* Arrow */}
+                    <ChevronRight size={18} style={{ color: "#cbd5e1", flexShrink: 0 }} />
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           <div className="relative my-5">
             <div className="border-t border-slate-200" />

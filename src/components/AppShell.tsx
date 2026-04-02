@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Package, Globe, LogOut, ShoppingBag, MapPin, ClipboardList, User, Star, TrendingUp } from "lucide-react";
+import { Package, LogOut, ShoppingBag, MapPin, ClipboardList, User, Star, TrendingUp } from "lucide-react";
 import { useLang } from "./LangProvider";
 import { supabaseClient } from "@/lib/supabase-client";
 import type { Lang } from "@/lib/i18n";
@@ -132,28 +132,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         position: "sticky", top: 0, zIndex: 40,
         display: "flex", alignItems: "center", justifyContent: "space-between",
       }}>
-        <a href="/" className="flex items-center gap-2.5 no-underline">
-          <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center">
-            <Package className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <span style={{
-              fontWeight: 800, fontSize: "1.25rem", letterSpacing: "-0.04em",
-              background: "linear-gradient(135deg, #6366f1, #4338ca)",
-              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-            }}>Tawsil</span>
-            <span className="text-xs text-slate-400 block">{t("appTagline")}</span>
-          </div>
+        <a href="/" className="no-underline">
+          <span style={{
+            fontWeight: 800, fontSize: "1.25rem", letterSpacing: "-0.04em",
+            background: "linear-gradient(135deg, #6366f1, #4338ca)",
+            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+          }}>Tawsil</span>
         </a>
 
         <div className="flex items-center gap-2">
-          {/* Greeting */}
-          {ready && role === "customer" && userName && (
-            <span className="text-sm text-slate-600 font-medium hidden sm:inline">
-              {t("greeting")}, {userName}
-            </span>
-          )}
-
           {/* Language switcher */}
           <div className="flex bg-slate-100 rounded-lg p-0.5">
             {LANGS.map((l) => (

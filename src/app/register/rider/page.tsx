@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bike, User, Phone, Clock, XCircle, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
 
 export default function RiderRegister() {
@@ -95,92 +95,127 @@ export default function RiderRegister() {
     }
   }
 
+  const inputStyle: React.CSSProperties = {
+    width: "100%", padding: "14px 16px", borderRadius: 14,
+    border: "1.5px solid #e2e8f0", fontSize: "0.9rem", outline: "none",
+    background: "#f8fafc", transition: "border-color 0.2s",
+  };
+
   if (status === "rejected") {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center">
-        <div className="w-full max-w-md text-center">
-          <div className="w-20 h-20 bg-red-50 border-2 border-red-200 rounded-full flex items-center justify-center mx-auto mb-4">
-            <XCircle className="w-10 h-10 text-red-500" />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">{t("rejected")}</h1>
-          <p className="text-slate-500 text-sm mb-6">{t("rejectedDesc")}</p>
-          <button
-            onClick={() => { localStorage.removeItem("tawsil_user"); window.location.href = "/"; }}
-            className="btn-secondary"
-          >
-            {t("backToHome")}
-          </button>
+      <div style={{
+        minHeight: "100dvh",
+        background: "linear-gradient(160deg, #4338ca 0%, #6366f1 40%, #7c3aed 100%)",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        padding: "24px",
+      }}>
+        <div style={{
+          width: "80px", height: "80px", borderRadius: "50%",
+          background: "rgba(255,255,255,0.15)", backdropFilter: "blur(10px)",
+          border: "1.5px solid rgba(255,255,255,0.3)",
+          display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20,
+        }}>
+          <span style={{ fontSize: "2.5rem" }}>❌</span>
         </div>
+        <h1 style={{ color: "white", fontSize: "1.75rem", fontWeight: 800, marginBottom: 8, textAlign: "center" }}>{t("rejected")}</h1>
+        <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.875rem", textAlign: "center", maxWidth: 320, marginBottom: 32 }}>{t("rejectedDesc")}</p>
+        <button
+          onClick={() => { localStorage.removeItem("tawsil_user"); window.location.href = "/"; }}
+          style={{
+            background: "rgba(255,255,255,0.15)", border: "1.5px solid rgba(255,255,255,0.3)",
+            color: "white", padding: "12px 32px", borderRadius: 16, fontSize: "0.875rem",
+            fontWeight: 600, cursor: "pointer", backdropFilter: "blur(10px)",
+          }}
+        >
+          {t("backToHome")}
+        </button>
       </div>
     );
   }
 
   if (status === "pending") {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center">
-        <div className="w-full max-w-md text-center">
-          <div className="w-20 h-20 bg-amber-50 border-2 border-amber-200 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Clock className="w-10 h-10 text-amber-600" />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">{t("pendingApproval")}</h1>
-          <p className="text-slate-500 text-sm mb-6">{t("pendingDesc")}</p>
-
-          <button
-            onClick={checkStatus}
-            disabled={checking}
-            className="btn-primary mb-3"
-          >
-            <RefreshCw className={`w-4 h-4 ${checking ? "animate-spin" : ""}`} />
-            {checking ? t("checking") : t("checkStatus")}
-          </button>
-          <button
-            onClick={() => { localStorage.removeItem("tawsil_user"); window.location.href = "/"; }}
-            className="btn-secondary"
-          >
-            {t("logout")}
-          </button>
+      <div style={{
+        minHeight: "100dvh",
+        background: "linear-gradient(160deg, #4338ca 0%, #6366f1 40%, #7c3aed 100%)",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        padding: "24px",
+      }}>
+        <div style={{
+          width: "80px", height: "80px", borderRadius: "50%",
+          background: "rgba(255,255,255,0.15)", backdropFilter: "blur(10px)",
+          border: "1.5px solid rgba(255,255,255,0.3)",
+          display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20,
+        }}>
+          <span style={{ fontSize: "2.5rem" }}>⏳</span>
         </div>
+        <h1 style={{ color: "white", fontSize: "1.75rem", fontWeight: 800, marginBottom: 8, textAlign: "center" }}>{t("pendingApproval")}</h1>
+        <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.875rem", textAlign: "center", maxWidth: 320, marginBottom: 32 }}>{t("pendingDesc")}</p>
+        <button
+          onClick={checkStatus} disabled={checking}
+          style={{
+            background: "rgba(255,255,255,0.2)", border: "1.5px solid rgba(255,255,255,0.3)",
+            color: "white", padding: "12px 32px", borderRadius: 16, fontSize: "0.875rem",
+            fontWeight: 600, cursor: "pointer", backdropFilter: "blur(10px)",
+            display: "flex", alignItems: "center", gap: 8, marginBottom: 12,
+          }}
+        >
+          <RefreshCw size={16} className={checking ? "animate-spin" : ""} />
+          {checking ? t("checking") : t("checkStatus")}
+        </button>
+        <button
+          onClick={() => { localStorage.removeItem("tawsil_user"); window.location.href = "/"; }}
+          style={{
+            background: "transparent", border: "1px solid rgba(255,255,255,0.2)",
+            color: "rgba(255,255,255,0.7)", padding: "10px 24px", borderRadius: 12,
+            fontSize: "0.8rem", fontWeight: 500, cursor: "pointer",
+          }}
+        >
+          {t("logout")}
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-indigo-50 border-2 border-indigo-200 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Bike className="w-10 h-10 text-indigo-600" />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">{t("registerAsRider")}</h1>
-          <p className="text-slate-500 text-sm">{t("enterInfoToDeliver")}</p>
-        </div>
+    <div style={{
+      minHeight: "100dvh",
+      background: "linear-gradient(160deg, #4338ca 0%, #6366f1 40%, #7c3aed 100%)",
+      position: "relative", overflow: "hidden",
+    }}>
+      {/* Decorative circles */}
+      <div style={{ position: "absolute", top: "-60px", right: "-60px", width: "200px", height: "200px", borderRadius: "50%", background: "rgba(255,255,255,0.07)" }} />
+      <div style={{ position: "absolute", top: "80px", left: "-40px", width: "120px", height: "120px", borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
 
-        <div className="card space-y-4">
-          <div className="input-group">
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder=" "
-              className="input-floating"
-            />
-            <label className="input-floating-label">{t("name")} *</label>
-          </div>
+      {/* Top section */}
+      <div style={{ padding: "60px 24px 32px", textAlign: "center" }}>
+        <div style={{ fontSize: "3rem", marginBottom: 12 }}>🏍️</div>
+        <div style={{ color: "white", fontSize: "1.75rem", fontWeight: 800, letterSpacing: "-0.04em" }}>Tawsil</div>
+        <div style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.875rem", marginTop: 6 }}>انضم كراكب توصيل</div>
+      </div>
 
-          <div className="input-group">
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder=" "
-              className="input-floating"
-              dir="ltr"
-            />
-            <label className="input-floating-label">{t("phone")} *</label>
+      {/* White card */}
+      <div style={{
+        background: "white", borderRadius: "28px 28px 0 0",
+        padding: "32px 24px", minHeight: "60vh",
+        boxShadow: "0 -20px 60px rgba(0,0,0,0.15)",
+      }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div>
+            <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: 4, display: "block" }}>{t("name")} *</label>
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
           </div>
 
-          <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-            <p className="text-indigo-700 text-sm font-medium leading-relaxed">
+          <div>
+            <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: 4, display: "block" }}>{t("phone")} *</label>
+            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} dir="ltr" style={inputStyle} />
+          </div>
+
+          {/* Review warning */}
+          <div style={{
+            background: "#eef2ff", border: "1.5px solid #c7d2fe", borderRadius: 14, padding: 16,
+          }}>
+            <p style={{ color: "#4338ca", fontSize: "0.85rem", fontWeight: 500, lineHeight: 1.6 }}>
               {t("reviewWarning")}
             </p>
           </div>
@@ -188,7 +223,13 @@ export default function RiderRegister() {
           <button
             onClick={submit}
             disabled={loading || !name.trim() || !phone.trim()}
-            className="btn-primary"
+            style={{
+              width: "100%", padding: "14px", borderRadius: 16, border: "none",
+              background: "linear-gradient(135deg, #6366f1, #4338ca)",
+              color: "white", fontSize: "1rem", fontWeight: 700, cursor: "pointer",
+              opacity: loading || !name.trim() || !phone.trim() ? 0.6 : 1,
+              boxShadow: "0 8px 24px rgba(99,102,241,0.35)", marginTop: 4,
+            }}
           >
             {loading ? t("registering") : t("register")}
           </button>
