@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { Package, Globe, LogOut, ShoppingBag, MapPin, ClipboardList, User, Star } from "lucide-react";
+import { Package, Globe, LogOut, ShoppingBag, MapPin, ClipboardList, User, Star, TrendingUp } from "lucide-react";
 import { useLang } from "./LangProvider";
 import { supabaseClient } from "@/lib/supabase-client";
 import type { Lang } from "@/lib/i18n";
@@ -157,6 +157,32 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <main className="max-w-lg mx-auto px-3 py-4 sm:px-4 sm:py-6 pb-24">
         {children}
       </main>
+
+      {/* Bottom nav for riders */}
+      {ready && role === "rider" && (
+        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40">
+          <div className="max-w-lg mx-auto flex">
+            <a
+              href="/rider"
+              className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
+                pathname === "/rider" ? "text-blue-700" : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              <Package className="w-5 h-5" />
+              {t("orders")}
+            </a>
+            <a
+              href="/rider/stats"
+              className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
+                pathname === "/rider/stats" ? "text-blue-700" : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              <TrendingUp className="w-5 h-5" />
+              {t("myStats")}
+            </a>
+          </div>
+        </nav>
+      )}
 
       {/* Bottom nav for customers */}
       {ready && role === "customer" && (
