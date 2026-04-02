@@ -243,7 +243,7 @@ export default function OrderPage() {
   const stepNumber = step === "store" ? 1 : step === "details" ? 2 : step === "info" ? 3 : step === "review" ? 4 : 4;
 
   const announcementMessage = announcement
-    ? (lang === "ar" ? announcement.message_ar : lang === "fr" ? announcement.message_fr : announcement.message_en)
+    ? (lang === "ar" ? announcement.message_ar : lang === "fr" ? (announcement.message_fr || announcement.message_ar) : (announcement.message_en || announcement.message_ar))
     : null;
 
   return (
