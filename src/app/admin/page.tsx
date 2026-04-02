@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Store, Package, Users, Plus, Trash2, RefreshCw, XCircle, CheckCircle2, ShoppingCart, Coffee, Pill, UtensilsCrossed, Bike, UserCheck, Search, Star, LayoutDashboard, TrendingUp, Clock } from "lucide-react";
 
 interface DashboardData {
-  today: { total: number; delivered: number; cancelled: number; active: number; revenue: number };
+  today: { total: number; delivered: number; cancelled: number; active: number; revenue: number; flagged: number };
   riders: { total: number; online: number; busy: number; available: number };
   topStores: { name: string; count: number }[];
   recentOrders: { id: string; order_number: string; store_name: string; status: string; created_at: string }[];
@@ -27,6 +27,7 @@ interface Order {
   customer_phone: string;
   delivery_fee: number;
   created_at: string;
+  flagged?: boolean;
 }
 
 interface Rider {
@@ -349,6 +350,17 @@ export default function AdminPage() {
                     </div>
                     <div className="text-2xl font-bold text-amber-600">{dash.today.active}</div>
                   </div>
+                  {dash.today.flagged > 0 && (
+                    <div className="rounded-xl border border-red-200 bg-white p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center">
+                          <XCircle className="w-4 h-4 text-red-600" />
+                        </div>
+                        <span className="text-xs font-medium text-slate-500">Flagged</span>
+                      </div>
+                      <div className="text-2xl font-bold text-red-600">{dash.today.flagged}</div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Row 2: Riders */}
@@ -479,8 +491,11 @@ export default function AdminPage() {
             {ordersLoading && <p className="text-slate-500 text-center py-5">Loading...</p>}
             <div className="space-y-2">
               {orders.map((order) => (
-                <div key={order.id} className="card flex items-center gap-3 flex-wrap !py-3">
+                <div key={order.id} className={`card flex items-center gap-3 flex-wrap !py-3 ${order.flagged ? "border-l-4 border-red-500" : ""}`}>
                   <span className="font-mono text-sm font-semibold text-slate-700 min-w-[130px]">{order.order_number}</span>
+                  {order.flagged && (
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-lg bg-red-50 text-red-600 border border-red-200">⚠ Flagged</span>
+                  )}
                   <span className={`badge badge-${order.status}`}>{order.status}</span>
                   <span className="text-sm text-slate-600 flex-1 min-w-[100px]">{order.store_name}</span>
                   <span className="text-sm text-slate-600">{order.customer_name}</span>

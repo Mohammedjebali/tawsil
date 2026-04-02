@@ -236,6 +236,9 @@ const translations: Record<string, Record<Lang, string>> = {
   activeTab: { ar: "نشط", fr: "Actif", en: "Active" },
   noDeliveriesToday: { ar: "لا توصيلات اليوم بعد", fr: "Aucune livraison aujourd'hui", en: "No deliveries today yet" },
   earnedPerOrder: { ar: "ربح لكل طلب", fr: "Gain par commande", en: "Earned per order" },
+  passOrder: { ar: "تخطي", fr: "Passer", en: "Pass" },
+  orderFlagged: { ar: "طلب مُبلَّغ عنه", fr: "Commande signalée", en: "Flagged order" },
+  flaggedOrders: { ar: "طلبات مُبلَّغ عنها", fr: "Commandes signalées", en: "Flagged orders" },
 };
 
 export function t(lang: Lang, key: string): string {

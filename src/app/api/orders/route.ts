@@ -91,8 +91,21 @@ export async function GET(req: NextRequest) {
     const phone = searchParams.get("phone");
 
     const rider_id = searchParams.get("rider_id");
+    const excludePassedBy = searchParams.get("exclude_passed_by");
 
     let query = supabase.from("orders").select("*");
+
+    // Exclude orders this rider has already passed on
+    if (excludePassedBy) {
+      const { data: passes } = await supabase
+        .from("order_passes")
+        .select("order_id")
+        .eq("rider_id", excludePassedBy);
+      const passedIds = (passes || []).map((p) => p.order_id);
+      if (passedIds.length > 0) {
+        query = query.not("id", "in", `(${passedIds.join(",")})`);
+      }
+    }
 
     if (order_number) {
       query = query.eq("order_number", order_number);

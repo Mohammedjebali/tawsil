@@ -21,6 +21,14 @@ export async function GET() {
   );
   const revenue = delivered.length * 500; // 500 millimes per delivery
 
+  // Flagged pending orders
+  const { data: flaggedOrders } = await supabase
+    .from("orders")
+    .select("id")
+    .eq("flagged", true)
+    .eq("status", "pending");
+  const flaggedCount = flaggedOrders?.length || 0;
+
   // All orders for top stores
   const { data: allOrders } = await supabase
     .from("orders")
@@ -67,6 +75,7 @@ export async function GET() {
       cancelled: cancelled.length,
       active: active.length,
       revenue,
+      flagged: flaggedCount,
     },
     riders: {
       total: activeRiders.length,

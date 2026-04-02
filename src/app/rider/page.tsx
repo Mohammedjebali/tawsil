@@ -125,8 +125,9 @@ export default function RiderPage() {
 
   async function fetchOrders() {
     try {
+      const excludeParam = rider?.db_id ? `&exclude_passed_by=${rider.db_id}` : "";
       const [pendingRes, allRes] = await Promise.all([
-        fetch("/api/orders?status=pending"),
+        fetch(`/api/orders?status=pending${excludeParam}`),
         fetch("/api/orders"),
       ]);
       const pendingData = await pendingRes.json();
@@ -143,6 +144,16 @@ export default function RiderPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function passOrder(orderId: string) {
+    if (!rider?.db_id) return;
+    await fetch(`/api/orders/${orderId}/pass`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rider_id: rider.db_id }),
+    });
+    setOrders(prev => prev.filter(o => o.id !== orderId));
   }
 
   async function acceptOrder(orderId: string) {
@@ -367,9 +378,17 @@ export default function RiderPage() {
                 <div className="text-sm text-slate-700 whitespace-pre-wrap">{order.items_description}</div>
               </div>
 
-              <button onClick={() => acceptOrder(order.id)} className="btn-primary">
-                {t("acceptOrder")}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => passOrder(order.id)}
+                  className="border border-slate-300 text-slate-500 px-3 py-1.5 rounded-lg text-xs"
+                >
+                  {t("passOrder")}
+                </button>
+                <button onClick={() => acceptOrder(order.id)} className="btn-primary flex-1">
+                  {t("acceptOrder")}
+                </button>
+              </div>
             </div>
           ))}
         </div>
