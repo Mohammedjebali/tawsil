@@ -237,6 +237,7 @@ const translations: Record<string, Record<Lang, string>> = {
   noDeliveriesToday: { ar: "لا توصيلات اليوم بعد", fr: "Aucune livraison aujourd'hui", en: "No deliveries today yet" },
   earnedPerOrder: { ar: "ربح لكل طلب", fr: "Gain par commande", en: "Earned per order" },
   passOrder: { ar: "تخطي", fr: "Passer", en: "Pass" },
+  fromYou: { ar: "منك", fr: "de vous", en: "from you" },
   orderFlagged: { ar: "طلب مُبلَّغ عنه", fr: "Commande signalée", en: "Flagged order" },
   flaggedOrders: { ar: "طلبات مُبلَّغ عنها", fr: "Commandes signalées", en: "Flagged orders" },
 };

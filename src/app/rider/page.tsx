@@ -17,6 +17,8 @@ interface Order {
   customer_lng: number | null;
   store_name: string;
   store_address: string | null;
+  store_lat: number | null;
+  store_lng: number | null;
   items_description: string;
   delivery_fee: number;
   rider_lat: number | null;
@@ -37,6 +39,14 @@ interface RiderProfile {
 
 function formatFee(m: number) { return `${(m/1000).toFixed(3)} DT`; }
 
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
 export default function RiderPage() {
   const { t } = useLang();
   const [rider, setRider] = useState<RiderProfile | null>(null);
@@ -54,8 +64,10 @@ export default function RiderPage() {
   const [priceSuccess, setPriceSuccess] = useState<Record<string, boolean>>({});
   const [isOnline, setIsOnline] = useState(false);
   const [toggling, setToggling] = useState(false);
+  const [riderPos, setRiderPos] = useState<{lat: number; lng: number} | null>(null);
   const watchIds = useRef<Record<string, number>>({});
   const prevOrderCount = useRef(0);
+  const posWatchId = useRef<number | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("tawsil_user");
@@ -106,6 +118,17 @@ export default function RiderPage() {
     return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
+
+  // Track rider position for distance-to-store calculation
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    posWatchId.current = navigator.geolocation.watchPosition(
+      (pos) => setRiderPos({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => {},
+      { enableHighAccuracy: false, maximumAge: 30000 }
+    );
+    return () => { if (posWatchId.current !== null) navigator.geolocation.clearWatch(posWatchId.current); };
+  }, []);
 
   async function toggleOnline() {
     if (!rider?.db_id || toggling) return;
@@ -340,7 +363,16 @@ export default function RiderPage() {
           {orders.length === 0 && !loading && (
             <div className="card text-center text-slate-500 py-8">{t("noOrders")}</div>
           )}
-          {orders.map((order) => (
+          {[...orders].sort((a, b) => {
+              // Sort by distance to store if rider position known
+              if (riderPos && a.store_lat && a.store_lng && b.store_lat && b.store_lng) {
+                return haversineKm(riderPos.lat, riderPos.lng, a.store_lat, a.store_lng)
+                  - haversineKm(riderPos.lat, riderPos.lng, b.store_lat, b.store_lng);
+              }
+              return 0;
+            }).map((order) => {const distToStore = riderPos && order.store_lat && order.store_lng
+                ? haversineKm(riderPos.lat, riderPos.lng, order.store_lat, order.store_lng)
+                : null; return (
             <div key={order.id} className="card">
               <div className="flex justify-between items-start mb-3">
                 <span className="text-xs text-slate-400 font-mono" dir="ltr">{order.order_number}</span>
@@ -351,7 +383,13 @@ export default function RiderPage() {
                 <Package className="w-4 h-4 text-slate-400 flex-shrink-0" />
                 <span className="font-semibold">{t("from")}: {order.store_name}</span>
               </div>
-              {order.store_address && <div className="text-xs text-slate-500 mb-2 pl-6">{order.store_address}</div>}
+              {order.store_address && <div className="text-xs text-slate-500 mb-1 pl-6">{order.store_address}</div>}
+              {distToStore !== null && (
+                <div className="flex items-center gap-1 text-xs font-semibold text-emerald-600 mb-2 pl-6">
+                  <Navigation className="w-3 h-3" />
+                  {distToStore < 1 ? `${Math.round(distToStore * 1000)}m` : `${distToStore.toFixed(1)} km`} {t("fromYou")}
+                </div>
+              )}
 
               <div className="flex items-center gap-2 text-sm text-slate-700 mb-1.5">
                 <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0" />
@@ -390,7 +428,7 @@ export default function RiderPage() {
                 </button>
               </div>
             </div>
-          ))}
+          );})}  
         </div>
       )}
 
