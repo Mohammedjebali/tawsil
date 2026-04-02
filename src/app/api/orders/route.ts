@@ -78,6 +78,14 @@ export async function GET(req: NextRequest) {
   try {
     const supabase = getSupabase();
     const { searchParams } = new URL(req.url);
+
+    // Auto-expire pending orders older than 30 minutes (runs on every orders fetch)
+    const expiryCutoff = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+    await supabase
+      .from("orders")
+      .update({ status: "cancelled" })
+      .eq("status", "pending")
+      .lt("created_at", expiryCutoff);
     const order_number = searchParams.get("order_number");
     const status = searchParams.get("status");
     const phone = searchParams.get("phone");
