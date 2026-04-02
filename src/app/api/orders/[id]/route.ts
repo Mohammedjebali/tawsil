@@ -12,7 +12,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const supabase = getSupabase();
     const { id } = await params;
     const body = await req.json();
-    const allowedFields = ["status", "rider_name", "rider_phone", "rider_lat", "rider_lng"];
+    const allowedFields = ["status", "rider_name", "rider_phone", "rider_lat", "rider_lng", "actual_goods_price", "price_note"];
     const update: Record<string, unknown> = {};
     for (const key of allowedFields) {
       if (body[key] !== undefined) update[key] = body[key];

@@ -14,6 +14,8 @@ interface Order {
   customer_address: string;
   created_at: string;
   rider_name?: string;
+  actual_goods_price?: number;
+  price_note?: string;
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -45,6 +47,9 @@ export default function OrdersPage() {
     const user = JSON.parse(saved);
     if (user.role !== "customer") { window.location.href = "/"; return; }
     fetchOrders(user.phone);
+    const interval = setInterval(() => fetchOrders(user.phone), 8000);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function fetchOrders(phone: string) {
@@ -129,6 +134,21 @@ export default function OrdersPage() {
                   <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0" />
                   <span className="line-clamp-1">{order.customer_address}</span>
                 </div>
+
+                {/* Price updated by rider */}
+                {order.actual_goods_price != null && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3">
+                    <div className="text-sm font-semibold text-amber-600">
+                      {t("goodsPrice")}: {formatFee(order.actual_goods_price)} <span className="text-xs font-normal">({t("priceUpdated")})</span>
+                    </div>
+                    <div className="text-sm font-bold text-amber-700 mt-1">
+                      {t("total")}: {formatFee(order.actual_goods_price + order.delivery_fee)}
+                    </div>
+                    {order.price_note && (
+                      <p className="text-xs text-amber-500 mt-1">{order.price_note}</p>
+                    )}
+                  </div>
+                )}
 
                 {/* Footer */}
                 <div className="flex justify-between items-center">

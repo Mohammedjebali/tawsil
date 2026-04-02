@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { User, Bell, BellOff, Package, MapPin, Phone, Navigation, CheckCircle2 } from "lucide-react";
+import { User, Bell, BellOff, Package, MapPin, Phone, Navigation, CheckCircle2, DollarSign } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
 import dynamic from "next/dynamic";
 const RiderMapView = dynamic(() => import("@/components/RiderMapView"), { ssr: false });
@@ -46,6 +46,10 @@ export default function RiderPage() {
   const [tab, setTab] = useState<"available" | "mine">("available");
   const [notifStatus, setNotifStatus] = useState<"idle" | "granted" | "denied">("idle");
   const [sharing, setSharing] = useState<Record<string, boolean>>({});
+  const [priceInputs, setPriceInputs] = useState<Record<string, string>>({});
+  const [noteInputs, setNoteInputs] = useState<Record<string, string>>({});
+  const [priceUpdating, setPriceUpdating] = useState<Record<string, boolean>>({});
+  const [priceSuccess, setPriceSuccess] = useState<Record<string, boolean>>({});
   const watchIds = useRef<Record<string, number>>({});
   const prevOrderCount = useRef(0);
 
@@ -165,6 +169,27 @@ export default function RiderPage() {
       setNotifStatus("granted");
     } catch {
       setNotifStatus("denied");
+    }
+  }
+
+  async function updateActualPrice(orderId: string) {
+    const priceStr = priceInputs[orderId];
+    const priceDT = parseFloat(priceStr);
+    if (!priceStr || isNaN(priceDT) || priceDT <= 0) return;
+    setPriceUpdating(prev => ({ ...prev, [orderId]: true }));
+    try {
+      const body: Record<string, unknown> = { actual_goods_price: Math.round(priceDT * 1000) };
+      const note = noteInputs[orderId]?.trim();
+      if (note) body.price_note = note;
+      await fetch(`/api/orders/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      setPriceSuccess(prev => ({ ...prev, [orderId]: true }));
+      setTimeout(() => setPriceSuccess(prev => ({ ...prev, [orderId]: false })), 3000);
+    } finally {
+      setPriceUpdating(prev => ({ ...prev, [orderId]: false }));
     }
   }
 
@@ -352,6 +377,49 @@ export default function RiderPage() {
                     {order.customer_phone}
                   </a>
                   <span className="text-sm font-medium text-slate-700">{order.customer_name}</span>
+                </div>
+
+                {/* Price adjustment */}
+                <div className="bg-white border border-slate-200 rounded-xl p-3 mb-3">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-2">
+                    <DollarSign className="w-4 h-4 text-blue-700" />
+                    {t("adjustPrice")}
+                  </div>
+                  <div className="space-y-2">
+                    <div>
+                      <label className="text-xs text-slate-500 mb-1 block">{t("actualPrice")} (DT)</label>
+                      <input
+                        type="number"
+                        step="0.001"
+                        min="0"
+                        placeholder="0.000"
+                        value={priceInputs[order.id] || ""}
+                        onChange={e => setPriceInputs(prev => ({ ...prev, [order.id]: e.target.value }))}
+                        className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
+                        dir="ltr"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-500 mb-1 block">{t("priceNote")}</label>
+                      <input
+                        type="text"
+                        placeholder={t("priceNote")}
+                        value={noteInputs[order.id] || ""}
+                        onChange={e => setNoteInputs(prev => ({ ...prev, [order.id]: e.target.value }))}
+                        className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
+                      />
+                    </div>
+                    <button
+                      onClick={() => updateActualPrice(order.id)}
+                      disabled={priceUpdating[order.id] || !priceInputs[order.id]}
+                      className="w-full py-2 rounded-xl text-sm font-semibold bg-blue-700 text-white hover:bg-blue-800 disabled:opacity-50 transition-colors"
+                    >
+                      {t("updatePrice")}
+                    </button>
+                    {priceSuccess[order.id] && (
+                      <div className="text-xs text-emerald-600 font-medium text-center">{t("priceUpdatedSuccess")}</div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Location sharing status */}

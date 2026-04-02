@@ -200,6 +200,13 @@ const translations: Record<string, Record<Lang, string>> = {
   rewardTiers: { ar: "المكافآت", fr: "Récompenses", en: "Rewards" },
   claimReward: { ar: "اتصل بنا للحصول على مكافأتك!", fr: "Contactez-nous pour réclamer votre récompense!", en: "Contact us to claim your reward!" },
   pointsPerOrder: { ar: "10 نقاط لكل طلب مكتمل", fr: "10 points par commande livrée", en: "10 points per delivered order" },
+  adjustPrice: { ar: "تعديل سعر البضاعة", fr: "Ajuster le prix", en: "Adjust goods price" },
+  actualPrice: { ar: "السعر الفعلي", fr: "Prix réel", en: "Actual price" },
+  priceNote: { ar: "ملاحظة", fr: "Note", en: "Note" },
+  priceUpdated: { ar: "تم تحديث السعر من قبل الراكب", fr: "Prix mis à jour par le livreur", en: "Price updated by your rider" },
+  updatePrice: { ar: "تحديث السعر", fr: "Mettre à jour le prix", en: "Update price" },
+  priceUpdatedSuccess: { ar: "تم تحديث السعر بنجاح", fr: "Prix mis à jour", en: "Price updated" },
+  total: { ar: "المجموع", fr: "Total", en: "Total" },
 };
 
 export function t(lang: Lang, key: string): string {
