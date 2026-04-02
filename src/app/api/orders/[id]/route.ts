@@ -29,6 +29,22 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       .single();
 
     if (error) return NextResponse.json({ error: error.message, details: error.details, hint: error.hint }, { status: 500 });
+
+    // Award 10 loyalty points on delivery
+    if (body.status === "delivered" && data?.customer_phone) {
+      const { data: customer } = await supabase
+        .from("customers")
+        .select("id, points")
+        .eq("phone", data.customer_phone)
+        .single();
+      if (customer) {
+        await supabase
+          .from("customers")
+          .update({ points: (customer.points || 0) + 10 })
+          .eq("id", customer.id);
+      }
+    }
+
     return NextResponse.json({ order: data });
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 });

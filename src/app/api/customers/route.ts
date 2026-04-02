@@ -70,10 +70,30 @@ export async function GET(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const supabase = getSupabase();
-    const { email, first_name, last_name } = await req.json();
+    const { email, first_name, last_name, points_delta } = await req.json();
 
     if (!email) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
+    }
+
+    // Handle points_delta: fetch current points, then add delta
+    if (typeof points_delta === "number") {
+      const { data: current, error: fetchErr } = await supabase
+        .from("customers")
+        .select("points")
+        .eq("email", email)
+        .single();
+      if (fetchErr) throw fetchErr;
+
+      const newPoints = (current?.points || 0) + points_delta;
+      const { data, error } = await supabase
+        .from("customers")
+        .update({ points: newPoints })
+        .eq("email", email)
+        .select()
+        .single();
+      if (error) throw error;
+      return NextResponse.json({ customer: data });
     }
 
     const update: Record<string, string> = {};

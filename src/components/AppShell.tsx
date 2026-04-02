@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { Package, Globe, LogOut, ShoppingBag, MapPin, ClipboardList, User } from "lucide-react";
+import { Package, Globe, LogOut, ShoppingBag, MapPin, ClipboardList, User, Star } from "lucide-react";
 import { useLang } from "./LangProvider";
 import { supabaseClient } from "@/lib/supabase-client";
 import type { Lang } from "@/lib/i18n";
@@ -188,6 +188,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             >
               <ClipboardList className="w-5 h-5" />
               {t("myOrders")}
+            </a>
+            <a
+              href="/rewards"
+              className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
+                pathname === "/rewards" ? "text-blue-700" : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              <Star className="w-5 h-5" />
+              {t("rewards")}
             </a>
             <a
               href="/profile"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, CheckCircle2 } from "lucide-react";
+import { User, CheckCircle2, Star } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
 
 export default function ProfilePage() {
@@ -11,6 +11,7 @@ export default function ProfilePage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [savedAddress, setSavedAddress] = useState("");
+  const [points, setPoints] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -30,6 +31,14 @@ export default function ProfilePage() {
     setEmail(user.email || "");
     setPhone(user.phone || "");
     setSavedAddress(user.savedAddress || "");
+
+    // Fetch points
+    if (user.email) {
+      fetch(`/api/customers?email=${encodeURIComponent(user.email)}`)
+        .then(r => r.json())
+        .then(d => { if (d.customer) setPoints(d.customer.points || 0); })
+        .catch(() => {});
+    }
   }, []);
 
   async function handleSave() {
@@ -73,6 +82,18 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Points balance */}
+      <a href="/rewards" className="card flex items-center gap-3 !py-3 mb-4 no-underline">
+        <div className="w-10 h-10 bg-yellow-50 rounded-full flex items-center justify-center">
+          <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+        </div>
+        <div className="flex-1">
+          <div className="text-sm font-semibold text-slate-900">{t("pointsBalance")}</div>
+          <div className="text-xs text-slate-500">{t("rewards")}</div>
+        </div>
+        <span className="text-lg font-bold text-blue-700">{points} pts</span>
+      </a>
 
       <div className="space-y-4">
         {/* First Name */}

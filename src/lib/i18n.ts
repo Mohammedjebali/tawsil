@@ -193,6 +193,13 @@ const translations: Record<string, Record<Lang, string>> = {
   profileSaved: { ar: "تم حفظ الملف الشخصي", fr: "Profil enregistré", en: "Profile saved" },
   customers: { ar: "الزبائن", fr: "Clients", en: "Customers" },
   totalCustomers: { ar: "إجمالي الزبائن", fr: "Total clients", en: "Total Customers" },
+  rewards: { ar: "نقاطي", fr: "Mes points", en: "My rewards" },
+  yourPoints: { ar: "نقاطك", fr: "Vos points", en: "Your points" },
+  pointsBalance: { ar: "رصيد النقاط", fr: "Solde de points", en: "Points balance" },
+  nextReward: { ar: "المكافأة التالية", fr: "Prochaine récompense", en: "Next reward" },
+  rewardTiers: { ar: "المكافآت", fr: "Récompenses", en: "Rewards" },
+  claimReward: { ar: "اتصل بنا للحصول على مكافأتك!", fr: "Contactez-nous pour réclamer votre récompense!", en: "Contact us to claim your reward!" },
+  pointsPerOrder: { ar: "10 نقاط لكل طلب مكتمل", fr: "10 points par commande livrée", en: "10 points per delivered order" },
 };
 
 export function t(lang: Lang, key: string): string {
