@@ -85,8 +85,8 @@ export default function ProfilePage() {
   }
 
   async function handleShare() {
-    const shareText = `استخدم كودي ${referralCode} على تطبيق Tawsil وإرباح 20 نقطة مجاناً! أحسن توصيل في منزل النور 🛵 tawsil.vercel.app`;
-    const shareUrl = `https://tawsil.vercel.app/register?ref=${referralCode}`;
+    const shareText = `استخدم كودي ${referralCode} على تطبيق Tawsil وإرباح 20 نقطة مجاناً! أحسن توصيل في منزل النور 🛵 www.tawsildelivery.com`;
+    const shareUrl = `https://www.tawsildelivery.com/register?ref=${referralCode}`;
 
     if (navigator.share) {
       try {

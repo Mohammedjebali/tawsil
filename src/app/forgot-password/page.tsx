@@ -22,7 +22,7 @@ export default function ForgotPasswordPage() {
 
     const { error: resetError } = await supabaseClient.auth.resetPasswordForEmail(
       email,
-      { redirectTo: "https://tawsil.vercel.app/reset-password" }
+      { redirectTo: "https://www.tawsildelivery.com/reset-password" }
     );
 
     setLoading(false);
