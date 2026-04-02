@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Package, ShoppingBag, Bike, ChevronRight, ChevronLeft, Globe, Store, Coffee, Pill, ShoppingCart, UtensilsCrossed, Search, DollarSign, MapPin, CheckCircle2, ArrowLeft, ArrowRight } from "lucide-react";
+import { Package, ShoppingBag, Bike, ChevronRight, ChevronLeft, Globe, Store, Coffee, Pill, ShoppingCart, UtensilsCrossed, Search, MapPin, CheckCircle2, ArrowLeft, ArrowRight } from "lucide-react";
 import { formatFee, calculateDeliveryFee, getDistanceKm } from "@/lib/fees";
 import { useLang } from "@/components/LangProvider";
 
@@ -309,7 +309,7 @@ export default function OrderPage() {
             <div>
               <label className="label">{t("estimatedAmount")}</label>
               <div className="relative">
-                <DollarSign className="absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" style={isRtl ? { right: '14px' } : { left: '14px' }} />
+                <span className="absolute top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400" style={isRtl ? { right: '14px' } : { left: '14px' }}>DT</span>
                 <input
                   type="number"
                   value={estimatedAmount}
