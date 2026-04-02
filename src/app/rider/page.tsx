@@ -524,7 +524,12 @@ export default function RiderPage() {
                   {t("passOrder")}
                 </button>
               </div>
-              <SlideToAccept onAccept={() => acceptOrder(order.id)} disabled={false} label={t("slideToAccept")} />
+              <button
+                onClick={() => acceptOrder(order.id)}
+                className="btn-primary mt-2"
+              >
+                {t("acceptOrder")}
+              </button>
             </div>
           );})}  
         </div>
