@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Store, Package, Users, Plus, Trash2, RefreshCw, XCircle, CheckCircle2, ShoppingCart, Coffee, Pill, UtensilsCrossed, Bike, UserCheck, Search, Star, LayoutDashboard, TrendingUp, Clock, Download, Pencil } from "lucide-react";
+import { Store, Package, Users, Plus, Trash2, RefreshCw, XCircle, CheckCircle2, ShoppingCart, Coffee, Pill, UtensilsCrossed, Bike, UserCheck, Search, Star, LayoutDashboard, TrendingUp, Clock, Download, Pencil, Megaphone } from "lucide-react";
 
 interface DashboardData {
   today: { total: number; delivered: number; cancelled: number; active: number; revenue: number; flagged: number };
@@ -76,6 +76,15 @@ interface StoreStats {
   order_count: number;
 }
 
+interface Announcement {
+  id: string;
+  message_ar: string | null;
+  message_fr: string | null;
+  message_en: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
 const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   restaurant: UtensilsCrossed,
   supermarket: ShoppingCart,
@@ -96,7 +105,7 @@ function formatDate(iso: string) { return new Date(iso).toLocaleDateString("en-U
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [password, setPassword] = useState("");
-  const [tab, setTab] = useState<"dashboard" | "stores" | "orders" | "riders" | "customers">("dashboard");
+  const [tab, setTab] = useState<"dashboard" | "stores" | "orders" | "riders" | "customers" | "broadcast">("dashboard");
 
   const [stores, setStores] = useState<StoreItem[]>([]);
   const [newName, setNewName] = useState("");
@@ -119,6 +128,13 @@ export default function AdminPage() {
   const [customerStats, setCustomerStats] = useState<Record<string, CustomerStats>>({});
 
   const [storeStats, setStoreStats] = useState<Record<string, number>>({});
+
+  // Broadcast state
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [broadcastAr, setBroadcastAr] = useState("");
+  const [broadcastFr, setBroadcastFr] = useState("");
+  const [broadcastEn, setBroadcastEn] = useState("");
+  const [broadcastSending, setBroadcastSending] = useState(false);
 
   const [dash, setDash] = useState<DashboardData | null>(null);
   const [dashLoading, setDashLoading] = useState(false);
@@ -215,12 +231,21 @@ export default function AdminPage() {
     } catch {}
   }, []);
 
+  const fetchAllAnnouncements = useCallback(async () => {
+    try {
+      // Use a query param to get all announcements for admin
+      const res = await fetch("/api/announcements/all");
+      const data = await res.json();
+      setAnnouncements(data.announcements || []);
+    } catch {}
+  }, []);
+
   useEffect(() => {
     if (authed) {
       fetchStores(); fetchOrders(); fetchRiders(); fetchCustomers(); fetchDashboard();
-      fetchCustomerStats(); fetchRiderStats(); fetchStoreStats();
+      fetchCustomerStats(); fetchRiderStats(); fetchStoreStats(); fetchAllAnnouncements();
     }
-  }, [authed, fetchStores, fetchOrders, fetchRiders, fetchCustomers, fetchDashboard, fetchCustomerStats, fetchRiderStats, fetchStoreStats]);
+  }, [authed, fetchStores, fetchOrders, fetchRiders, fetchCustomers, fetchDashboard, fetchCustomerStats, fetchRiderStats, fetchStoreStats, fetchAllAnnouncements]);
 
   // Auto-refresh dashboard every 30s
   useEffect(() => {
@@ -324,6 +349,31 @@ export default function AdminPage() {
     fetchRiders();
   }
 
+  async function sendBroadcast() {
+    if (!broadcastAr.trim() && !broadcastFr.trim() && !broadcastEn.trim()) return;
+    setBroadcastSending(true);
+    try {
+      await fetch("/api/announcements", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message_ar: broadcastAr, message_fr: broadcastFr, message_en: broadcastEn }),
+      });
+      setBroadcastAr("");
+      setBroadcastFr("");
+      setBroadcastEn("");
+      fetchAllAnnouncements();
+    } finally { setBroadcastSending(false); }
+  }
+
+  async function toggleAnnouncement(id: string, currentActive: boolean) {
+    await fetch("/api/announcements", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, is_active: !currentActive }),
+    });
+    fetchAllAnnouncements();
+  }
+
   // Orders filtering
   const filteredOrders = orders.filter((o) => {
     if (filterStore && o.store_name !== filterStore) return false;
@@ -410,6 +460,7 @@ export default function AdminPage() {
     { key: "orders" as const, label: "Orders", icon: Package },
     { key: "riders" as const, label: "Riders", icon: Users, badge: pendingRiders.length },
     { key: "customers" as const, label: "Clients", icon: UserCheck },
+    { key: "broadcast" as const, label: "Broadcast", icon: Megaphone },
   ];
 
   return (
@@ -1005,6 +1056,123 @@ export default function AdminPage() {
             {customers.length === 0 && !customersLoading && (
               <p className="text-slate-500 text-center py-8">No customers registered yet</p>
             )}
+          </div>
+        )}
+
+        {/* Broadcast Tab */}
+        {tab === "broadcast" && (
+          <div>
+            {/* New broadcast form */}
+            <div className="card mb-5">
+              <h2 className="text-base font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                <Megaphone className="w-4 h-4" /> New Broadcast
+              </h2>
+              <div className="space-y-3">
+                <div>
+                  <label className="label">Message in Arabic</label>
+                  <textarea
+                    value={broadcastAr}
+                    onChange={(e) => setBroadcastAr(e.target.value)}
+                    className="input resize-none"
+                    rows={2}
+                    dir="rtl"
+                    placeholder="الرسالة بالعربية..."
+                  />
+                </div>
+                <div>
+                  <label className="label">Message in French</label>
+                  <textarea
+                    value={broadcastFr}
+                    onChange={(e) => setBroadcastFr(e.target.value)}
+                    className="input resize-none"
+                    rows={2}
+                    placeholder="Message en français..."
+                  />
+                </div>
+                <div>
+                  <label className="label">Message in English</label>
+                  <textarea
+                    value={broadcastEn}
+                    onChange={(e) => setBroadcastEn(e.target.value)}
+                    className="input resize-none"
+                    rows={2}
+                    placeholder="Message in English..."
+                  />
+                </div>
+                <button
+                  onClick={sendBroadcast}
+                  disabled={broadcastSending || (!broadcastAr.trim() && !broadcastFr.trim() && !broadcastEn.trim())}
+                  className="btn-primary"
+                >
+                  {broadcastSending ? "Sending..." : "Send Broadcast"}
+                </button>
+              </div>
+            </div>
+
+            {/* Current active announcement */}
+            {(() => {
+              const active = announcements.find((a) => a.is_active);
+              return active ? (
+                <div className="card border-emerald-200 bg-emerald-50/50 mb-5">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-semibold text-emerald-700">Active Announcement</h3>
+                    <button
+                      onClick={() => toggleAnnouncement(active.id, true)}
+                      className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                    >
+                      Deactivate
+                    </button>
+                  </div>
+                  {active.message_ar && <div className="text-sm text-slate-700 mb-1" dir="rtl">🇹🇳 {active.message_ar}</div>}
+                  {active.message_fr && <div className="text-sm text-slate-700 mb-1">🇫🇷 {active.message_fr}</div>}
+                  {active.message_en && <div className="text-sm text-slate-700">🇬🇧 {active.message_en}</div>}
+                  <div className="text-xs text-slate-400 mt-2">{formatDate(active.created_at)} {formatTime(active.created_at)}</div>
+                </div>
+              ) : (
+                <div className="card mb-5 text-center">
+                  <p className="text-sm text-slate-400">No active broadcast</p>
+                </div>
+              );
+            })()}
+
+            {/* History */}
+            <h3 className="text-sm font-semibold text-slate-900 mb-3">History</h3>
+            <div className="space-y-2">
+              {announcements.map((a) => (
+                <div key={a.id} className={`card !py-3 ${a.is_active ? "border-emerald-200 bg-emerald-50/30" : ""}`}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${
+                      a.is_active
+                        ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
+                        : "bg-slate-100 text-slate-500 border border-slate-200"
+                    }`}>
+                      {a.is_active ? "Active" : "Inactive"}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-400">{formatDate(a.created_at)} {formatTime(a.created_at)}</span>
+                      <button
+                        onClick={() => toggleAnnouncement(a.id, a.is_active)}
+                        className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${
+                          a.is_active
+                            ? "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+                            : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                        }`}
+                      >
+                        {a.is_active ? "Deactivate" : "Reactivate"}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="text-sm text-slate-600 mt-2">
+                    {a.message_ar && <div dir="rtl" className="mb-0.5">{a.message_ar}</div>}
+                    {a.message_fr && <div className="mb-0.5">{a.message_fr}</div>}
+                    {a.message_en && <div>{a.message_en}</div>}
+                  </div>
+                </div>
+              ))}
+              {announcements.length === 0 && (
+                <p className="text-slate-500 text-center py-8">No announcements yet</p>
+              )}
+            </div>
           </div>
         )}
       </div>

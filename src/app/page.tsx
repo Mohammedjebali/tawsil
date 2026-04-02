@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Package, ShoppingBag, Bike, ChevronRight, ChevronLeft, Globe, Store, Coffee, Pill, ShoppingCart, UtensilsCrossed, Search, MapPin, CheckCircle2, ArrowLeft, ArrowRight } from "lucide-react";
+import { Package, ShoppingBag, Bike, ChevronRight, ChevronLeft, Globe, Store, Coffee, Pill, ShoppingCart, UtensilsCrossed, Search, MapPin, CheckCircle2, ArrowLeft, ArrowRight, X } from "lucide-react";
 import { formatFee, calculateDeliveryFee, getDistanceKm } from "@/lib/fees";
 import { useLang } from "@/components/LangProvider";
 
@@ -112,13 +112,17 @@ function StepProgress({ current, total }: { current: number; total: number }) {
 }
 
 export default function OrderPage() {
-  const { t, isRtl } = useLang();
+  const { t, isRtl, lang } = useLang();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [ready, setReady] = useState(false);
 
   const [stores, setStores] = useState<StoreItem[]>([]);
   const [storeSearch, setStoreSearch] = useState("");
   const [step, setStep] = useState<"store" | "details" | "info" | "review" | "success">("store");
+
+  // Announcement banner
+  const [announcement, setAnnouncement] = useState<{ id: string; message_ar: string; message_fr: string; message_en: string } | null>(null);
+  const [announcementDismissed, setAnnouncementDismissed] = useState(false);
 
   // Form state
   const [selectedStore, setSelectedStore] = useState<StoreItem | null>(null);
@@ -164,6 +168,29 @@ export default function OrderPage() {
         .then((r) => r.json())
         .then((d) => setStores(d.stores || []));
     }
+  }, [user]);
+
+  // Fetch announcement + poll every 60s
+  useEffect(() => {
+    if (!user) return;
+    function fetchAnnouncement() {
+      fetch("/api/announcements")
+        .then((r) => r.json())
+        .then((d) => {
+          const a = d.announcement;
+          if (a) {
+            const dismissed = localStorage.getItem(`tawsil_dismissed_announcement_${a.id}`);
+            setAnnouncement(a);
+            setAnnouncementDismissed(dismissed === "true");
+          } else {
+            setAnnouncement(null);
+          }
+        })
+        .catch(() => {});
+    }
+    fetchAnnouncement();
+    const interval = setInterval(fetchAnnouncement, 60000);
+    return () => clearInterval(interval);
   }, [user]);
 
   async function submitOrder() {
@@ -215,8 +242,28 @@ export default function OrderPage() {
 
   const stepNumber = step === "store" ? 1 : step === "details" ? 2 : step === "info" ? 3 : step === "review" ? 4 : 4;
 
+  const announcementMessage = announcement
+    ? (lang === "ar" ? announcement.message_ar : lang === "fr" ? announcement.message_fr : announcement.message_en)
+    : null;
+
   return (
     <div>
+      {/* Announcement banner */}
+      {announcement && !announcementDismissed && announcementMessage && (
+        <div className="bg-blue-700 text-white rounded-xl mx-4 mb-4 px-4 py-3 flex justify-between items-center">
+          <span className="text-sm font-medium">{announcementMessage}</span>
+          <button
+            onClick={() => {
+              localStorage.setItem(`tawsil_dismissed_announcement_${announcement.id}`, "true");
+              setAnnouncementDismissed(true);
+            }}
+            className="text-white hover:text-blue-200 transition-colors flex-shrink-0 ml-3"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Step 1: Pick store */}
       {step === "store" && (
         <div>

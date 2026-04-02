@@ -269,6 +269,16 @@ const translations: Record<string, Record<Lang, string>> = {
   thisMonth: { ar: "هذا الشهر", fr: "Ce mois", en: "This month" },
   allTime: { ar: "الكل", fr: "Tout", en: "All time" },
   save: { ar: "حفظ", fr: "Enregistrer", en: "Save" },
+  broadcast: { ar: "الإعلانات", fr: "Annonces", en: "Broadcast" },
+  newBroadcast: { ar: "إعلان جديد", fr: "Nouvel annonce", en: "New broadcast" },
+  messageAr: { ar: "الرسالة بالعربية", fr: "Message en arabe", en: "Message in Arabic" },
+  messageFr: { ar: "الرسالة بالفرنسية", fr: "Message en français", en: "Message in French" },
+  messageEn: { ar: "الرسالة بالإنجليزية", fr: "Message en anglais", en: "Message in English" },
+  sendBroadcast: { ar: "إرسال الإعلان", fr: "Envoyer l'annonce", en: "Send broadcast" },
+  deactivate: { ar: "إلغاء التفعيل", fr: "Désactiver", en: "Deactivate" },
+  reactivate: { ar: "إعادة التفعيل", fr: "Réactiver", en: "Reactivate" },
+  noActiveBroadcast: { ar: "لا يوجد إعلان نشط", fr: "Aucune annonce active", en: "No active broadcast" },
+  broadcastHistory: { ar: "السجل", fr: "Historique", en: "History" },
 };
 
 export function t(lang: Lang, key: string): string {
