@@ -224,6 +224,16 @@ const translations: Record<string, Record<Lang, string>> = {
   youAreOffline: { ar: "أنت غير متصل — لن تصلك طلبات", fr: "Vous êtes hors ligne — aucune commande", en: "You are offline — no orders will appear" },
   online: { ar: "متصل", fr: "En ligne", en: "Online" },
   offline: { ar: "غير متصل", fr: "Hors ligne", en: "Offline" },
+  callCustomer: { ar: "اتصل بالزبون", fr: "Appeler le client", en: "Call customer" },
+  myStats: { ar: "إحصائياتي", fr: "Mes stats", en: "My stats" },
+  totalDelivered: { ar: "إجمالي التوصيلات", fr: "Total livraisons", en: "Total delivered" },
+  todayDelivered: { ar: "توصيلات اليوم", fr: "Livraisons aujourd'hui", en: "Today's deliveries" },
+  totalEarnings: { ar: "إجمالي الأرباح", fr: "Gains totaux", en: "Total earnings" },
+  todayEarnings: { ar: "أرباح اليوم", fr: "Gains aujourd'hui", en: "Today's earnings" },
+  history: { ar: "السجل", fr: "Historique", en: "History" },
+  activeTab: { ar: "نشط", fr: "Actif", en: "Active" },
+  noDeliveriesToday: { ar: "لا توصيلات اليوم بعد", fr: "Aucune livraison aujourd'hui", en: "No deliveries today yet" },
+  earnedPerOrder: { ar: "ربح لكل طلب", fr: "Gain par commande", en: "Earned per order" },
 };
 
 export function t(lang: Lang, key: string): string {

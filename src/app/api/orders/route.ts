@@ -82,6 +82,8 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get("status");
     const phone = searchParams.get("phone");
 
+    const rider_id = searchParams.get("rider_id");
+
     let query = supabase.from("orders").select("*");
 
     if (order_number) {
@@ -92,6 +94,13 @@ export async function GET(req: NextRequest) {
       query = query.eq("status", "pending").order("created_at", { ascending: true });
     } else {
       query = query.order("created_at", { ascending: false }).limit(50);
+    }
+
+    if (rider_id) {
+      query = query.eq("rider_id", rider_id);
+    }
+    if (status && status !== "pending") {
+      query = query.eq("status", status);
     }
 
     const { data, error } = await query;

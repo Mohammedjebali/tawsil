@@ -1,10 +1,17 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { User, Bell, BellOff, Package, MapPin, Phone, Navigation, CheckCircle2, DollarSign } from "lucide-react";
+import { User, Bell, BellOff, Package, MapPin, Phone, Navigation, CheckCircle2, DollarSign, TrendingUp, Clock } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
 import dynamic from "next/dynamic";
 const RiderMapView = dynamic(() => import("@/components/RiderMapView"), { ssr: false });
+
+interface RiderStats {
+  totalDelivered: number;
+  todayDelivered: number;
+  totalEarnings: number;
+  todayEarnings: number;
+}
 
 interface Order {
   id: string;
@@ -54,6 +61,10 @@ export default function RiderPage() {
   const [priceSuccess, setPriceSuccess] = useState<Record<string, boolean>>({});
   const [isOnline, setIsOnline] = useState(false);
   const [toggling, setToggling] = useState(false);
+  const [stats, setStats] = useState<RiderStats | null>(null);
+  const [mainTab, setMainTab] = useState<"active" | "history">("active");
+  const [historyOrders, setHistoryOrders] = useState<Order[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const watchIds = useRef<Record<string, number>>({});
   const prevOrderCount = useRef(0);
 
@@ -106,6 +117,36 @@ export default function RiderPage() {
     return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
+
+  // Fetch rider stats
+  useEffect(() => {
+    if (!rider?.db_id) return;
+    function fetchStats() {
+      fetch(`/api/riders/stats?id=${rider!.db_id}`)
+        .then(r => r.json())
+        .then(data => { if (data.totalDelivered !== undefined) setStats(data); })
+        .catch(() => {});
+    }
+    fetchStats();
+    const interval = setInterval(fetchStats, 60000);
+    return () => clearInterval(interval);
+  }, [rider?.db_id]);
+
+  // Fetch history (today's delivered orders)
+  useEffect(() => {
+    if (!rider?.db_id || mainTab !== "history") return;
+    setHistoryLoading(true);
+    fetch(`/api/orders?rider_id=${rider.db_id}&status=delivered`)
+      .then(r => r.json())
+      .then(data => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayOrders = (data.orders || []).filter((o: Order) => new Date(o.created_at) >= today);
+        setHistoryOrders(todayOrders);
+      })
+      .catch(() => {})
+      .finally(() => setHistoryLoading(false));
+  }, [rider?.db_id, mainTab]);
 
   async function toggleOnline() {
     if (!rider?.db_id || toggling) return;
@@ -282,8 +323,62 @@ export default function RiderPage() {
         </button>
       )}
 
+      {/* My Stats */}
+      {rider.db_id && stats && (
+        <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-4">
+          <div className="flex items-center gap-2 text-blue-700 font-bold text-sm mb-3">
+            <TrendingUp className="w-4 h-4" />
+            {t("myStats")}
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-white rounded-lg p-2.5 border border-blue-100 text-center">
+              <div className="text-lg font-bold text-slate-900">{stats.totalDelivered}</div>
+              <div className="text-xs text-slate-500">{t("totalDelivered")}</div>
+            </div>
+            <div className="bg-white rounded-lg p-2.5 border border-blue-100 text-center">
+              <div className="text-lg font-bold text-slate-900">{stats.todayDelivered}</div>
+              <div className="text-xs text-slate-500">{t("todayDelivered")}</div>
+            </div>
+            <div className="bg-white rounded-lg p-2.5 border border-blue-100 text-center">
+              <div className="text-lg font-bold text-emerald-700">{formatFee(stats.totalEarnings)}</div>
+              <div className="text-xs text-slate-500">{t("totalEarnings")}</div>
+            </div>
+            <div className="bg-white rounded-lg p-2.5 border border-blue-100 text-center">
+              <div className="text-lg font-bold text-emerald-700">{formatFee(stats.todayEarnings)}</div>
+              <div className="text-xs text-slate-500">{t("todayEarnings")}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Active / History top-level tabs */}
+      {isOnline && (
+        <div className="flex border-b border-slate-200 mb-4">
+          <button
+            onClick={() => setMainTab("active")}
+            className={`flex-1 py-2.5 text-sm font-semibold text-center border-b-2 transition-colors ${
+              mainTab === "active"
+                ? "border-blue-700 text-blue-700"
+                : "border-transparent text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            {t("activeTab")}
+          </button>
+          <button
+            onClick={() => setMainTab("history")}
+            className={`flex-1 py-2.5 text-sm font-semibold text-center border-b-2 transition-colors ${
+              mainTab === "history"
+                ? "border-blue-700 text-blue-700"
+                : "border-transparent text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            {t("history")}
+          </button>
+        </div>
+      )}
+
       {/* Tabs + orders — only show when online */}
-      {isOnline && <>
+      {isOnline && mainTab === "active" && <>
       <div className="flex bg-slate-100 rounded-xl p-1 mb-4">
         <button
           onClick={() => setTab("available")}
@@ -420,11 +515,11 @@ export default function RiderPage() {
                 <div className="flex justify-between items-center mb-3">
                   <a
                     href={`tel:${order.customer_phone}`}
-                    className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-2 rounded-xl text-xs font-semibold border border-blue-200 no-underline"
+                    className="inline-flex items-center gap-2 border border-blue-700 text-blue-700 px-4 py-2.5 rounded-xl text-sm font-bold no-underline hover:bg-blue-50 transition-colors"
                     dir="ltr"
                   >
-                    <Phone className="w-3.5 h-3.5" />
-                    {order.customer_phone}
+                    <Phone className="w-4 h-4" />
+                    {t("callCustomer")}
                   </a>
                   <span className="text-sm font-medium text-slate-700">{order.customer_name}</span>
                 </div>
@@ -508,6 +603,39 @@ export default function RiderPage() {
         </div>
       )}
       </>}
+
+      {/* History tab */}
+      {isOnline && mainTab === "history" && (
+        <div className="space-y-3">
+          {historyLoading && <div className="text-center text-slate-500 py-8">{t("loading")}</div>}
+          {!historyLoading && historyOrders.length === 0 && (
+            <div className="card text-center text-slate-500 py-8">{t("noDeliveriesToday")}</div>
+          )}
+          {historyOrders.map((order) => (
+            <div key={order.id} className="card">
+              <div className="flex justify-between items-start mb-2">
+                <span className="text-xs text-slate-400 font-mono" dir="ltr">{order.order_number}</span>
+                <span className="text-xs text-slate-400">
+                  <Clock className="w-3 h-3 inline mr-1" />
+                  {new Date(order.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-slate-700 mb-1">
+                <Package className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                <span className="font-semibold">{order.store_name}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-slate-700 mb-2">
+                <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                <span>{order.customer_address}</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t border-slate-100">
+                <span className="text-xs text-slate-500">{t("earnedPerOrder")}</span>
+                <span className="text-sm font-bold text-emerald-700">1.500 DT</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
