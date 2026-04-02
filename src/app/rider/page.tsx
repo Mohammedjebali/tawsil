@@ -115,8 +115,8 @@ function SlideToAccept({ onAccept, disabled, label }: { onAccept: () => void; di
         position: "absolute", top: "4px",
         left: `${thumbOffset}px`,
         width: `${thumbSize}px`, height: `${thumbSize}px`, borderRadius: "999px",
-        background: disabled ? "#cbd5e1" : "linear-gradient(135deg, #6366f1, #4f46e5)",
-        boxShadow: disabled ? "none" : "0 4px 16px rgba(99,102,241,0.4)",
+        background: disabled ? "#cbd5e1" : "#6366f1",
+        boxShadow: disabled ? "none" : "0 2px 8px rgba(99,102,241,0.3)",
         display: "flex", alignItems: "center", justifyContent: "center",
         transition: dragging ? "none" : "left 0.3s ease",
       }}>

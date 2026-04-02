@@ -116,46 +116,41 @@ export default function LoginPage() {
   }
 
   const inputStyle: React.CSSProperties = {
-    width: "100%", padding: "14px 16px", borderRadius: 14,
-    border: "1.5px solid #e2e8f0", fontSize: "0.9rem", outline: "none",
-    background: "#f8fafc", transition: "border-color 0.2s",
+    width: "100%", padding: "12px 16px", borderRadius: 10,
+    border: "1px solid #E2E8F0", fontSize: "0.9rem", outline: "none",
+    background: "#ffffff", color: "#0f172a", transition: "border-color 0.15s",
   };
 
   const tabStyle = (active: boolean): React.CSSProperties => ({
     flex: 1, padding: "10px", borderRadius: 10, fontSize: "0.875rem", fontWeight: 600,
     background: active ? "white" : "transparent",
     color: active ? "#6366f1" : "#94a3b8",
-    boxShadow: active ? "0 1px 4px rgba(0,0,0,0.1)" : "none",
-    transition: "all 0.2s", border: "none", cursor: "pointer",
+    boxShadow: active ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+    transition: "all 0.15s", border: "none", cursor: "pointer",
   });
 
   return (
     <div style={{
-      minHeight: "100dvh",
-      background: "linear-gradient(160deg, #4338ca 0%, #6366f1 40%, #7c3aed 100%)",
-      position: "relative", overflow: "hidden",
+      minHeight: "100dvh", background: "#F8FAFC",
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      padding: "24px 16px",
     }}>
-      {/* Decorative circles */}
-      <div style={{ position: "absolute", top: "-60px", right: "-60px", width: "200px", height: "200px", borderRadius: "50%", background: "rgba(255,255,255,0.07)" }} />
-      <div style={{ position: "absolute", top: "80px", left: "-40px", width: "120px", height: "120px", borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
-
-      {/* Top section */}
-      <div style={{ padding: "60px 24px 32px", textAlign: "center" }}>
-        <div style={{ fontSize: "3rem", marginBottom: 12 }}>🛵</div>
-        <div style={{ color: "white", fontSize: "1.75rem", fontWeight: 800, letterSpacing: "-0.04em" }}>Tawsil</div>
-        <div style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.875rem", marginTop: 6 }}>مرحباً بعودتك</div>
+      {/* Logo */}
+      <div style={{ marginBottom: 32, textAlign: "center" }}>
+        <div style={{ fontSize: "2rem", fontWeight: 900, color: "#6366f1", letterSpacing: "-0.05em" }}>Tawsil</div>
+        <div style={{ fontSize: "0.875rem", color: "#64748b", marginTop: 6 }}>مرحباً بعودتك</div>
       </div>
 
-      {/* White card */}
+      {/* Card */}
       <div style={{
-        background: "white", borderRadius: "28px 28px 0 0",
-        padding: "32px 24px", minHeight: "60vh",
-        boxShadow: "0 -20px 60px rgba(0,0,0,0.15)",
+        background: "#ffffff", border: "1px solid #E2E8F0", borderRadius: 20,
+        padding: "28px 24px", width: "100%", maxWidth: 400,
+        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.07)",
       }}>
         {/* Confirmed banner */}
         {confirmed && (
           <div style={{
-            background: "#ecfdf5", border: "1.5px solid #a7f3d0", borderRadius: 14,
+            background: "#ecfdf5", border: "1px solid #a7f3d0", borderRadius: 12,
             padding: "12px 16px", marginBottom: 20, textAlign: "center",
             color: "#059669", fontSize: "0.875rem", fontWeight: 600,
           }}>
@@ -177,12 +172,12 @@ export default function LoginPage() {
         {tab === "customer" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div>
-              <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: 4, display: "block" }}>{t("email")}</label>
+              <label className="label">{t("email")}</label>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} dir="ltr" style={inputStyle} />
             </div>
 
             <div>
-              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 4 }}>
+              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 6 }}>
                 <a href="/forgot-password" style={{ fontSize: "0.75rem", color: "#6366f1", fontWeight: 600, textDecoration: "none" }}>
                   {t("forgotPassword")}
                 </a>
@@ -204,13 +199,8 @@ export default function LoginPage() {
 
             <button
               onClick={submitCustomer} disabled={custLoading}
-              style={{
-                width: "100%", padding: "14px", borderRadius: 16, border: "none",
-                background: "linear-gradient(135deg, #6366f1, #4338ca)",
-                color: "white", fontSize: "1rem", fontWeight: 700, cursor: "pointer",
-                opacity: custLoading ? 0.6 : 1,
-                boxShadow: "0 8px 24px rgba(99,102,241,0.35)",
-              }}
+              className="btn-primary"
+              style={{ opacity: custLoading ? 0.6 : 1, border: "none", cursor: "pointer" }}
             >
               {custLoading ? t("signingIn") : t("login")}
             </button>
@@ -226,14 +216,14 @@ export default function LoginPage() {
         {tab === "rider" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div style={{
-              background: "#eef2ff", border: "1.5px solid #c7d2fe", borderRadius: 14,
+              background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 12,
               padding: "12px 16px", textAlign: "center",
             }}>
               <p style={{ color: "#4338ca", fontSize: "0.85rem", fontWeight: 500 }}>{t("riderLoginInfo")}</p>
             </div>
 
             <div>
-              <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: 4, display: "block" }}>{t("phone")}</label>
+              <label className="label">{t("phone")}</label>
               <input type="tel" value={riderPhone} onChange={(e) => setRiderPhone(e.target.value)} dir="ltr" style={inputStyle} />
             </div>
 
@@ -241,13 +231,8 @@ export default function LoginPage() {
 
             <button
               onClick={submitRider} disabled={riderLoading}
-              style={{
-                width: "100%", padding: "14px", borderRadius: 16, border: "none",
-                background: "linear-gradient(135deg, #6366f1, #4338ca)",
-                color: "white", fontSize: "1rem", fontWeight: 700, cursor: "pointer",
-                opacity: riderLoading ? 0.6 : 1,
-                boxShadow: "0 8px 24px rgba(99,102,241,0.35)",
-              }}
+              className="btn-primary"
+              style={{ opacity: riderLoading ? 0.6 : 1, border: "none", cursor: "pointer" }}
             >
               {riderLoading ? t("signingIn") : t("login")}
             </button>

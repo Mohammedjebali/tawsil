@@ -123,37 +123,30 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <div dir={dir} className="min-h-screen">
       {/* Header */}
       <header style={{
-        background: "rgba(255,255,255,0.88)",
-        backdropFilter: "blur(20px) saturate(200%)",
-        WebkitBackdropFilter: "blur(20px) saturate(200%)",
-        borderBottom: "1px solid rgba(203,213,225,0.3)",
-        boxShadow: "0 1px 0 rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.04)",
-        padding: "12px 16px",
+        background: "#ffffff",
+        borderBottom: "1px solid #E2E8F0",
+        padding: "14px 16px",
         position: "sticky", top: 0, zIndex: 40,
         display: "flex", alignItems: "center", justifyContent: "space-between",
       }}>
         <a href="/" className="no-underline">
-          <span style={{
-            fontWeight: 800, fontSize: "1.25rem", letterSpacing: "-0.04em",
-            background: "linear-gradient(135deg, #6366f1, #4338ca)",
-            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-          }}>Tawsil</span>
+          <span style={{ fontWeight: 800, fontSize: "1.375rem", letterSpacing: "-0.04em", color: "#6366f1" }}>
+            Tawsil
+          </span>
         </a>
 
-        <div className="flex items-center gap-2">
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {/* Language switcher */}
-          <div className="flex bg-slate-100 rounded-lg p-0.5">
-            {LANGS.map((l) => (
-              <button
-                key={l.code}
-                onClick={() => setLang(l.code)}
-                className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
-                  lang === l.code
-                    ? "bg-white text-indigo-600 shadow-sm"
-                    : "text-slate-500 hover:text-slate-700"
-                }`}
-              >
-                {l.label}
+          <div style={{ display: "flex", gap: 4 }}>
+            {(["ar","fr","en"] as const).map(l => (
+              <button key={l} onClick={() => setLang(l)} style={{
+                padding: "4px 10px", borderRadius: 8, fontSize: "12px", fontWeight: 600,
+                border: `1px solid ${lang === l ? "#6366f1" : "#E2E8F0"}`,
+                background: lang === l ? "#eef2ff" : "transparent",
+                color: lang === l ? "#6366f1" : "#94a3b8",
+                transition: "all 0.15s", cursor: "pointer",
+              }}>
+                {l === "ar" ? "ع" : l === "fr" ? "FR" : "EN"}
               </button>
             ))}
           </div>
@@ -162,10 +155,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           {ready && role && (
             <button
               onClick={logout}
-              className="p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
+              style={{
+                padding: 8, borderRadius: 8, color: "#94a3b8", background: "transparent",
+                border: "none", cursor: "pointer", display: "flex", alignItems: "center",
+              }}
               title={t("logout")}
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut size={16} />
             </button>
           )}
         </div>
@@ -178,37 +174,29 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Bottom nav for riders */}
       {ready && role === "rider" && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 pb-5 px-5 flex justify-center" style={{ pointerEvents: "none" }}>
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 40, padding: "0 16px 20px", display: "flex", justifyContent: "center" }}>
           <nav style={{
-            pointerEvents: "auto",
-            width: "100%",
-            maxWidth: "360px",
-            background: "rgba(255,255,255,0.88)",
-            backdropFilter: "blur(20px) saturate(200%)",
-            WebkitBackdropFilter: "blur(20px) saturate(200%)",
-            border: "1px solid rgba(255,255,255,0.7)",
-            boxShadow: "0 8px 32px rgba(99,102,241,0.15), 0 2px 8px rgba(0,0,0,0.06)",
+            width: "100%", maxWidth: "360px",
+            background: "#ffffff",
+            border: "1px solid #E2E8F0",
             borderRadius: "999px",
-            padding: "6px 12px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-around",
+            padding: "6px 8px",
+            display: "flex", alignItems: "center", justifyContent: "space-around",
+            boxShadow: "0 4px 16px rgb(0 0 0 / 0.08)",
           }}>
             {riderTabs.map(tab => {
               const active = pathname === tab.href || (tab.href !== "/" && pathname.startsWith(tab.href));
               return (
                 <Link key={tab.href} href={tab.href}
-                  onClick={() => { if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(30); }}
+                  onClick={() => { if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(20); }}
                   style={{
-                    display: "flex", flexDirection: "column", alignItems: "center", gap: "2px",
-                    padding: "8px 14px", borderRadius: "999px", transition: "all 0.2s ease",
-                    background: active ? "rgba(99,102,241,0.1)" : "transparent",
-                    transform: active ? "scale(1.08)" : "scale(1)",
-                    boxShadow: active ? "0 0 12px rgba(99,102,241,0.2)" : "none",
-                    textDecoration: "none",
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: "3px",
+                    padding: "8px 16px", borderRadius: "999px",
+                    background: active ? "#eef2ff" : "transparent",
+                    transition: "all 0.15s ease", textDecoration: "none",
                   }}>
-                  <tab.icon size={20} style={{ color: active ? "#6366f1" : "#94a3b8", transition: "color 0.2s" }} />
-                  <span style={{ fontSize: "10px", fontWeight: active ? 700 : 500, color: active ? "#6366f1" : "#94a3b8", transition: "color 0.2s" }}>
+                  <tab.icon size={19} style={{ color: active ? "#6366f1" : "#94a3b8" }} />
+                  <span style={{ fontSize: "10px", fontWeight: active ? 700 : 500, color: active ? "#6366f1" : "#94a3b8" }}>
                     {t(tab.labelKey)}
                   </span>
                 </Link>
@@ -220,37 +208,29 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Bottom nav for customers */}
       {ready && role === "customer" && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 pb-5 px-5 flex justify-center" style={{ pointerEvents: "none" }}>
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 40, padding: "0 16px 20px", display: "flex", justifyContent: "center" }}>
           <nav style={{
-            pointerEvents: "auto",
-            width: "100%",
-            maxWidth: "360px",
-            background: "rgba(255,255,255,0.88)",
-            backdropFilter: "blur(20px) saturate(200%)",
-            WebkitBackdropFilter: "blur(20px) saturate(200%)",
-            border: "1px solid rgba(255,255,255,0.7)",
-            boxShadow: "0 8px 32px rgba(99,102,241,0.15), 0 2px 8px rgba(0,0,0,0.06)",
+            width: "100%", maxWidth: "360px",
+            background: "#ffffff",
+            border: "1px solid #E2E8F0",
             borderRadius: "999px",
-            padding: "6px 12px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-around",
+            padding: "6px 8px",
+            display: "flex", alignItems: "center", justifyContent: "space-around",
+            boxShadow: "0 4px 16px rgb(0 0 0 / 0.08)",
           }}>
             {customerTabs.map(tab => {
               const active = pathname === tab.href || (tab.href !== "/" && pathname.startsWith(tab.href));
               return (
                 <Link key={tab.href} href={tab.href}
-                  onClick={() => { if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(30); }}
+                  onClick={() => { if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(20); }}
                   style={{
-                    display: "flex", flexDirection: "column", alignItems: "center", gap: "2px",
-                    padding: "8px 14px", borderRadius: "999px", transition: "all 0.2s ease",
-                    background: active ? "rgba(99,102,241,0.1)" : "transparent",
-                    transform: active ? "scale(1.08)" : "scale(1)",
-                    boxShadow: active ? "0 0 12px rgba(99,102,241,0.2)" : "none",
-                    textDecoration: "none",
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: "3px",
+                    padding: "8px 16px", borderRadius: "999px",
+                    background: active ? "#eef2ff" : "transparent",
+                    transition: "all 0.15s ease", textDecoration: "none",
                   }}>
-                  <tab.icon size={20} style={{ color: active ? "#6366f1" : "#94a3b8", transition: "color 0.2s" }} />
-                  <span style={{ fontSize: "10px", fontWeight: active ? 700 : 500, color: active ? "#6366f1" : "#94a3b8", transition: "color 0.2s" }}>
+                  <tab.icon size={19} style={{ color: active ? "#6366f1" : "#94a3b8" }} />
+                  <span style={{ fontSize: "10px", fontWeight: active ? 700 : 500, color: active ? "#6366f1" : "#94a3b8" }}>
                     {t(tab.labelKey)}
                   </span>
                 </Link>

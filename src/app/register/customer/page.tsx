@@ -93,38 +93,33 @@ export default function CustomerRegister() {
   if (success) {
     return (
       <div style={{
-        minHeight: "100dvh",
-        background: "linear-gradient(160deg, #4338ca 0%, #6366f1 40%, #7c3aed 100%)",
+        minHeight: "100dvh", background: "#F8FAFC",
         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
         padding: "24px",
       }}>
         <div style={{
-          width: "80px", height: "80px", borderRadius: "50%",
-          background: "rgba(255,255,255,0.15)", backdropFilter: "blur(10px)",
-          border: "1.5px solid rgba(255,255,255,0.3)",
+          width: "72px", height: "72px", borderRadius: "50%",
+          background: "#eef2ff", border: "1px solid #c7d2fe",
           display: "flex", alignItems: "center", justifyContent: "center",
           marginBottom: "20px",
         }}>
-          <span style={{ fontSize: "2.5rem" }}>📧</span>
+          <span style={{ fontSize: "2rem" }}>📧</span>
         </div>
-        <h1 style={{ color: "white", fontSize: "1.75rem", fontWeight: 800, marginBottom: 8, textAlign: "center" }}>
+        <h1 style={{ color: "#0f172a", fontSize: "1.5rem", fontWeight: 800, marginBottom: 8, textAlign: "center" }}>
           {t("checkGmail")}
         </h1>
-        <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.875rem", textAlign: "center", maxWidth: 320, marginBottom: 32 }}>
+        <p style={{ color: "#64748b", fontSize: "0.875rem", textAlign: "center", maxWidth: 320, marginBottom: 32 }}>
           {t("confirmationSent")}
         </p>
         <button
           onClick={resend}
           disabled={resendLoading}
-          style={{
-            background: "rgba(255,255,255,0.15)", border: "1.5px solid rgba(255,255,255,0.3)",
-            color: "white", padding: "12px 32px", borderRadius: 16, fontSize: "0.875rem",
-            fontWeight: 600, cursor: "pointer", backdropFilter: "blur(10px)",
-          }}
+          className="btn-secondary"
+          style={{ maxWidth: 240, cursor: "pointer" }}
         >
           {resendLoading ? t("sending") : resendDone ? t("emailResent") : t("resendEmail")}
         </button>
-        <a href="/login" style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.875rem", marginTop: 16, textDecoration: "none" }}>
+        <a href="/login" style={{ color: "#6366f1", fontSize: "0.875rem", marginTop: 16, textDecoration: "none", fontWeight: 600 }}>
           {t("backToLogin")}
         </a>
       </div>
@@ -132,40 +127,35 @@ export default function CustomerRegister() {
   }
 
   const inputStyle = (hasError?: boolean): React.CSSProperties => ({
-    width: "100%", padding: "14px 16px", borderRadius: 14,
-    border: `1.5px solid ${hasError ? "#f87171" : "#e2e8f0"}`,
-    fontSize: "0.9rem", outline: "none", background: "#f8fafc",
-    transition: "border-color 0.2s",
+    width: "100%", padding: "12px 16px", borderRadius: 10,
+    border: `1px solid ${hasError ? "#f87171" : "#E2E8F0"}`,
+    fontSize: "0.9rem", outline: "none", background: "#ffffff",
+    color: "#0f172a", transition: "border-color 0.15s",
   });
 
   return (
     <div style={{
-      minHeight: "100dvh",
-      background: "linear-gradient(160deg, #4338ca 0%, #6366f1 40%, #7c3aed 100%)",
-      position: "relative", overflow: "hidden",
+      minHeight: "100dvh", background: "#F8FAFC",
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      padding: "24px 16px",
     }}>
-      {/* Decorative circles */}
-      <div style={{ position: "absolute", top: "-60px", right: "-60px", width: "200px", height: "200px", borderRadius: "50%", background: "rgba(255,255,255,0.07)" }} />
-      <div style={{ position: "absolute", top: "80px", left: "-40px", width: "120px", height: "120px", borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
-
-      {/* Top section */}
-      <div style={{ padding: "60px 24px 32px", textAlign: "center" }}>
-        <div style={{ fontSize: "3rem", marginBottom: 12 }}>🛵</div>
-        <div style={{ color: "white", fontSize: "1.75rem", fontWeight: 800, letterSpacing: "-0.04em" }}>Tawsil</div>
-        <div style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.875rem", marginTop: 6 }}>إنشاء حساب جديد</div>
+      {/* Logo */}
+      <div style={{ marginBottom: 32, textAlign: "center" }}>
+        <div style={{ fontSize: "2rem", fontWeight: 900, color: "#6366f1", letterSpacing: "-0.05em" }}>Tawsil</div>
+        <div style={{ fontSize: "0.875rem", color: "#64748b", marginTop: 6 }}>إنشاء حساب جديد</div>
       </div>
 
-      {/* White card */}
+      {/* Card */}
       <div style={{
-        background: "white", borderRadius: "28px 28px 0 0",
-        padding: "32px 24px", minHeight: "60vh",
-        boxShadow: "0 -20px 60px rgba(0,0,0,0.15)",
+        background: "#ffffff", border: "1px solid #E2E8F0", borderRadius: 20,
+        padding: "28px 24px", width: "100%", maxWidth: 400,
+        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.07)",
       }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {/* Name row */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <div>
-              <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: 4, display: "block" }}>{t("firstName")} *</label>
+              <label className="label">{t("firstName")} *</label>
               <input
                 type="text" value={firstName}
                 onChange={(e) => { setFirstName(e.target.value); setErrors((p) => ({ ...p, firstName: "" })); }}
@@ -174,7 +164,7 @@ export default function CustomerRegister() {
               {errors.firstName && <p style={{ color: "#ef4444", fontSize: "0.75rem", marginTop: 4 }}>{errors.firstName}</p>}
             </div>
             <div>
-              <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: 4, display: "block" }}>{t("lastName")} *</label>
+              <label className="label">{t("lastName")} *</label>
               <input
                 type="text" value={lastName}
                 onChange={(e) => { setLastName(e.target.value); setErrors((p) => ({ ...p, lastName: "" })); }}
@@ -186,7 +176,7 @@ export default function CustomerRegister() {
 
           {/* Email */}
           <div>
-            <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: 4, display: "block" }}>{t("email")} *</label>
+            <label className="label">{t("email")} *</label>
             <input
               type="email" value={email} dir="ltr"
               onChange={(e) => { setEmail(e.target.value); setErrors((p) => ({ ...p, email: "" })); }}
@@ -197,7 +187,7 @@ export default function CustomerRegister() {
 
           {/* Phone */}
           <div>
-            <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: 4, display: "block" }}>{t("phone")} *</label>
+            <label className="label">{t("phone")} *</label>
             <input
               type="tel" value={phone} dir="ltr" maxLength={13}
               onChange={(e) => {
@@ -212,7 +202,7 @@ export default function CustomerRegister() {
 
           {/* Password */}
           <div>
-            <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: 4, display: "block" }}>{t("password")} *</label>
+            <label className="label">{t("password")} *</label>
             <div style={{ position: "relative" }}>
               <input
                 type={showPw ? "text" : "password"} value={password} dir="ltr"
@@ -229,7 +219,7 @@ export default function CustomerRegister() {
 
           {/* Confirm password */}
           <div>
-            <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: 4, display: "block" }}>{t("confirmPassword")} *</label>
+            <label className="label">{t("confirmPassword")} *</label>
             <div style={{ position: "relative" }}>
               <input
                 type={showConfirmPw ? "text" : "password"} value={confirmPw} dir="ltr"
@@ -246,9 +236,7 @@ export default function CustomerRegister() {
 
           {/* Referral code */}
           <div>
-            <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
-              🎁 {t("referralCodeOptional")}
-            </label>
+            <label className="label">{t("referralCodeOptional")}</label>
             <input
               type="text" value={referralCode} dir="ltr" maxLength={6}
               onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
@@ -261,13 +249,8 @@ export default function CustomerRegister() {
           {/* Submit */}
           <button
             onClick={submit} disabled={loading}
-            style={{
-              width: "100%", padding: "14px", borderRadius: 16, border: "none",
-              background: "linear-gradient(135deg, #6366f1, #4338ca)",
-              color: "white", fontSize: "1rem", fontWeight: 700, cursor: "pointer",
-              opacity: loading ? 0.6 : 1, marginTop: 4,
-              boxShadow: "0 8px 24px rgba(99,102,241,0.35)",
-            }}
+            className="btn-primary"
+            style={{ opacity: loading ? 0.6 : 1, marginTop: 4, border: "none", cursor: "pointer" }}
           >
             {loading ? t("signingUp") : t("register")}
           </button>

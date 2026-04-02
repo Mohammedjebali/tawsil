@@ -33,25 +33,25 @@ const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string; s
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  restaurant: "#fef3c7",
-  supermarket: "#dcfce7",
-  pharmacy: "#ede9fe",
-  bakery: "#fce7f3",
-  grocery: "#d1fae5",
-  shop: "#e0e7ff",
-  cafe: "#fef9c3",
-  other: "#eef2ff",
+  restaurant: "#fff7ed",
+  supermarket: "#f0fdf4",
+  pharmacy: "#eff6ff",
+  bakery: "#fdf4ff",
+  grocery: "#f0fdf4",
+  shop: "#f8fafc",
+  cafe: "#fff7ed",
+  other: "#f8fafc",
 };
 
 const CATEGORY_ICON_COLORS: Record<string, string> = {
-  restaurant: "#d97706",
+  restaurant: "#ea580c",
   supermarket: "#16a34a",
-  pharmacy: "#7c3aed",
-  bakery: "#db2777",
-  grocery: "#059669",
-  shop: "#4f46e5",
-  cafe: "#ca8a04",
-  other: "#6366f1",
+  pharmacy: "#2563eb",
+  bakery: "#a21caf",
+  grocery: "#16a34a",
+  shop: "#475569",
+  cafe: "#ea580c",
+  other: "#475569",
 };
 
 function LandingPage() {
@@ -284,39 +284,27 @@ export default function OrderPage() {
       {/* Step 1: Pick store */}
       {step === "store" && (
         <div>
-          {/* Personal greeting card */}
-          <div style={{
-            background: "linear-gradient(135deg, #6366f1 0%, #4338ca 50%, #7c3aed 100%)",
-            borderRadius: "1.5rem", padding: "1.5rem", marginBottom: "1.5rem", color: "white",
-            position: "relative", overflow: "hidden",
-            boxShadow: "0 12px 40px rgba(99,102,241,0.35)",
-          }}>
-            <div style={{
-              position: "absolute", top: "-30px", right: "-30px",
-              width: "140px", height: "140px", borderRadius: "50%",
-              background: "rgba(255,255,255,0.08)",
-            }} />
-            <div style={{
-              position: "absolute", bottom: "-20px", left: "30%",
-              width: "80px", height: "80px", borderRadius: "50%",
-              background: "rgba(255,255,255,0.05)",
-            }} />
-            <div style={{ fontSize: "1.25rem", marginBottom: 4 }}>🛵</div>
-            {user && <div style={{ fontSize: "1.25rem", fontWeight: 800, letterSpacing: "-0.02em" }}>{t("hi")} {user.name?.split(" ")[0]} 👋</div>}
-            <div style={{ fontSize: "0.8rem", opacity: 0.7, marginTop: 4 }}>{t("storeSubtitle")}</div>
+          {/* Greeting — plain text */}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "#0f172a", letterSpacing: "-0.04em" }}>
+              {user ? `${t("hi")}, ${user.name?.split(" ")[0]}` : t("appName")}
+            </div>
+            <div style={{ fontSize: "0.875rem", color: "#64748b", marginTop: 4 }}>
+              {t("appTagline")}
+            </div>
           </div>
 
           <StepProgress current={1} total={4} />
 
           {/* Search bar */}
-          <div style={{ position: "relative", marginBottom: 16 }}>
+          <div style={{ position: "relative", marginBottom: 20 }}>
             <Search size={16} style={{ position: "absolute", left: isRtl ? "auto" : 14, right: isRtl ? 14 : "auto", top: "50%", transform: "translateY(-50%)", color: "#94a3b8" }} />
             <input
               style={{
                 width: "100%", paddingLeft: isRtl ? 16 : 40, paddingRight: isRtl ? 40 : 16,
-                paddingTop: 12, paddingBottom: 12,
-                background: "rgba(255,255,255,0.8)", border: "1.5px solid rgba(203,213,225,0.6)",
-                borderRadius: 999, fontSize: 14, outline: "none",
+                paddingTop: 11, paddingBottom: 11,
+                background: "#ffffff", border: "1px solid #E2E8F0",
+                borderRadius: 12, fontSize: 14, outline: "none", color: "#0f172a",
               }}
               placeholder={t("searchStores")}
               value={storeSearch}
@@ -351,26 +339,25 @@ export default function OrderPage() {
                     key={store.id}
                     onClick={() => { setSelectedStore(store); setCustomStore(""); setStep("details"); }}
                     className="card-hover"
-                    style={{ display: "flex", alignItems: "center", gap: 16, padding: 16, width: "100%", textAlign: isRtl ? "right" : "left", cursor: "pointer", background: "white", border: "none" }}
+                    style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", textAlign: isRtl ? "right" : "left", cursor: "pointer" }}
                   >
-                    {/* Category icon square */}
+                    {/* Icon square */}
                     <div style={{
-                      width: 56, height: 56, borderRadius: 16, flexShrink: 0,
-                      background: bgColor,
-                      display: "flex", alignItems: "center", justifyContent: "center",
+                      width: 52, height: 52, borderRadius: 12, flexShrink: 0,
+                      background: bgColor, display: "flex", alignItems: "center", justifyContent: "center",
+                      border: "1px solid #E2E8F0",
                     }}>
                       {store.image_url
-                        ? <img src={store.image_url} style={{ width: 40, height: 40, borderRadius: 10, objectFit: "cover" }} alt="" />
-                        : <IconComp size={24} style={{ color: iconColor }} />}
+                        ? <img src={store.image_url} style={{ width: 36, height: 36, borderRadius: 8, objectFit: "cover" }} alt="" />
+                        : <IconComp size={22} style={{ color: iconColor }} />}
                     </div>
                     {/* Info */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: "1rem", color: "#0f172a" }}>{store.name}</div>
-                      <div style={{ fontSize: "0.8rem", color: "#64748b", marginTop: 2 }}>{t(store.category)}</div>
-                      <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 4 }}>⏱ ~15-25 min</div>
+                      <div style={{ fontWeight: 700, fontSize: "0.9375rem", color: "#0f172a", letterSpacing: "-0.02em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{store.name}</div>
+                      <div style={{ fontSize: "0.75rem", color: "#64748b", marginTop: 2, fontWeight: 500 }}>{t(store.category)}</div>
+                      <div style={{ fontSize: "0.7rem", color: "#94a3b8", marginTop: 3 }}>⏱ ~15-25 min</div>
                     </div>
-                    {/* Arrow */}
-                    <ChevronRight size={18} style={{ color: "#cbd5e1", flexShrink: 0 }} />
+                    <ChevronRight size={16} style={{ color: "#cbd5e1", flexShrink: 0 }} />
                   </button>
                 );
               })}

@@ -17,118 +17,110 @@
   html { -webkit-text-size-adjust: 100%; }
   button, a { touch-action: manipulation; }
   body {
-    font-family: var(--font-inter), system-ui, sans-serif;
-    letter-spacing: -0.02em;
+    background: #F8FAFC;
     color: #0f172a;
-    background: linear-gradient(-45deg, #eef2ff, #f0f9ff, #f5f3ff, #faf5ff);
-    background-size: 400% 400%;
-    animation: meshMove 12s ease infinite;
+    font-family: var(--font-inter), system-ui, sans-serif;
+    letter-spacing: -0.01em;
     min-height: 100dvh;
     @apply antialiased;
     overflow-x: hidden;
   }
 }
 
-@keyframes meshMove {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
 @layer components {
   .card {
-    background: rgba(255, 255, 255, 0.72);
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.08), 0 2px 8px rgba(0,0,0,0.04);
-    border-radius: 1.25rem;
+    background: #ffffff;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
     padding: 1rem;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
   }
   .card-hover {
-    background: rgba(255, 255, 255, 0.72);
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.08);
-    border-radius: 1.25rem;
+    background: #ffffff;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
     padding: 1.25rem;
-    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
     cursor: pointer;
   }
   .card-hover:hover {
-    box-shadow: 0 12px 40px rgba(99, 102, 241, 0.18);
-    border-color: rgba(99, 102, 241, 0.3);
-    transform: translateY(-1px);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+    border-color: #c7d2fe;
   }
   .glass-card {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(20px) saturate(200%);
-    -webkit-backdrop-filter: blur(20px) saturate(200%);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    box-shadow: 0 20px 60px rgba(99, 102, 241, 0.12);
-    border-radius: 1.5rem;
+    background: #ffffff;
+    border: 1px solid #E2E8F0;
+    border-radius: 20px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.07);
   }
   .mission-card {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(99, 102, 241, 0.2);
-    box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.1), 0 8px 32px rgba(99, 102, 241, 0.12);
-    border-radius: 1.25rem;
+    background: #ffffff;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
     padding: 1.25rem;
-    transition: all 0.2s ease;
-  }
-  .mission-card:hover {
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3), 0 12px 40px rgba(99, 102, 241, 0.2);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.07);
+    border-left: 3px solid #6366f1;
+    transition: box-shadow 0.15s ease;
   }
   .btn-primary {
     width: 100%;
-    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    background: #6366f1;
     color: white;
     font-weight: 600;
     padding: 0.875rem 1.5rem;
-    border-radius: 0.875rem;
-    transition: all 0.2s ease;
+    border-radius: 12px;
+    transition: background 0.15s ease, transform 0.1s ease;
     font-size: 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
     letter-spacing: -0.01em;
   }
-  .btn-primary:hover {
-    background: linear-gradient(135deg, #4f46e5, #4338ca);
-    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
-  }
-  .btn-primary:active {
-    transform: scale(0.97);
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
-  }
+  .btn-primary:hover { background: #4f46e5; }
+  .btn-primary:active { transform: scale(0.98); }
   .btn-secondary {
     width: 100%;
-    background: rgba(255,255,255,0.8);
-    border: 1px solid rgba(203, 213, 225, 0.8);
-    color: #334155;
+    background: #ffffff;
+    border: 1px solid #E2E8F0;
+    color: #475569;
     font-weight: 600;
     padding: 0.875rem 1.5rem;
-    border-radius: 0.875rem;
-    transition: all 0.2s ease;
+    border-radius: 12px;
+    transition: all 0.15s ease;
     font-size: 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
   }
-  .btn-secondary:hover {
-    border-color: rgba(99, 102, 241, 0.4);
-    background: rgba(238, 242, 255, 0.6);
-  }
+  .btn-secondary:hover { border-color: #6366f1; color: #6366f1; background: #eef2ff; }
   .btn-ghost { @apply w-full text-slate-500 hover:text-slate-700 hover:bg-slate-100 font-medium py-3 px-4 rounded-xl transition-all duration-200 text-sm flex items-center justify-center gap-2; }
-  .input { @apply w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 outline-none transition-all text-sm; background: rgba(255,255,255,0.8); }
-  .input:focus { @apply ring-2 ring-indigo-500 border-indigo-500; }
-  .label { @apply text-sm font-semibold text-slate-700 mb-1.5 block; }
+  .input {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    color: #0f172a;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    outline: none;
+  }
+  .input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgb(99 102 241 / 0.1);
+  }
+  .label {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 6px;
+    letter-spacing: 0;
+  }
   .badge { @apply inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full; }
   .badge-pending { @apply bg-amber-50 text-amber-700 border border-amber-200; }
   .badge-accepted { @apply bg-blue-50 text-blue-700 border border-blue-200; }
@@ -136,53 +128,11 @@
   .badge-delivered { @apply bg-emerald-50 text-emerald-700 border border-emerald-200; }
   .badge-cancelled { @apply bg-red-50 text-red-700 border border-red-200; }
   .skeleton {
-    background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
-    border-radius: 0.5rem;
+    border-radius: 8px;
   }
-}
-
-/* Floating label inputs */
-.input-group {
-  position: relative;
-}
-.input-floating {
-  width: 100%;
-  background: rgba(238, 242, 255, 0.5);
-  border: 1.5px solid rgba(203, 213, 225, 0.6);
-  border-radius: 0.875rem;
-  padding: 1.25rem 1rem 0.5rem 1rem;
-  font-size: 1rem;
-  color: #0f172a;
-  transition: all 0.2s ease;
-  outline: none;
-}
-.input-floating:focus {
-  border-color: #6366f1;
-  background: rgba(238, 242, 255, 0.7);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
-}
-.input-floating-label {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.9375rem;
-  color: #94a3b8;
-  pointer-events: none;
-  transition: all 0.2s ease;
-  font-weight: 500;
-}
-.input-floating:focus ~ .input-floating-label,
-.input-floating:not(:placeholder-shown) ~ .input-floating-label {
-  top: 0.65rem;
-  transform: translateY(0);
-  font-size: 0.6875rem;
-  color: #6366f1;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
 }
 
 .btn-primary:disabled { @apply bg-slate-200 text-slate-400 cursor-not-allowed shadow-none; }
