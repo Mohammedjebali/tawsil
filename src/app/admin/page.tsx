@@ -513,9 +513,9 @@ export default function AdminPage() {
                       <button
                         onClick={() => addPoints(c.email)}
                         disabled={pointsUpdating === c.email}
-                        className="text-xs font-semibold px-4 py-2 rounded-lg bg-blue-700 text-white hover:bg-blue-800 transition-colors disabled:opacity-50"
+                        className="text-xs font-semibold px-3 py-2 rounded-lg bg-blue-700 text-white hover:bg-blue-800 transition-colors disabled:opacity-50"
                       >
-                        {pointsUpdating === c.email ? "..." : "Add points"}
+                        {pointsUpdating === c.email ? "..." : "+/- pts"}
                       </button>
                     </div>
                   </div>

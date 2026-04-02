@@ -10,12 +10,12 @@ export default function RewardsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchPoints() {
-      const raw = localStorage.getItem("tawsil_user");
-      if (!raw) { window.location.href = "/login"; return; }
-      const user = JSON.parse(raw);
-      if (user.role !== "customer") { window.location.href = "/"; return; }
+    const raw = localStorage.getItem("tawsil_user");
+    if (!raw) { window.location.href = "/login"; return; }
+    const user = JSON.parse(raw);
+    if (user.role !== "customer") { window.location.href = "/"; return; }
 
+    async function fetchPoints() {
       try {
         const res = await fetch(`/api/customers?email=${encodeURIComponent(user.email)}`);
         const data = await res.json();
@@ -24,6 +24,9 @@ export default function RewardsPage() {
       setLoading(false);
     }
     fetchPoints();
+    // Poll every 10s so customer sees admin point updates instantly
+    const interval = setInterval(fetchPoints, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
