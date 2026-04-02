@@ -156,37 +156,27 @@ export default function RiderRegister() {
         </div>
 
         <div className="card space-y-4">
-          <div>
-            <label className="label">
-              {t("name")} <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <User className="absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" style={{ left: '14px' }} />
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={t("fullName")}
-                className="input !pl-10"
-              />
-            </div>
+          <div className="input-group">
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder=" "
+              className="input-floating"
+            />
+            <label className="input-floating-label">{t("name")} *</label>
           </div>
 
-          <div>
-            <label className="label">
-              {t("phone")} <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <Phone className="absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" style={{ left: '14px' }} />
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="2X XXX XXX"
-                className="input !pl-10"
-                dir="ltr"
-              />
-            </div>
+          <div className="input-group">
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder=" "
+              className="input-floating"
+              dir="ltr"
+            />
+            <label className="input-floating-label">{t("phone")} *</label>
           </div>
 
           <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">

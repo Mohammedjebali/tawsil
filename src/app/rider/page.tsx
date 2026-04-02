@@ -47,6 +47,87 @@ function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): nu
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
+function SlideToAccept({ onAccept, disabled, label }: { onAccept: () => void; disabled: boolean; label: string }) {
+  const [progress, setProgress] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const [trackWidth, setTrackWidth] = useState(300);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const startXRef = useRef(0);
+  const thumbSize = 48;
+
+  useEffect(() => {
+    if (trackRef.current) setTrackWidth(trackRef.current.clientWidth);
+  }, []);
+
+  const maxOffset = trackWidth - thumbSize - 8;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (disabled) return;
+    startXRef.current = e.touches[0].clientX;
+    setDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!dragging) return;
+    const diff = e.touches[0].clientX - startXRef.current;
+    const pct = Math.min(Math.max(diff / maxOffset, 0), 1);
+    setProgress(pct);
+    if (pct >= 0.92) {
+      setDragging(false);
+      setProgress(1);
+      if (navigator.vibrate) navigator.vibrate([50, 30, 100]);
+      setTimeout(() => { setProgress(0); onAccept(); }, 150);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (progress < 0.92) { setDragging(false); setProgress(0); }
+  };
+
+  const thumbOffset = 4 + progress * maxOffset;
+
+  return (
+    <div
+      ref={trackRef}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      style={{
+        position: "relative", height: "56px", borderRadius: "999px",
+        background: "rgba(99,102,241,0.08)", border: "1.5px solid rgba(99,102,241,0.2)",
+        overflow: "hidden", userSelect: "none", touchAction: "none",
+      }}
+    >
+      <div style={{
+        position: "absolute", inset: 0, borderRadius: "999px",
+        background: "linear-gradient(90deg, rgba(99,102,241,0.1), rgba(99,102,241,0.25))",
+        width: `${thumbOffset + thumbSize / 2}px`,
+        transition: dragging ? "none" : "width 0.3s ease",
+      }} />
+      <div style={{
+        position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: "13px", fontWeight: 600, color: "#6366f1",
+        opacity: Math.max(0, 1 - progress * 2.5), pointerEvents: "none",
+      }}>
+        {disabled ? "..." : label}
+      </div>
+      <div style={{
+        position: "absolute", top: "4px",
+        left: `${thumbOffset}px`,
+        width: `${thumbSize}px`, height: `${thumbSize}px`, borderRadius: "999px",
+        background: disabled ? "#cbd5e1" : "linear-gradient(135deg, #6366f1, #4f46e5)",
+        boxShadow: disabled ? "none" : "0 4px 16px rgba(99,102,241,0.4)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        transition: dragging ? "none" : "left 0.3s ease",
+      }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
 export default function RiderPage() {
   const { t } = useLang();
   const [rider, setRider] = useState<RiderProfile | null>(null);
@@ -392,7 +473,7 @@ export default function RiderPage() {
             }).map((order) => {const distToStore = riderPos && order.store_lat && order.store_lng
                 ? haversineKm(riderPos.lat, riderPos.lng, order.store_lat, order.store_lng)
                 : null; return (
-            <div key={order.id} className="card">
+            <div key={order.id} className="mission-card" style={{ borderLeft: "3px solid #6366f1" }}>
               <div className="flex justify-between items-start mb-3">
                 <span className="text-xs text-slate-400 font-mono" dir="ltr">{order.order_number}</span>
                 <span className="font-bold text-indigo-600 text-lg">{formatFee(order.delivery_fee)}</span>
@@ -435,17 +516,15 @@ export default function RiderPage() {
                 <div className="text-sm text-slate-700 whitespace-pre-wrap">{order.items_description}</div>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 mb-3">
                 <button
                   onClick={() => passOrder(order.id)}
                   className="border border-slate-300 text-slate-500 px-3 py-1.5 rounded-lg text-xs"
                 >
                   {t("passOrder")}
                 </button>
-                <button onClick={() => acceptOrder(order.id)} className="btn-primary flex-1">
-                  {t("acceptOrder")}
-                </button>
               </div>
+              <SlideToAccept onAccept={() => acceptOrder(order.id)} disabled={false} label={t("slideToAccept")} />
             </div>
           );})}  
         </div>
@@ -460,7 +539,7 @@ export default function RiderPage() {
             const isAccepted = order.status === "accepted";
             const isPickedUp = order.status === "picked_up";
             return (
-              <div key={order.id} className="card">
+              <div key={order.id} className="mission-card" style={{ borderLeft: "3px solid #6366f1" }}>
                 <div className="flex justify-between items-start mb-3">
                   <span className="text-xs text-slate-400 font-mono" dir="ltr">{order.order_number}</span>
                   <span className="font-bold text-indigo-600">{formatFee(order.delivery_fee)}</span>

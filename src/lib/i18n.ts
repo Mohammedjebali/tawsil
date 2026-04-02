@@ -279,6 +279,7 @@ const translations: Record<string, Record<Lang, string>> = {
   reactivate: { ar: "إعادة التفعيل", fr: "Réactiver", en: "Reactivate" },
   noActiveBroadcast: { ar: "لا يوجد إعلان نشط", fr: "Aucune annonce active", en: "No active broadcast" },
   broadcastHistory: { ar: "السجل", fr: "Historique", en: "History" },
+  slideToAccept: { ar: "اسحب للقبول ←", fr: "Glisser pour accepter →", en: "Slide to accept →" },
 };
 
 export function t(lang: Lang, key: string): string {

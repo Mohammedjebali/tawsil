@@ -142,33 +142,37 @@ export default function CustomerRegister() {
           {/* First name + Last name */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="label">{t("firstName")} *</label>
-              <input
-                type="text"
-                value={firstName}
-                onChange={(e) => {
-                  setFirstName(e.target.value);
-                  setErrors((prev) => ({ ...prev, firstName: "" }));
-                }}
-                placeholder="Mohamed"
-                className={`input ${errors.firstName ? "border-red-400 focus:border-red-400" : ""}`}
-              />
+              <div className="input-group">
+                <input
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => {
+                    setFirstName(e.target.value);
+                    setErrors((prev) => ({ ...prev, firstName: "" }));
+                  }}
+                  placeholder=" "
+                  className={`input-floating ${errors.firstName ? "!border-red-400" : ""}`}
+                />
+                <label className="input-floating-label">{t("firstName")} *</label>
+              </div>
               {errors.firstName && (
                 <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
               )}
             </div>
             <div>
-              <label className="label">{t("lastName")} *</label>
-              <input
-                type="text"
-                value={lastName}
-                onChange={(e) => {
-                  setLastName(e.target.value);
-                  setErrors((prev) => ({ ...prev, lastName: "" }));
-                }}
-                placeholder="Ben Ali"
-                className={`input ${errors.lastName ? "border-red-400 focus:border-red-400" : ""}`}
-              />
+              <div className="input-group">
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => {
+                    setLastName(e.target.value);
+                    setErrors((prev) => ({ ...prev, lastName: "" }));
+                  }}
+                  placeholder=" "
+                  className={`input-floating ${errors.lastName ? "!border-red-400" : ""}`}
+                />
+                <label className="input-floating-label">{t("lastName")} *</label>
+              </div>
               {errors.lastName && (
                 <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
               )}
@@ -177,12 +181,7 @@ export default function CustomerRegister() {
 
           {/* Email */}
           <div>
-            <label className="label">{t("email")} *</label>
-            <div className="relative">
-              <Mail
-                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
-                style={{ left: "14px" }}
-              />
+            <div className="input-group">
               <input
                 type="email"
                 value={email}
@@ -190,10 +189,11 @@ export default function CustomerRegister() {
                   setEmail(e.target.value);
                   setErrors((prev) => ({ ...prev, email: "" }));
                 }}
-                placeholder="nom@gmail.com"
-                className={`input !pl-10 ${errors.email ? "border-red-400 focus:border-red-400" : ""}`}
+                placeholder=" "
+                className={`input-floating ${errors.email ? "!border-red-400" : ""}`}
                 dir="ltr"
               />
+              <label className="input-floating-label">{t("email")} *</label>
             </div>
             {errors.email && (
               <p className="text-red-500 text-xs mt-1">{errors.email}</p>
@@ -202,12 +202,7 @@ export default function CustomerRegister() {
 
           {/* Phone */}
           <div>
-            <label className="label">{t("phone")} *</label>
-            <div className="relative">
-              <Phone
-                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
-                style={{ left: "14px" }}
-              />
+            <div className="input-group">
               <input
                 type="tel"
                 value={phone}
@@ -217,11 +212,12 @@ export default function CustomerRegister() {
                   setPhone(v);
                   setErrors((prev) => ({ ...prev, phone: "" }));
                 }}
-                placeholder="+216 XX XXX XXX"
-                className={`input !pl-10 ${errors.phone ? "border-red-400 focus:border-red-400" : ""}`}
+                placeholder=" "
+                className={`input-floating ${errors.phone ? "!border-red-400" : ""}`}
                 dir="ltr"
                 maxLength={13}
               />
+              <label className="input-floating-label">{t("phone")} *</label>
             </div>
             {errors.phone && (
               <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
@@ -230,12 +226,7 @@ export default function CustomerRegister() {
 
           {/* Password */}
           <div>
-            <label className="label">{t("password")} *</label>
-            <div className="relative">
-              <Lock
-                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
-                style={{ left: "14px" }}
-              />
+            <div className="input-group">
               <input
                 type={showPw ? "text" : "password"}
                 value={password}
@@ -243,10 +234,12 @@ export default function CustomerRegister() {
                   setPassword(e.target.value);
                   setErrors((prev) => ({ ...prev, password: "" }));
                 }}
-                placeholder="••••••••"
-                className={`input !pl-10 !pr-10 ${errors.password ? "border-red-400 focus:border-red-400" : ""}`}
+                placeholder=" "
+                className={`input-floating ${errors.password ? "!border-red-400" : ""}`}
                 dir="ltr"
+                style={{ paddingRight: "40px" }}
               />
+              <label className="input-floating-label">{t("password")} *</label>
               <button
                 type="button"
                 onClick={() => setShowPw(!showPw)}
@@ -263,12 +256,7 @@ export default function CustomerRegister() {
 
           {/* Confirm password */}
           <div>
-            <label className="label">{t("confirmPassword")} *</label>
-            <div className="relative">
-              <Lock
-                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
-                style={{ left: "14px" }}
-              />
+            <div className="input-group">
               <input
                 type={showConfirmPw ? "text" : "password"}
                 value={confirmPw}
@@ -276,10 +264,12 @@ export default function CustomerRegister() {
                   setConfirmPw(e.target.value);
                   setErrors((prev) => ({ ...prev, confirmPw: "" }));
                 }}
-                placeholder="••••••••"
-                className={`input !pl-10 !pr-10 ${errors.confirmPw ? "border-red-400 focus:border-red-400" : ""}`}
+                placeholder=" "
+                className={`input-floating ${errors.confirmPw ? "!border-red-400" : ""}`}
                 dir="ltr"
+                style={{ paddingRight: "40px" }}
               />
+              <label className="input-floating-label">{t("confirmPassword")} *</label>
               <button
                 type="button"
                 onClick={() => setShowConfirmPw(!showConfirmPw)}
@@ -295,23 +285,17 @@ export default function CustomerRegister() {
           </div>
 
           {/* Referral code */}
-          <div>
-            <label className="label">{t("referralCodeOptional")}</label>
-            <div className="relative">
-              <Gift
-                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
-                style={{ left: "14px" }}
-              />
-              <input
-                type="text"
-                value={referralCode}
-                onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                placeholder="AMIN47"
-                className="input !pl-10"
-                dir="ltr"
-                maxLength={6}
-              />
-            </div>
+          <div className="input-group">
+            <input
+              type="text"
+              value={referralCode}
+              onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+              placeholder=" "
+              className="input-floating"
+              dir="ltr"
+              maxLength={6}
+            />
+            <label className="input-floating-label">{t("referralCodeOptional")}</label>
           </div>
 
           {errors.form && (

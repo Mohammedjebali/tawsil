@@ -270,10 +270,28 @@ export default function OrderPage() {
       {step === "store" && (
         <div>
           {/* Gradient header */}
-          <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-2xl p-5 mb-6 text-white">
-            <div className="text-xs font-medium opacity-75 mb-1">{t("appTagline")}</div>
-            <div className="text-2xl font-bold">Tawsil 🛵</div>
-            {user && <div className="text-sm opacity-90 mt-1">{t("hi")} {user.name?.split(" ")[0]} 👋</div>}
+          <div style={{
+            background: "linear-gradient(135deg, #6366f1 0%, #4338ca 50%, #7c3aed 100%)",
+            borderRadius: "1.5rem", padding: "1.5rem", marginBottom: "1.5rem", color: "white",
+            position: "relative", overflow: "hidden",
+            boxShadow: "0 12px 40px rgba(99,102,241,0.35)",
+          }}>
+            <div style={{
+              position: "absolute", top: "-30px", right: "-30px",
+              width: "140px", height: "140px", borderRadius: "50%",
+              background: "rgba(255,255,255,0.08)",
+            }} />
+            <div style={{
+              position: "absolute", bottom: "-20px", left: "30%",
+              width: "80px", height: "80px", borderRadius: "50%",
+              background: "rgba(255,255,255,0.05)",
+            }} />
+            <div style={{ fontSize: "11px", fontWeight: 600, opacity: 0.7, marginBottom: 6, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+              {t("appTagline")}
+            </div>
+            <div style={{ fontSize: "2rem", fontWeight: 800, letterSpacing: "-0.04em", lineHeight: 1 }}>Tawsil</div>
+            <div style={{ fontSize: "1.25rem", marginTop: 2 }}>🛵</div>
+            {user && <div style={{ fontSize: "0.875rem", opacity: 0.85, marginTop: 8, fontWeight: 500 }}>{t("hi")} {user.name?.split(" ")[0]} 👋</div>}
           </div>
 
           <StepProgress current={1} total={4} />

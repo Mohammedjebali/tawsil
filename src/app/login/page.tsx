@@ -158,27 +158,24 @@ export default function LoginPage() {
         {/* Customer login */}
         {tab === "customer" && (
           <div className="card space-y-4">
-            <div>
-              <label className="label">{t("email")}</label>
-              <div className="relative">
-                <Mail className="absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" style={{ left: "14px" }} />
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                  placeholder="nom@gmail.com" className="input !pl-10" dir="ltr" />
-              </div>
+            <div className="input-group">
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                placeholder=" " className="input-floating" dir="ltr" />
+              <label className="input-floating-label">{t("email")}</label>
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="label !mb-0">{t("password")}</label>
+              <div className="flex items-center justify-end mb-1">
                 <a href="/forgot-password" className="text-xs text-indigo-600 hover:underline font-medium">
                   {t("forgotPassword")}
                 </a>
               </div>
-              <div className="relative">
-                <Lock className="absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" style={{ left: "14px" }} />
+              <div className="input-group">
                 <input type={showPw ? "text" : "password"} value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••" className="input !pl-10 !pr-10" dir="ltr" />
+                  placeholder=" " className="input-floating" dir="ltr"
+                  style={{ paddingRight: "40px" }} />
+                <label className="input-floating-label">{t("password")}</label>
                 <button type="button" onClick={() => setShowPw(!showPw)}
                   className="absolute top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                   style={{ right: "14px" }}>
@@ -209,13 +206,10 @@ export default function LoginPage() {
               <p className="text-indigo-600 text-sm font-medium">{t("riderLoginInfo")}</p>
             </div>
 
-            <div>
-              <label className="label">{t("phone")}</label>
-              <div className="relative">
-                <Phone className="absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" style={{ left: "14px" }} />
-                <input type="tel" value={riderPhone} onChange={(e) => setRiderPhone(e.target.value)}
-                  placeholder="2X XXX XXX" className="input !pl-10" dir="ltr" />
-              </div>
+            <div className="input-group">
+              <input type="tel" value={riderPhone} onChange={(e) => setRiderPhone(e.target.value)}
+                placeholder=" " className="input-floating" dir="ltr" />
+              <label className="input-floating-label">{t("phone")}</label>
             </div>
 
             {riderError && <p className="text-red-500 text-sm text-center">{riderError}</p>}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { Package, Globe, LogOut, ShoppingBag, MapPin, ClipboardList, User, Star, TrendingUp } from "lucide-react";
 import { useLang } from "./LangProvider";
 import { supabaseClient } from "@/lib/supabase-client";
@@ -15,6 +16,19 @@ const LANGS: { code: Lang; label: string }[] = [
 
 // Pages that don't require auth
 const PUBLIC_PATHS = ["/login", "/register", "/forgot-password", "/reset-password", "/auth/callback", "/admin", "/rider"];
+
+const customerTabs = [
+  { href: "/", icon: ShoppingBag, labelKey: "orderTab" },
+  { href: "/track", icon: MapPin, labelKey: "trackTab" },
+  { href: "/orders", icon: ClipboardList, labelKey: "myOrders" },
+  { href: "/rewards", icon: Star, labelKey: "rewards" },
+  { href: "/profile", icon: User, labelKey: "profile" },
+];
+
+const riderTabs = [
+  { href: "/rider", icon: Package, labelKey: "orders" },
+  { href: "/rider/stats", icon: TrendingUp, labelKey: "myStats" },
+];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const { lang, setLang, t, isRtl } = useLang();
@@ -106,16 +120,29 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div dir={dir} className="min-h-screen" style={{ backgroundColor: "#f1f5f9" }}>
+    <div dir={dir} className="min-h-screen">
       {/* Header */}
-      <header className="bg-white/90 backdrop-blur-md border-b border-white/60 px-4 py-3 flex items-center justify-between sticky top-0 z-40">
+      <header style={{
+        background: "rgba(255,255,255,0.88)",
+        backdropFilter: "blur(20px) saturate(200%)",
+        WebkitBackdropFilter: "blur(20px) saturate(200%)",
+        borderBottom: "1px solid rgba(203,213,225,0.3)",
+        boxShadow: "0 1px 0 rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.04)",
+        padding: "12px 16px",
+        position: "sticky", top: 0, zIndex: 40,
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+      }}>
         <a href="/" className="flex items-center gap-2.5 no-underline">
           <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center">
             <Package className="w-5 h-5 text-white" />
           </div>
           <div>
-            <span className="font-bold text-base text-indigo-600 block leading-tight">Tawsil</span>
-            <span className="text-xs text-slate-400">{t("appTagline")}</span>
+            <span style={{
+              fontWeight: 800, fontSize: "1.25rem", letterSpacing: "-0.04em",
+              background: "linear-gradient(135deg, #6366f1, #4338ca)",
+              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+            }}>Tawsil</span>
+            <span className="text-xs text-slate-400 block">{t("appTagline")}</span>
           </div>
         </a>
 
@@ -158,92 +185,90 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </header>
 
       {/* Main */}
-      <main className="max-w-lg mx-auto px-3 py-4 sm:px-4 sm:py-6 pb-24">
+      <main className="max-w-lg mx-auto px-3 py-4 sm:px-4 sm:py-6 pb-28">
         {children}
       </main>
 
       {/* Bottom nav for riders */}
       {ready && role === "rider" && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-center pb-4 px-4">
-          <nav className="bg-white/90 backdrop-blur-md border border-white/60 shadow-xl rounded-2xl flex w-full max-w-lg overflow-hidden">
-            <a
-              href="/rider"
-              className={`relative flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
-                pathname === "/rider" ? "text-indigo-600" : "text-slate-400 hover:text-slate-600"
-              }`}
-            >
-              <Package className="w-5 h-5" />
-              {t("orders")}
-              {pathname === "/rider" && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-indigo-600 rounded-full" />}
-            </a>
-            <a
-              href="/rider/stats"
-              className={`relative flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
-                pathname === "/rider/stats" ? "text-indigo-600" : "text-slate-400 hover:text-slate-600"
-              }`}
-            >
-              <TrendingUp className="w-5 h-5" />
-              {t("myStats")}
-              {pathname === "/rider/stats" && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-indigo-600 rounded-full" />}
-            </a>
+        <div className="fixed bottom-0 left-0 right-0 z-40 pb-5 px-5 flex justify-center" style={{ pointerEvents: "none" }}>
+          <nav style={{
+            pointerEvents: "auto",
+            width: "100%",
+            maxWidth: "360px",
+            background: "rgba(255,255,255,0.88)",
+            backdropFilter: "blur(20px) saturate(200%)",
+            WebkitBackdropFilter: "blur(20px) saturate(200%)",
+            border: "1px solid rgba(255,255,255,0.7)",
+            boxShadow: "0 8px 32px rgba(99,102,241,0.15), 0 2px 8px rgba(0,0,0,0.06)",
+            borderRadius: "999px",
+            padding: "6px 12px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-around",
+          }}>
+            {riderTabs.map(tab => {
+              const active = pathname === tab.href || (tab.href !== "/" && pathname.startsWith(tab.href));
+              return (
+                <Link key={tab.href} href={tab.href}
+                  onClick={() => { if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(30); }}
+                  style={{
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: "2px",
+                    padding: "8px 14px", borderRadius: "999px", transition: "all 0.2s ease",
+                    background: active ? "rgba(99,102,241,0.1)" : "transparent",
+                    transform: active ? "scale(1.08)" : "scale(1)",
+                    boxShadow: active ? "0 0 12px rgba(99,102,241,0.2)" : "none",
+                    textDecoration: "none",
+                  }}>
+                  <tab.icon size={20} style={{ color: active ? "#6366f1" : "#94a3b8", transition: "color 0.2s" }} />
+                  <span style={{ fontSize: "10px", fontWeight: active ? 700 : 500, color: active ? "#6366f1" : "#94a3b8", transition: "color 0.2s" }}>
+                    {t(tab.labelKey)}
+                  </span>
+                </Link>
+              );
+            })}
           </nav>
         </div>
       )}
 
       {/* Bottom nav for customers */}
       {ready && role === "customer" && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-center pb-4 px-4">
-          <nav className="bg-white/90 backdrop-blur-md border border-white/60 shadow-xl rounded-2xl flex w-full max-w-lg overflow-hidden">
-            <a
-              href="/"
-              className={`relative flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
-                pathname === "/" ? "text-indigo-600" : "text-slate-400 hover:text-slate-600"
-              }`}
-            >
-              <ShoppingBag className="w-5 h-5" />
-              {t("orderTab")}
-              {pathname === "/" && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-indigo-600 rounded-full" />}
-            </a>
-            <a
-              href="/track"
-              className={`relative flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
-                pathname === "/track" ? "text-indigo-600" : "text-slate-400 hover:text-slate-600"
-              }`}
-            >
-              <MapPin className="w-5 h-5" />
-              {t("trackTab")}
-              {pathname === "/track" && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-indigo-600 rounded-full" />}
-            </a>
-            <a
-              href="/orders"
-              className={`relative flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
-                pathname === "/orders" ? "text-indigo-600" : "text-slate-400 hover:text-slate-600"
-              }`}
-            >
-              <ClipboardList className="w-5 h-5" />
-              {t("myOrders")}
-              {pathname === "/orders" && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-indigo-600 rounded-full" />}
-            </a>
-            <a
-              href="/rewards"
-              className={`relative flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
-                pathname === "/rewards" ? "text-indigo-600" : "text-slate-400 hover:text-slate-600"
-              }`}
-            >
-              <Star className="w-5 h-5" />
-              {t("rewards")}
-              {pathname === "/rewards" && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-indigo-600 rounded-full" />}
-            </a>
-            <a
-              href="/profile"
-              className={`relative flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
-                pathname === "/profile" ? "text-indigo-600" : "text-slate-400 hover:text-slate-600"
-              }`}
-            >
-              <User className="w-5 h-5" />
-              {t("profile")}
-              {pathname === "/profile" && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-indigo-600 rounded-full" />}
-            </a>
+        <div className="fixed bottom-0 left-0 right-0 z-40 pb-5 px-5 flex justify-center" style={{ pointerEvents: "none" }}>
+          <nav style={{
+            pointerEvents: "auto",
+            width: "100%",
+            maxWidth: "360px",
+            background: "rgba(255,255,255,0.88)",
+            backdropFilter: "blur(20px) saturate(200%)",
+            WebkitBackdropFilter: "blur(20px) saturate(200%)",
+            border: "1px solid rgba(255,255,255,0.7)",
+            boxShadow: "0 8px 32px rgba(99,102,241,0.15), 0 2px 8px rgba(0,0,0,0.06)",
+            borderRadius: "999px",
+            padding: "6px 12px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-around",
+          }}>
+            {customerTabs.map(tab => {
+              const active = pathname === tab.href || (tab.href !== "/" && pathname.startsWith(tab.href));
+              return (
+                <Link key={tab.href} href={tab.href}
+                  onClick={() => { if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(30); }}
+                  style={{
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: "2px",
+                    padding: "8px 14px", borderRadius: "999px", transition: "all 0.2s ease",
+                    background: active ? "rgba(99,102,241,0.1)" : "transparent",
+                    transform: active ? "scale(1.08)" : "scale(1)",
+                    boxShadow: active ? "0 0 12px rgba(99,102,241,0.2)" : "none",
+                    textDecoration: "none",
+                  }}>
+                  <tab.icon size={20} style={{ color: active ? "#6366f1" : "#94a3b8", transition: "color 0.2s" }} />
+                  <span style={{ fontSize: "10px", fontWeight: active ? 700 : 500, color: active ? "#6366f1" : "#94a3b8", transition: "color 0.2s" }}>
+                    {t(tab.labelKey)}
+                  </span>
+                </Link>
+              );
+            })}
           </nav>
         </div>
       )}
