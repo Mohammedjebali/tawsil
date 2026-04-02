@@ -21,7 +21,7 @@ const translations: Record<string, Record<Lang, string>> = {
   rejected: { ar: "تم رفض طلبك", fr: "Votre demande a \u00e9t\u00e9 refus\u00e9e", en: "Your request was rejected" },
   selectStore: { ar: "اختر المحل", fr: "Choisir le magasin", en: "Select store" },
   storeSubtitle: { ar: "من وين تحب تطلب؟", fr: "D'o\u00f9 voulez-vous commander?", en: "Where do you want to order from?" },
-  describeOrder: { ar: "وش تحب تطلب؟", fr: "Que souhaitez-vous commander?", en: "What would you like to order?" },
+  describeOrder: { ar: "شنوا تحب تكمندي؟", fr: "Que souhaitez-vous commander?", en: "What would you like to order?" },
   describeOrderPlaceholder: { ar: "مثال: قهوة كبيرة بحليب، كيك شوكولا...", fr: "Ex: Grand caf\u00e9 au lait, g\u00e2teau chocolat...", en: "E.g.: Large latte, chocolate cake..." },
   yourInfo: { ar: "معلوماتك", fr: "Vos informations", en: "Your info" },
   yourLocation: { ar: "عنوان التوصيل", fr: "Adresse de livraison", en: "Delivery address" },
