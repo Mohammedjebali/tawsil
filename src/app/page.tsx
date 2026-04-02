@@ -143,6 +143,9 @@ export default function OrderPage() {
       const parsed = JSON.parse(saved);
       if (parsed.role === "customer") {
         setUser(parsed);
+        if (parsed.savedAddress) {
+          setCustomerAddress(parsed.savedAddress);
+        }
       } else if (parsed.role === "rider") {
         window.location.href = "/rider";
         return;
@@ -399,9 +402,24 @@ export default function OrderPage() {
 
             {/* Address */}
             <div>
-              <label className="label">
-                {t("address")} <span className="text-red-500">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="label !mb-0">
+                  {t("address")} <span className="text-red-500">*</span>
+                </label>
+                {(() => {
+                  const raw = localStorage.getItem("tawsil_user");
+                  const addr = raw ? JSON.parse(raw).savedAddress : null;
+                  return addr ? (
+                    <button
+                      type="button"
+                      onClick={() => setCustomerAddress(addr)}
+                      className="text-xs font-semibold text-blue-700 hover:text-blue-800 transition-colors"
+                    >
+                      {t("useSavedAddress")}
+                    </button>
+                  ) : null;
+                })()}
+              </div>
               <textarea
                 value={customerAddress}
                 onChange={(e) => setCustomerAddress(e.target.value)}

@@ -66,3 +66,30 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const supabase = getSupabase();
+    const { email, first_name, last_name } = await req.json();
+
+    if (!email) {
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
+    }
+
+    const update: Record<string, string> = {};
+    if (first_name !== undefined) update.first_name = first_name;
+    if (last_name !== undefined) update.last_name = last_name;
+
+    const { data, error } = await supabase
+      .from("customers")
+      .update(update)
+      .eq("email", email)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return NextResponse.json({ customer: data });
+  } catch (err) {
+    return NextResponse.json({ error: String(err) }, { status: 500 });
+  }
+}

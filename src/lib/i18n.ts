@@ -185,6 +185,14 @@ const translations: Record<string, Record<Lang, string>> = {
   signingIn: { ar: "جاري تسجيل الدخول...", fr: "Connexion...", en: "Signing in..." },
   sending: { ar: "جاري الإرسال...", fr: "Envoi...", en: "Sending..." },
   updating: { ar: "جاري التحديث...", fr: "Mise à jour...", en: "Updating..." },
+  editProfile: { ar: "تعديل الملف الشخصي", fr: "Modifier le profil", en: "Edit Profile" },
+  saveChanges: { ar: "حفظ التغييرات", fr: "Enregistrer", en: "Save Changes" },
+  savedAddress: { ar: "العنوان المحفوظ", fr: "Adresse enregistrée", en: "Saved Address" },
+  savedAddressPlaceholder: { ar: "أدخل عنوانك الافتراضي للتوصيل", fr: "Entrez votre adresse de livraison par défaut", en: "Enter your default delivery address" },
+  useSavedAddress: { ar: "استخدم عنواني", fr: "Utiliser mon adresse", en: "Use my address" },
+  profileSaved: { ar: "تم حفظ الملف الشخصي", fr: "Profil enregistré", en: "Profile saved" },
+  customers: { ar: "الزبائن", fr: "Clients", en: "Customers" },
+  totalCustomers: { ar: "إجمالي الزبائن", fr: "Total clients", en: "Total Customers" },
 };
 
 export function t(lang: Lang, key: string): string {
