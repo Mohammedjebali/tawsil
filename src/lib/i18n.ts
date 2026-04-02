@@ -127,7 +127,7 @@ const translations: Record<string, Record<Lang, string>> = {
   registering: { ar: "جاري التسجيل...", fr: "Inscription en cours...", en: "Registering..." },
   rejectedDesc: { ar: "للأسف، لم تتم الموافقة على طلبك. تواصل مع الإدارة لمزيد من المعلومات.", fr: "D\u00e9sol\u00e9, votre demande n'a pas \u00e9t\u00e9 approuv\u00e9e. Contactez l'administration.", en: "Sorry, your request was not approved. Contact administration for more info." },
   backToHome: { ar: "العودة للرئيسية", fr: "Retour \u00e0 l'accueil", en: "Back to home" },
-  reviewWarning: { ar: "سيتم مراجعة طلبك من قبل الإدارة قبل التفعيل", fr: "Votre demande sera examin\u00e9e par l'administration", en: "Your request will be reviewed by administration before activation" },
+  reviewWarning: { ar: "بالتسجيل ستنضم إلى قائمة الانتظار. يُرجى العلم أنك ستُتصل عبر هاتفك لمتابعة طلبك. شكراً لتفهمك.", fr: "En vous inscrivant, vous rejoignez notre liste d'attente. Vous serez contacté par téléphone pour toute mise à jour. Merci de votre compréhension.", en: "By registering, you will be added to our waitlist. You will be contacted via your phone for updates on your application. Thank you for your understanding." },
   registerAsCustomer: { ar: "تسجيل كزبون", fr: "S'inscrire comme client", en: "Register as customer" },
   registerAsRider: { ar: "تسجيل كراكب", fr: "S'inscrire comme livreur", en: "Register as rider" },
   enterInfoToOrder: { ar: "أدخل معلوماتك لتبدأ الطلب", fr: "Entrez vos infos pour commencer", en: "Enter your info to start ordering" },

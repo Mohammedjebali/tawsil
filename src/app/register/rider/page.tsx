@@ -189,8 +189,8 @@ export default function RiderRegister() {
             </div>
           </div>
 
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
-            <p className="text-amber-700 text-xs font-medium">
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+            <p className="text-blue-800 text-sm font-medium leading-relaxed">
               {t("reviewWarning")}
             </p>
           </div>
