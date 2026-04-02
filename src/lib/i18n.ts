@@ -207,6 +207,17 @@ const translations: Record<string, Record<Lang, string>> = {
   updatePrice: { ar: "تحديث السعر", fr: "Mettre à jour le prix", en: "Update price" },
   priceUpdatedSuccess: { ar: "تم تحديث السعر بنجاح", fr: "Prix mis à jour", en: "Price updated" },
   total: { ar: "المجموع", fr: "Total", en: "Total" },
+  dashboard: { ar: "لوحة القيادة", fr: "Tableau de bord", en: "Dashboard" },
+  todayStats: { ar: "إحصائيات اليوم", fr: "Stats du jour", en: "Today's stats" },
+  revenue: { ar: "الأرباح", fr: "Revenus", en: "Revenue" },
+  totalOrders: { ar: "إجمالي الطلبات", fr: "Total commandes", en: "Total orders" },
+  deliveredToday: { ar: "تم التسليم", fr: "Livrées", en: "Delivered" },
+  activeOrders: { ar: "نشطة", fr: "Actives", en: "Active" },
+  topStores: { ar: "أكثر المحلات طلباً", fr: "Magasins populaires", en: "Top stores" },
+  recentOrders: { ar: "آخر الطلبات", fr: "Commandes récentes", en: "Recent orders" },
+  riderStats: { ar: "حالة الراكبين", fr: "État des livreurs", en: "Rider status" },
+  busy: { ar: "مشغول", fr: "Occupé", en: "Busy" },
+  available: { ar: "متاح", fr: "Disponible", en: "Available" },
 };
 
 export function t(lang: Lang, key: string): string {

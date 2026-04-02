@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Store, Package, Users, Plus, Trash2, RefreshCw, XCircle, CheckCircle2, ShoppingCart, Coffee, Pill, UtensilsCrossed, Bike, UserCheck, Search, Star } from "lucide-react";
+import { Store, Package, Users, Plus, Trash2, RefreshCw, XCircle, CheckCircle2, ShoppingCart, Coffee, Pill, UtensilsCrossed, Bike, UserCheck, Search, Star, LayoutDashboard, TrendingUp, Clock } from "lucide-react";
+
+interface DashboardData {
+  today: { total: number; delivered: number; cancelled: number; active: number; revenue: number };
+  riders: { total: number; busy: number; available: number };
+  topStores: { name: string; count: number }[];
+  recentOrders: { id: string; order_number: string; store_name: string; status: string; created_at: string }[];
+}
 
 interface StoreItem {
   id: string;
@@ -49,7 +56,7 @@ function formatTime(iso: string) { return new Date(iso).toLocaleTimeString("en-U
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [password, setPassword] = useState("");
-  const [tab, setTab] = useState<"stores" | "orders" | "riders" | "customers">("stores");
+  const [tab, setTab] = useState<"dashboard" | "stores" | "orders" | "riders" | "customers">("dashboard");
 
   const [stores, setStores] = useState<StoreItem[]>([]);
   const [newName, setNewName] = useState("");
@@ -68,6 +75,10 @@ export default function AdminPage() {
   const [customerSearch, setCustomerSearch] = useState("");
   const [pointsDelta, setPointsDelta] = useState<Record<string, string>>({});
   const [pointsUpdating, setPointsUpdating] = useState<string | null>(null);
+
+  const [dash, setDash] = useState<DashboardData | null>(null);
+  const [dashLoading, setDashLoading] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("adminAuth");
@@ -110,9 +121,26 @@ export default function AdminPage() {
     } finally { setCustomersLoading(false); }
   }, []);
 
+  const fetchDashboard = useCallback(async () => {
+    setDashLoading(true);
+    try {
+      const res = await fetch("/api/admin/dashboard");
+      const data = await res.json();
+      setDash(data);
+      setLastUpdated(new Date());
+    } finally { setDashLoading(false); }
+  }, []);
+
   useEffect(() => {
-    if (authed) { fetchStores(); fetchOrders(); fetchRiders(); fetchCustomers(); }
-  }, [authed, fetchStores, fetchOrders, fetchRiders, fetchCustomers]);
+    if (authed) { fetchStores(); fetchOrders(); fetchRiders(); fetchCustomers(); fetchDashboard(); }
+  }, [authed, fetchStores, fetchOrders, fetchRiders, fetchCustomers, fetchDashboard]);
+
+  // Auto-refresh dashboard every 30s
+  useEffect(() => {
+    if (!authed || tab !== "dashboard") return;
+    const interval = setInterval(fetchDashboard, 30000);
+    return () => clearInterval(interval);
+  }, [authed, tab, fetchDashboard]);
 
   function login() {
     if (password === "zerba-321") {
@@ -215,10 +243,11 @@ export default function AdminPage() {
   const rejectedRiders = riders.filter(r => r.status === "rejected");
 
   const TABS = [
+    { key: "dashboard" as const, label: "Dashboard", icon: LayoutDashboard },
     { key: "stores" as const, label: "Stores", icon: Store },
     { key: "orders" as const, label: "Orders", icon: Package },
     { key: "riders" as const, label: "Riders", icon: Users, badge: pendingRiders.length },
-    { key: "customers" as const, label: "Customers", icon: UserCheck },
+    { key: "customers" as const, label: "Clients", icon: UserCheck },
   ];
 
   return (
@@ -260,6 +289,130 @@ export default function AdminPage() {
             );
           })}
         </div>
+
+        {/* Dashboard Tab */}
+        {tab === "dashboard" && (
+          <div>
+            {dashLoading && !dash && <p className="text-slate-500 text-center py-5">Loading...</p>}
+            {dash && (
+              <div className="space-y-5">
+                {/* Last updated */}
+                {lastUpdated && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                      <Clock className="w-3.5 h-3.5" />
+                      Last updated: {lastUpdated.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true })}
+                    </div>
+                    <button onClick={fetchDashboard} className="text-xs text-blue-700 font-medium hover:text-blue-800">
+                      <RefreshCw className={`w-3.5 h-3.5 inline mr-1 ${dashLoading ? "animate-spin" : ""}`} />
+                      Refresh
+                    </button>
+                  </div>
+                )}
+
+                {/* Row 1: Stat cards */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl border border-slate-200 bg-white p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+                        <Package className="w-4 h-4 text-blue-700" />
+                      </div>
+                      <span className="text-xs font-medium text-slate-500">Orders Today</span>
+                    </div>
+                    <div className="text-2xl font-bold text-slate-900">{dash.today.total}</div>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-white p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      </div>
+                      <span className="text-xs font-medium text-slate-500">Delivered</span>
+                    </div>
+                    <div className="text-2xl font-bold text-emerald-600">{dash.today.delivered}</div>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-white p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+                        <TrendingUp className="w-4 h-4 text-blue-700" />
+                      </div>
+                      <span className="text-xs font-medium text-slate-500">Revenue</span>
+                    </div>
+                    <div className="text-2xl font-bold text-blue-700">{formatFee(dash.today.revenue)}</div>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-white p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-8 h-8 bg-amber-50 rounded-lg flex items-center justify-center">
+                        <RefreshCw className="w-4 h-4 text-amber-600" />
+                      </div>
+                      <span className="text-xs font-medium text-slate-500">Active</span>
+                    </div>
+                    <div className="text-2xl font-bold text-amber-600">{dash.today.active}</div>
+                  </div>
+                </div>
+
+                {/* Row 2: Riders */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4">
+                  <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                    <Bike className="w-4 h-4 text-blue-700" /> Rider Status
+                  </h3>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="text-center">
+                      <div className="text-xl font-bold text-slate-900">{dash.riders.total}</div>
+                      <div className="text-xs text-slate-500">Total Active</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xl font-bold text-amber-600">{dash.riders.busy}</div>
+                      <div className="text-xs text-slate-500">Busy</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xl font-bold text-emerald-600">{dash.riders.available}</div>
+                      <div className="text-xs text-slate-500">Available</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Row 3: Top Stores */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4">
+                  <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                    <Store className="w-4 h-4 text-blue-700" /> Top Stores
+                  </h3>
+                  {dash.topStores.length === 0 && (
+                    <p className="text-sm text-slate-400 text-center py-2">No orders yet</p>
+                  )}
+                  <div className="space-y-2">
+                    {dash.topStores.map((s, i) => (
+                      <div key={s.name} className="flex items-center gap-3">
+                        <span className="w-6 h-6 rounded-full bg-blue-50 text-blue-700 text-xs font-bold flex items-center justify-center">{i + 1}</span>
+                        <span className="flex-1 text-sm font-medium text-slate-700 truncate">{s.name}</span>
+                        <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600">{s.count} orders</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Row 4: Recent Orders */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4">
+                  <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                    <Package className="w-4 h-4 text-blue-700" /> Recent Orders
+                  </h3>
+                  {dash.recentOrders.length === 0 && (
+                    <p className="text-sm text-slate-400 text-center py-2">No orders yet</p>
+                  )}
+                  <div className="space-y-2">
+                    {dash.recentOrders.map((o) => (
+                      <div key={o.id} className="flex items-center gap-3 text-sm">
+                        <span className="font-mono font-semibold text-slate-700 min-w-[110px]">{o.order_number}</span>
+                        <span className="flex-1 text-slate-600 truncate">{o.store_name}</span>
+                        <span className={`badge badge-${o.status}`}>{o.status}</span>
+                        <span className="text-xs text-slate-400">{formatTime(o.created_at)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Stores Tab */}
         {tab === "stores" && (
