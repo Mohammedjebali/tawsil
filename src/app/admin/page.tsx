@@ -5,7 +5,7 @@ import { Store, Package, Users, Plus, Trash2, RefreshCw, XCircle, CheckCircle2, 
 
 interface DashboardData {
   today: { total: number; delivered: number; cancelled: number; active: number; revenue: number };
-  riders: { total: number; busy: number; available: number };
+  riders: { total: number; online: number; busy: number; available: number };
   topStores: { name: string; count: number }[];
   recentOrders: { id: string; order_number: string; store_name: string; status: string; created_at: string }[];
 }
@@ -34,6 +34,7 @@ interface Rider {
   name: string;
   phone: string;
   status: string;
+  is_online?: boolean;
   created_at: string;
 }
 
@@ -357,16 +358,16 @@ export default function AdminPage() {
                   </h3>
                   <div className="grid grid-cols-3 gap-3">
                     <div className="text-center">
-                      <div className="text-xl font-bold text-slate-900">{dash.riders.total}</div>
-                      <div className="text-xs text-slate-500">Total Active</div>
+                      <div className="text-xl font-bold text-emerald-600">{dash.riders.online}</div>
+                      <div className="text-xs text-slate-500">Online</div>
                     </div>
                     <div className="text-center">
                       <div className="text-xl font-bold text-amber-600">{dash.riders.busy}</div>
                       <div className="text-xs text-slate-500">Busy</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-xl font-bold text-emerald-600">{dash.riders.available}</div>
-                      <div className="text-xs text-slate-500">Available</div>
+                      <div className="text-xl font-bold text-slate-400">{dash.riders.total - dash.riders.online}</div>
+                      <div className="text-xs text-slate-500">Offline</div>
                     </div>
                   </div>
                 </div>
@@ -548,15 +549,22 @@ export default function AdminPage() {
                 <div className="space-y-2">
                   {approvedRiders.map((rider) => (
                     <div key={rider.id} className="card flex items-center gap-3 !py-3">
-                      <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
+                      <div className="relative w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
                         <Bike className="w-5 h-5 text-blue-700" />
+                        {rider.is_online && (
+                          <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white" />
+                        )}
                       </div>
                       <div className="flex-1">
                         <div className="font-semibold text-sm text-slate-900">{rider.name}</div>
                         <div className="text-xs text-slate-500 font-mono">{rider.phone}</div>
                       </div>
-                      <span className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        Active
+                      <span className={`text-xs font-semibold px-3 py-1.5 rounded-lg border ${
+                        rider.is_online
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-slate-50 text-slate-500 border-slate-200"
+                      }`}>
+                        {rider.is_online ? "Online" : "Offline"}
                       </span>
                     </div>
                   ))}

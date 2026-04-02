@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
 
     const { data, error } = await supabase
       .from("riders")
-      .select("id, name, phone, status")
+      .select("id, name, phone, status, is_online")
       .eq("phone", phone)
       .single();
 

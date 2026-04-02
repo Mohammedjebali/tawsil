@@ -31,6 +31,8 @@ interface RiderProfile {
   role: string;
   status: string;
   rider_id?: string;
+  is_online?: boolean;
+  db_id?: string;
 }
 
 function formatFee(m: number) { return `${(m/1000).toFixed(3)} DT`; }
@@ -50,6 +52,8 @@ export default function RiderPage() {
   const [noteInputs, setNoteInputs] = useState<Record<string, string>>({});
   const [priceUpdating, setPriceUpdating] = useState<Record<string, boolean>>({});
   const [priceSuccess, setPriceSuccess] = useState<Record<string, boolean>>({});
+  const [isOnline, setIsOnline] = useState(false);
+  const [toggling, setToggling] = useState(false);
   const watchIds = useRef<Record<string, number>>({});
   const prevOrderCount = useRef(0);
 
@@ -75,7 +79,12 @@ export default function RiderPage() {
         if (!data.id || data.status !== "active") {
           localStorage.removeItem("tawsil_user");
           window.location.href = "/login";
+          return;
         }
+        setIsOnline(!!data.is_online);
+        user.db_id = data.id;
+        user.is_online = !!data.is_online;
+        setRider({ ...user });
       })
       .catch(() => {});
 
@@ -97,6 +106,22 @@ export default function RiderPage() {
     return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
+
+  async function toggleOnline() {
+    if (!rider?.db_id || toggling) return;
+    setToggling(true);
+    const next = !isOnline;
+    try {
+      await fetch(`/api/riders/${rider.db_id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_online: next }),
+      });
+      setIsOnline(next);
+    } finally {
+      setToggling(false);
+    }
+  }
 
   async function fetchOrders() {
     try {
@@ -217,6 +242,30 @@ export default function RiderPage() {
         </div>
       </div>
 
+      {/* Online/Offline toggle */}
+      <button
+        onClick={toggleOnline}
+        disabled={toggling || !rider.db_id}
+        className={`w-full py-3 rounded-xl text-base font-bold mb-3 transition-colors disabled:opacity-50 ${
+          isOnline
+            ? "bg-red-500 text-white hover:bg-red-600"
+            : "bg-emerald-600 text-white hover:bg-emerald-700"
+        }`}
+      >
+        {toggling ? "..." : isOnline ? t("goOffline") : t("goOnline")}
+      </button>
+
+      {isOnline ? (
+        <div className="flex items-center gap-2 text-emerald-700 text-sm mb-4 bg-emerald-50 border border-emerald-200 rounded-xl py-2.5 px-4 font-medium">
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
+          {t("youAreOnline")}
+        </div>
+      ) : (
+        <div className="text-amber-700 text-sm mb-4 bg-amber-50 border border-amber-200 rounded-xl py-2.5 px-4 font-medium text-center">
+          {t("youAreOffline")}
+        </div>
+      )}
+
       {/* Notification toggle */}
       {notifStatus === "granted" ? (
         <div className="flex items-center gap-2 text-emerald-700 text-xs mb-4 bg-emerald-50 border border-emerald-200 rounded-xl py-2.5 px-4 font-medium">
@@ -233,7 +282,8 @@ export default function RiderPage() {
         </button>
       )}
 
-      {/* Tabs */}
+      {/* Tabs + orders — only show when online */}
+      {isOnline && <>
       <div className="flex bg-slate-100 rounded-xl p-1 mb-4">
         <button
           onClick={() => setTab("available")}
@@ -457,6 +507,7 @@ export default function RiderPage() {
           })}
         </div>
       )}
+      </>}
     </div>
   );
 }

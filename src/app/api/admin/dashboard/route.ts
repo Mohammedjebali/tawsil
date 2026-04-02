@@ -38,7 +38,7 @@ export async function GET() {
   // Active riders
   const { data: riders } = await supabase
     .from("riders")
-    .select("id, name, status");
+    .select("id, name, status, is_online");
 
   const activeRiders = (riders || []).filter((r) => r.status === "active");
   const busyRiderIds = orders
@@ -56,6 +56,10 @@ export async function GET() {
     .order("created_at", { ascending: false })
     .limit(5);
 
+  const onlineCount = activeRiders.filter(
+    (r) => (r as Record<string, unknown>).is_online === true
+  ).length;
+
   return NextResponse.json({
     today: {
       total: orders.length,
@@ -66,6 +70,7 @@ export async function GET() {
     },
     riders: {
       total: activeRiders.length,
+      online: onlineCount,
       busy: busyCount,
       available: activeRiders.length - busyCount,
     },

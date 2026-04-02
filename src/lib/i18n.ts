@@ -218,6 +218,12 @@ const translations: Record<string, Record<Lang, string>> = {
   riderStats: { ar: "حالة الراكبين", fr: "État des livreurs", en: "Rider status" },
   busy: { ar: "مشغول", fr: "Occupé", en: "Busy" },
   available: { ar: "متاح", fr: "Disponible", en: "Available" },
+  goOnline: { ar: "ابدأ العمل", fr: "Commencer", en: "Go Online" },
+  goOffline: { ar: "أنهِ الدوام", fr: "Terminer", en: "Go Offline" },
+  youAreOnline: { ar: "أنت متصل — ستصلك الطلبات", fr: "Vous êtes en ligne — commandes visibles", en: "You are online — orders visible" },
+  youAreOffline: { ar: "أنت غير متصل — لن تصلك طلبات", fr: "Vous êtes hors ligne — aucune commande", en: "You are offline — no orders will appear" },
+  online: { ar: "متصل", fr: "En ligne", en: "Online" },
+  offline: { ar: "غير متصل", fr: "Hors ligne", en: "Offline" },
 };
 
 export function t(lang: Lang, key: string): string {
