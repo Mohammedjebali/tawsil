@@ -64,6 +64,17 @@ export default function RiderPage() {
       window.location.href = "/register/rider";
       return;
     }
+    // Verify rider still exists and is active in DB
+    fetch(`/api/riders/status?phone=${encodeURIComponent(user.phone)}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data.id || data.status !== "active") {
+          localStorage.removeItem("tawsil_user");
+          window.location.href = "/login";
+        }
+      })
+      .catch(() => {});
+
     setRider(user);
     setReady(true);
 
