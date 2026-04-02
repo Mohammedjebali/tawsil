@@ -16,7 +16,7 @@
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html { -webkit-text-size-adjust: 100%; }
   button, a { touch-action: manipulation; }
-  body { background-color: #f1f5f9; @apply text-slate-900 antialiased; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; overflow-x: hidden; }
+  body { background: linear-gradient(135deg, #eef2ff 0%, #f0f9ff 50%, #f5f3ff 100%); min-height: 100vh; @apply text-slate-900 antialiased; font-family: system-ui, -apple-system, sans-serif; overflow-x: hidden; }
 }
 
 @layer components {
