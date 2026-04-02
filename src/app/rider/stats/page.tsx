@@ -83,25 +83,25 @@ export default function RiderStatsPage() {
     <div>
       {/* My Stats */}
       {stats && (
-        <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-4">
-          <div className="flex items-center gap-2 text-blue-700 font-bold text-sm mb-3">
+        <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 mb-4">
+          <div className="flex items-center gap-2 text-indigo-600 font-bold text-sm mb-3">
             <TrendingUp className="w-4 h-4" />
             {t("myStats")}
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white rounded-lg p-2.5 border border-blue-100 text-center">
+            <div className="bg-white rounded-lg p-2.5 border border-indigo-100 text-center">
               <div className="text-lg font-bold text-slate-900">{stats.totalDelivered}</div>
               <div className="text-xs text-slate-500">{t("totalDelivered")}</div>
             </div>
-            <div className="bg-white rounded-lg p-2.5 border border-blue-100 text-center">
+            <div className="bg-white rounded-lg p-2.5 border border-indigo-100 text-center">
               <div className="text-lg font-bold text-slate-900">{stats.todayDelivered}</div>
               <div className="text-xs text-slate-500">{t("todayDelivered")}</div>
             </div>
-            <div className="bg-white rounded-lg p-2.5 border border-blue-100 text-center">
+            <div className="bg-white rounded-lg p-2.5 border border-indigo-100 text-center">
               <div className="text-lg font-bold text-emerald-700">{formatFee(stats.totalEarnings)}</div>
               <div className="text-xs text-slate-500">{t("totalEarnings")}</div>
             </div>
-            <div className="bg-white rounded-lg p-2.5 border border-blue-100 text-center">
+            <div className="bg-white rounded-lg p-2.5 border border-indigo-100 text-center">
               <div className="text-lg font-bold text-emerald-700">{formatFee(stats.todayEarnings)}</div>
               <div className="text-xs text-slate-500">{t("todayEarnings")}</div>
             </div>

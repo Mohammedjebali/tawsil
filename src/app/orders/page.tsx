@@ -20,7 +20,7 @@ interface Order {
 
 const STATUS_COLOR: Record<string, string> = {
   pending: "bg-amber-50 text-amber-700 border-amber-200",
-  accepted: "bg-blue-50 text-blue-700 border-blue-200",
+  accepted: "bg-indigo-50 text-indigo-600 border-indigo-200",
   picked_up: "bg-purple-50 text-purple-700 border-purple-200",
   delivered: "bg-emerald-50 text-emerald-700 border-emerald-200",
   cancelled: "bg-red-50 text-red-600 border-red-200",
@@ -93,8 +93,18 @@ export default function OrdersPage() {
         <h1 className="text-xl font-bold text-slate-900 mb-5">{t("myOrders")}</h1>
 
         {loading && (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+          <div className="space-y-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="card">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="skeleton h-3 w-24" />
+                  <div className="skeleton h-5 w-16 rounded-full" />
+                </div>
+                <div className="skeleton h-4 w-2/3 mb-2" />
+                <div className="skeleton h-3 w-1/2 mb-3" />
+                <div className="skeleton h-3 w-3/4" />
+              </div>
+            ))}
           </div>
         )}
 
@@ -102,7 +112,7 @@ export default function OrdersPage() {
           <div className="text-center py-16">
             <Package className="w-14 h-14 text-slate-300 mx-auto mb-3" />
             <p className="text-slate-500 text-sm">{t("noOrdersYet")}</p>
-            <a href="/" className="mt-4 inline-block text-blue-700 font-semibold text-sm hover:underline">
+            <a href="/" className="mt-4 inline-block text-indigo-600 font-semibold text-sm hover:underline">
               {t("orderNow")}
             </a>
           </div>
@@ -153,14 +163,14 @@ export default function OrdersPage() {
                 {/* Footer */}
                 <div className="flex justify-between items-center">
                   <div>
-                    <span className="text-blue-700 font-bold text-sm">{formatFee(order.delivery_fee)}</span>
+                    <span className="text-indigo-600 font-bold text-sm">{formatFee(order.delivery_fee)}</span>
                     <p className="text-xs text-slate-400 mt-0.5">{formatDate(order.created_at)}</p>
                   </div>
 
                   {order.status === "picked_up" && (
                     <a
                       href={`/track?order=${order.id}`}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-full"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full"
                     >
                       {t("trackOrder")} <ChevronRight className="w-3 h-3" />
                     </a>

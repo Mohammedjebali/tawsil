@@ -148,8 +148,8 @@ export default function RiderRegister() {
     <div className="min-h-[80vh] flex items-center justify-center">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-blue-50 border-2 border-blue-200 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Bike className="w-10 h-10 text-blue-700" />
+          <div className="w-20 h-20 bg-indigo-50 border-2 border-indigo-200 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Bike className="w-10 h-10 text-indigo-600" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 mb-2">{t("registerAsRider")}</h1>
           <p className="text-slate-500 text-sm">{t("enterInfoToDeliver")}</p>
@@ -189,8 +189,8 @@ export default function RiderRegister() {
             </div>
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-            <p className="text-blue-800 text-sm font-medium leading-relaxed">
+          <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
+            <p className="text-indigo-700 text-sm font-medium leading-relaxed">
               {t("reviewWarning")}
             </p>
           </div>

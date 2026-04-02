@@ -427,7 +427,7 @@ export default function AdminPage() {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <div className="w-full max-w-sm">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Package className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-slate-900">Admin Login</h1>
@@ -487,7 +487,7 @@ export default function AdminPage() {
                 onClick={() => setTab(t.key)}
                 className={`relative flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${
                   tab === t.key
-                    ? "bg-blue-700 text-white shadow-sm"
+                    ? "bg-indigo-600 text-white shadow-sm"
                     : "text-slate-500 hover:text-slate-700"
                 }`}
               >
@@ -516,7 +516,7 @@ export default function AdminPage() {
                       <Clock className="w-3.5 h-3.5" />
                       Last updated: {lastUpdated.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true })}
                     </div>
-                    <button onClick={fetchDashboard} className="text-xs text-blue-700 font-medium hover:text-blue-800">
+                    <button onClick={fetchDashboard} className="text-xs text-indigo-600 font-medium hover:text-indigo-700">
                       <RefreshCw className={`w-3.5 h-3.5 inline mr-1 ${dashLoading ? "animate-spin" : ""}`} />
                       Refresh
                     </button>
@@ -527,8 +527,8 @@ export default function AdminPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-xl border border-slate-200 bg-white p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-                        <Package className="w-4 h-4 text-blue-700" />
+                      <div className="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center">
+                        <Package className="w-4 h-4 text-indigo-600" />
                       </div>
                       <span className="text-xs font-medium text-slate-500">Orders Today</span>
                     </div>
@@ -545,12 +545,12 @@ export default function AdminPage() {
                   </div>
                   <div className="rounded-xl border border-slate-200 bg-white p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-                        <TrendingUp className="w-4 h-4 text-blue-700" />
+                      <div className="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center">
+                        <TrendingUp className="w-4 h-4 text-indigo-600" />
                       </div>
                       <span className="text-xs font-medium text-slate-500">Revenue</span>
                     </div>
-                    <div className="text-2xl font-bold text-blue-700">{formatFee(dash.today.revenue)}</div>
+                    <div className="text-2xl font-bold text-indigo-600">{formatFee(dash.today.revenue)}</div>
                   </div>
                   <div className="rounded-xl border border-slate-200 bg-white p-4">
                     <div className="flex items-center gap-2 mb-2">
@@ -577,7 +577,7 @@ export default function AdminPage() {
                 {/* Row 2: Riders */}
                 <div className="rounded-xl border border-slate-200 bg-white p-4">
                   <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                    <Bike className="w-4 h-4 text-blue-700" /> Rider Status
+                    <Bike className="w-4 h-4 text-indigo-600" /> Rider Status
                   </h3>
                   <div className="grid grid-cols-3 gap-3">
                     <div className="text-center">
@@ -598,7 +598,7 @@ export default function AdminPage() {
                 {/* Row 3: Top Stores */}
                 <div className="rounded-xl border border-slate-200 bg-white p-4">
                   <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                    <Store className="w-4 h-4 text-blue-700" /> Top Stores
+                    <Store className="w-4 h-4 text-indigo-600" /> Top Stores
                   </h3>
                   {dash.topStores.length === 0 && (
                     <p className="text-sm text-slate-400 text-center py-2">No orders yet</p>
@@ -606,7 +606,7 @@ export default function AdminPage() {
                   <div className="space-y-2">
                     {dash.topStores.map((s, i) => (
                       <div key={s.name} className="flex items-center gap-3">
-                        <span className="w-6 h-6 rounded-full bg-blue-50 text-blue-700 text-xs font-bold flex items-center justify-center">{i + 1}</span>
+                        <span className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold flex items-center justify-center">{i + 1}</span>
                         <span className="flex-1 text-sm font-medium text-slate-700 truncate">{s.name}</span>
                         <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600">{s.count} orders</span>
                       </div>
@@ -617,7 +617,7 @@ export default function AdminPage() {
                 {/* Row 4: Recent Orders */}
                 <div className="rounded-xl border border-slate-200 bg-white p-4">
                   <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                    <Package className="w-4 h-4 text-blue-700" /> Recent Orders
+                    <Package className="w-4 h-4 text-indigo-600" /> Recent Orders
                   </h3>
                   {dash.recentOrders.length === 0 && (
                     <p className="text-sm text-slate-400 text-center py-2">No orders yet</p>
@@ -651,7 +651,7 @@ export default function AdminPage() {
                   {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
                 <input type="text" value={newAddress} onChange={(e) => setNewAddress(e.target.value)} placeholder="Address" className="input flex-[2] min-w-[150px]" />
-                <button type="submit" className="bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm hover:bg-blue-800 transition-colors">
+                <button type="submit" className="bg-indigo-600 text-white font-semibold px-5 py-2.5 rounded-xl text-sm hover:bg-indigo-700 transition-colors">
                   Add
                 </button>
               </div>
@@ -664,8 +664,8 @@ export default function AdminPage() {
                 const orderCount = storeStats[store.name] || 0;
                 return (
                   <div key={store.id} className="card flex items-center gap-3 !py-3">
-                    <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
-                      <IconComp className="w-5 h-5 text-blue-700" />
+                    <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center">
+                      <IconComp className="w-5 h-5 text-indigo-600" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="font-semibold text-sm text-slate-900">{store.name}</div>
@@ -754,7 +754,7 @@ export default function AdminPage() {
                   <span className="text-sm text-slate-600 flex-1 min-w-[100px]">{order.store_name}</span>
                   <span className="text-sm text-slate-600">{order.customer_name}</span>
                   <span className="text-sm font-mono text-slate-500" dir="ltr">{order.customer_phone}</span>
-                  <span className="text-sm font-semibold text-blue-700">{formatFee(order.delivery_fee)}</span>
+                  <span className="text-sm font-semibold text-indigo-600">{formatFee(order.delivery_fee)}</span>
                   <span className="text-xs text-slate-400">{formatTime(order.created_at)}</span>
                   {(order.status === "pending" || order.status === "accepted") && (
                     <button
@@ -822,8 +822,8 @@ export default function AdminPage() {
                     return (
                       <div key={rider.id} className="card !py-3">
                         <div className="flex items-center gap-3">
-                          <div className="relative w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
-                            <Bike className="w-5 h-5 text-blue-700" />
+                          <div className="relative w-10 h-10 bg-indigo-50 rounded-full flex items-center justify-center">
+                            <Bike className="w-5 h-5 text-indigo-600" />
                             {rider.is_online && (
                               <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white" />
                             )}
@@ -847,7 +847,7 @@ export default function AdminPage() {
                                 />
                                 <button
                                   onClick={() => saveRiderEdit(rider.id)}
-                                  className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-700 text-white hover:bg-blue-800"
+                                  className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
                                 >
                                   Save
                                 </button>
@@ -887,7 +887,7 @@ export default function AdminPage() {
                               </span>
                               <button
                                 onClick={() => { setEditingRider(rider.id); setEditRiderName(rider.name); setEditRiderPhone(rider.phone); }}
-                                className="p-2 text-slate-400 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                                className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                               >
                                 <Pencil className="w-3.5 h-3.5" />
                               </button>
@@ -986,8 +986,8 @@ export default function AdminPage() {
                   return (
                     <div key={c.id} className="card !py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
-                          <UserCheck className="w-5 h-5 text-blue-700" />
+                        <div className="w-10 h-10 bg-indigo-50 rounded-full flex items-center justify-center">
+                          <UserCheck className="w-5 h-5 text-indigo-600" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="font-semibold text-sm text-slate-900 flex items-center gap-2">
@@ -1011,12 +1011,12 @@ export default function AdminPage() {
                         <div className="text-right">
                           <div className="text-sm font-mono text-slate-600" dir="ltr">{c.phone}</div>
                           {c.referred_by && (
-                            <div className="text-xs text-blue-600">Referred by: {c.referred_by}</div>
+                            <div className="text-xs text-indigo-600">Referred by: {c.referred_by}</div>
                           )}
                           <div className="flex items-center justify-end gap-2">
                             <div className="text-xs text-slate-400">{new Date(c.created_at).toLocaleDateString()}</div>
                             {(c.successful_referrals_count || 0) > 0 && (
-                              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 border border-indigo-200">
                                 {c.successful_referrals_count} referrals
                               </span>
                             )}
@@ -1034,7 +1034,7 @@ export default function AdminPage() {
                         <button
                           onClick={() => addPoints(c.email)}
                           disabled={pointsUpdating === c.email}
-                          className="text-xs font-semibold px-3 py-2 rounded-lg bg-blue-700 text-white hover:bg-blue-800 transition-colors disabled:opacity-50"
+                          className="text-xs font-semibold px-3 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
                         >
                           {pointsUpdating === c.email ? "..." : "+/- pts"}
                         </button>

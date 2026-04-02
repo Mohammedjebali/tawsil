@@ -95,8 +95,8 @@ export default function CustomerRegister() {
     return (
       <div className="min-h-[80vh] flex items-center justify-center">
         <div className="w-full max-w-md text-center">
-          <div className="w-20 h-20 bg-blue-50 border-2 border-blue-200 rounded-full flex items-center justify-center mx-auto mb-5">
-            <Mail className="w-10 h-10 text-blue-700" />
+          <div className="w-20 h-20 bg-indigo-50 border-2 border-indigo-200 rounded-full flex items-center justify-center mx-auto mb-5">
+            <Mail className="w-10 h-10 text-indigo-600" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 mb-2">
             {t("checkGmail")}
@@ -115,7 +115,7 @@ export default function CustomerRegister() {
           </button>
           <a
             href="/login"
-            className="block mt-4 text-blue-700 text-sm font-medium hover:underline"
+            className="block mt-4 text-indigo-600 text-sm font-medium hover:underline"
           >
             {t("backToLogin")}
           </a>
@@ -129,7 +129,7 @@ export default function CustomerRegister() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-3">
+          <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
             <Package className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 mb-1">
@@ -324,7 +324,7 @@ export default function CustomerRegister() {
 
           <p className="text-center text-sm text-slate-500 mt-3">
             {t("haveAccount")}{" "}
-            <a href="/login" className="text-blue-700 font-medium hover:underline">
+            <a href="/login" className="text-indigo-600 font-medium hover:underline">
               {t("signIn")}
             </a>
           </p>

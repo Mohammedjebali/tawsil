@@ -126,7 +126,7 @@ function TrackContent() {
           <button
             onClick={() => fetchOrder()}
             disabled={loading}
-            className="bg-blue-700 hover:bg-blue-800 text-white font-semibold px-5 py-2.5 rounded-xl text-sm disabled:opacity-50 transition-colors"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm disabled:opacity-50 transition-colors"
           >
             {loading ? "..." : t("search")}
           </button>
@@ -138,17 +138,17 @@ function TrackContent() {
       {order && (
         <div className="space-y-4">
           {/* Status badge */}
-          <div className="card border-blue-200 bg-blue-50/50">
+          <div className="card border-indigo-200 bg-indigo-50/50">
             <div className="flex items-center gap-3">
               <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                order.status === "delivered" ? "bg-emerald-100" : order.status === "cancelled" ? "bg-red-100" : "bg-blue-100"
+                order.status === "delivered" ? "bg-emerald-100" : order.status === "cancelled" ? "bg-red-100" : "bg-indigo-100"
               }`}>
                 {order.status === "delivered" ? (
                   <CheckCircle2 className="w-6 h-6 text-emerald-600" />
                 ) : order.status === "cancelled" ? (
                   <Package className="w-6 h-6 text-red-500" />
                 ) : (
-                  <Package className="w-6 h-6 text-blue-700" />
+                  <Package className="w-6 h-6 text-indigo-600" />
                 )}
               </div>
               <div className="flex-1">
@@ -191,7 +191,7 @@ function TrackContent() {
                         isCompleted
                           ? "bg-emerald-50 border-emerald-400 text-emerald-600"
                           : isCurrent
-                          ? "bg-blue-100 border-blue-600 text-blue-700 pulse-dot"
+                          ? "bg-indigo-100 border-indigo-600 text-indigo-600 pulse-dot"
                           : "bg-slate-100 border-slate-200 text-slate-400"
                       }`}>
                         {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
@@ -232,16 +232,16 @@ function TrackContent() {
             )}
             <div className="flex justify-between text-sm border-t border-slate-100 pt-3">
               <span className="text-slate-500">{t("deliveryFee")}</span>
-              <span className="font-bold text-blue-700">{formatFee(order.delivery_fee)}</span>
+              <span className="font-bold text-indigo-600">{formatFee(order.delivery_fee)}</span>
             </div>
           </div>
 
           {/* Rider info */}
           {order.rider_name && (
-            <div className="card border-blue-200">
+            <div className="card border-indigo-200">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
-                  <Package className="w-5 h-5 text-blue-700" />
+                <div className="w-10 h-10 bg-indigo-50 rounded-full flex items-center justify-center">
+                  <Package className="w-5 h-5 text-indigo-600" />
                 </div>
                 <div className="flex-1">
                   <div className="text-sm font-bold text-slate-900">{t("rider")}</div>
@@ -250,7 +250,7 @@ function TrackContent() {
                 {order.rider_phone && (
                   <a
                     href={`tel:${order.rider_phone}`}
-                    className="flex items-center gap-1.5 bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-blue-800 transition-colors no-underline"
+                    className="flex items-center gap-1.5 bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors no-underline"
                   >
                     <Phone className="w-4 h-4" />
                     {t("callRider")}

@@ -57,8 +57,8 @@ export default function RewardsPage() {
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-1">
-          <div className="w-12 h-12 bg-blue-50 border border-blue-200 rounded-full flex items-center justify-center">
-            <Trophy className="w-6 h-6 text-blue-700" />
+          <div className="w-12 h-12 bg-indigo-50 border border-indigo-200 rounded-full flex items-center justify-center">
+            <Trophy className="w-6 h-6 text-indigo-600" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-slate-900">{t("rewards")}</h1>
@@ -94,7 +94,7 @@ export default function RewardsPage() {
             </div>
             <div className="w-full bg-slate-100 rounded-full h-3">
               <div
-                className="bg-blue-700 h-3 rounded-full transition-all"
+                className="bg-indigo-600 h-3 rounded-full transition-all"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>

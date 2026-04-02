@@ -126,8 +126,8 @@ export default function ProfilePage() {
     <div>
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-1">
-          <div className="w-12 h-12 bg-blue-50 border border-blue-200 rounded-full flex items-center justify-center">
-            <User className="w-6 h-6 text-blue-700" />
+          <div className="w-12 h-12 bg-indigo-50 border border-indigo-200 rounded-full flex items-center justify-center">
+            <User className="w-6 h-6 text-indigo-600" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-slate-900">{t("editProfile")}</h1>
@@ -144,29 +144,29 @@ export default function ProfilePage() {
           <div className="text-sm font-semibold text-slate-900">{t("pointsBalance")}</div>
           <div className="text-xs text-slate-500">{t("rewards")}</div>
         </div>
-        <span className="text-lg font-bold text-blue-700">{points} pts</span>
+        <span className="text-lg font-bold text-indigo-600">{points} pts</span>
       </a>
 
       {/* Referral card */}
       {referralCode && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-4">
           <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
-            <Share2 className="w-4 h-4 text-blue-700" />
+            <Share2 className="w-4 h-4 text-indigo-600" />
             {t("referFriend")}
           </h3>
           <p className="text-xs text-slate-500 mb-2">{t("yourReferralCode")}</p>
           <div className="flex items-center gap-2 mb-3">
             <button
               onClick={handleCopyCode}
-              className="flex-1 bg-white border border-blue-200 rounded-lg py-2.5 px-4 text-center cursor-pointer hover:bg-blue-50 transition-colors"
+              className="flex-1 bg-white border border-indigo-200 rounded-lg py-2.5 px-4 text-center cursor-pointer hover:bg-indigo-50 transition-colors"
             >
-              <span className="text-2xl font-bold text-blue-700 tracking-widest font-mono">
+              <span className="text-2xl font-bold text-indigo-600 tracking-widest font-mono">
                 {referralCode}
               </span>
             </button>
             <button
               onClick={handleCopyCode}
-              className="p-2.5 bg-white border border-blue-200 rounded-lg text-blue-700 hover:bg-blue-100 transition-colors"
+              className="p-2.5 bg-white border border-indigo-200 rounded-lg text-indigo-600 hover:bg-indigo-100 transition-colors"
             >
               <Copy className="w-5 h-5" />
             </button>

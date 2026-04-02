@@ -78,11 +78,21 @@ export default function RiderMapView({
         L.marker([storeLat, storeLng], { icon: storeIcon }).addTo(map).bindPopup("🏪 Magasin");
       }
 
-      // Rider pin
+      // Inject ping keyframes
+      const styleEl = document.createElement("style");
+      styleEl.textContent = `@keyframes ping{0%{transform:scale(1);opacity:0.6}75%,100%{transform:scale(2.2);opacity:0}}`;
+      document.head.appendChild(styleEl);
+
+      // Rider pin with pulsing ring
       if (riderLat && riderLng) {
         const riderIcon = L.divIcon({
-          html: `<div style="background:#dc2626;width:24px;height:24px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.5);font-size:13px;display:flex;align-items:center;justify-content:center">🛵</div>`,
-          iconSize: [24, 24], iconAnchor: [12, 12], className: "",
+          html: `<div style="position:relative;width:32px;height:32px;">
+  <div style="position:absolute;inset:-6px;border-radius:50%;background:rgba(99,102,241,0.3);animation:ping 1.5s cubic-bezier(0,0,0.2,1) infinite;"></div>
+  <div style="width:32px;height:32px;background:#6366f1;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(99,102,241,0.5);display:flex;align-items:center;justify-content:center;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>
+  </div>
+</div>`,
+          iconSize: [32, 32], iconAnchor: [16, 16], className: "",
         });
         riderMarkerRef.current = L.marker([riderLat, riderLng], { icon: riderIcon })
           .addTo(map).bindPopup("🛵 Vous");

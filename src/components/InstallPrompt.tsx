@@ -36,7 +36,7 @@ export default function InstallPrompt() {
   return (
     <div className="fixed bottom-20 left-3 right-3 z-50 max-w-lg mx-auto">
       <div className="bg-white border border-slate-200 rounded-2xl shadow-lg p-4 flex items-center gap-3">
-        <div className="w-10 h-10 bg-blue-700 rounded-xl flex items-center justify-center flex-shrink-0">
+        <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0">
           <Download className="w-5 h-5 text-white" />
         </div>
         <div className="flex-1 min-w-0">
@@ -46,7 +46,7 @@ export default function InstallPrompt() {
         <div className="flex gap-2 flex-shrink-0">
           <button
             onClick={install}
-            className="bg-blue-700 text-white text-xs px-3.5 py-2 rounded-lg font-semibold hover:bg-blue-800 transition-colors"
+            className="bg-indigo-600 text-white text-xs px-3.5 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
           >
             {t("install")}
           </button>

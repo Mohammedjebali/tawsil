@@ -181,6 +181,7 @@ export default function RiderPage() {
 
   async function acceptOrder(orderId: string) {
     if (!rider) return;
+    if (navigator.vibrate) navigator.vibrate([50, 30, 100]);
     const res = await fetch(`/api/orders/${orderId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -277,8 +278,8 @@ export default function RiderPage() {
     <div>
       {/* Welcome card */}
       <div className="card flex items-center gap-3 mb-4">
-        <div className="w-12 h-12 bg-blue-50 border border-blue-200 rounded-full flex items-center justify-center">
-          <User className="w-6 h-6 text-blue-700" />
+        <div className="w-12 h-12 bg-indigo-50 border border-indigo-200 rounded-full flex items-center justify-center">
+          <User className="w-6 h-6 text-indigo-600" />
         </div>
         <div className="flex-1">
           <div className="text-sm text-slate-500">{t("hi")}</div>
@@ -319,7 +320,7 @@ export default function RiderPage() {
       ) : (
         <button
           onClick={subscribePush}
-          className="w-full mb-4 py-2.5 rounded-xl text-sm font-semibold border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors flex items-center justify-center gap-2"
+          className="w-full mb-4 py-2.5 rounded-xl text-sm font-semibold border border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors flex items-center justify-center gap-2"
         >
           <Bell className="w-4 h-4" />
           {t("notificationEnable")}
@@ -333,14 +334,14 @@ export default function RiderPage() {
           onClick={() => setTab("available")}
           className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-1.5 ${
             tab === "available"
-              ? "bg-white text-blue-700 shadow-sm"
+              ? "bg-white text-indigo-600 shadow-sm"
               : "text-slate-500"
           }`}
         >
           {t("availableOrders")}
           {orders.length > 0 && (
             <span className={`inline-flex items-center justify-center min-w-[20px] h-5 rounded-full text-xs font-bold px-1.5 ${
-              tab === "available" ? "bg-blue-100 text-blue-700" : "bg-slate-200 text-slate-600"
+              tab === "available" ? "bg-indigo-100 text-indigo-600" : "bg-slate-200 text-slate-600"
             }`}>{orders.length}</span>
           )}
         </button>
@@ -348,7 +349,7 @@ export default function RiderPage() {
           onClick={() => setTab("mine")}
           className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-1.5 ${
             tab === "mine"
-              ? "bg-white text-blue-700 shadow-sm"
+              ? "bg-white text-indigo-600 shadow-sm"
               : "text-slate-500"
           }`}
         >
@@ -356,7 +357,25 @@ export default function RiderPage() {
         </button>
       </div>
 
-      {loading && <div className="text-center text-slate-500 py-8">{t("loading")}</div>}
+      {loading && (
+        <div className="space-y-3">
+          {[...Array(2)].map((_, i) => (
+            <div key={i} className="card">
+              <div className="flex justify-between items-start mb-3">
+                <div className="skeleton h-3 w-24" />
+                <div className="skeleton h-6 w-20" />
+              </div>
+              <div className="skeleton h-4 w-2/3 mb-2" />
+              <div className="skeleton h-3 w-1/2 mb-3" />
+              <div className="skeleton h-16 w-full mb-3 rounded-xl" />
+              <div className="flex gap-2">
+                <div className="skeleton h-10 w-20 rounded-xl" />
+                <div className="skeleton h-10 flex-1 rounded-xl" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {tab === "available" && (
         <div className="space-y-3">
@@ -376,7 +395,7 @@ export default function RiderPage() {
             <div key={order.id} className="card">
               <div className="flex justify-between items-start mb-3">
                 <span className="text-xs text-slate-400 font-mono" dir="ltr">{order.order_number}</span>
-                <span className="font-bold text-blue-700 text-lg">{formatFee(order.delivery_fee)}</span>
+                <span className="font-bold text-indigo-600 text-lg">{formatFee(order.delivery_fee)}</span>
               </div>
 
               <div className="flex items-center gap-2 text-sm text-slate-700 mb-1.5">
@@ -399,7 +418,7 @@ export default function RiderPage() {
                       href={`https://www.google.com/maps?q=${order.customer_lat},${order.customer_lng}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full text-xs font-medium border border-blue-200"
+                      className="inline-flex items-center gap-1 bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full text-xs font-medium border border-indigo-200"
                     >
                       <MapPin className="w-3 h-3" />
                       {t("viewOnMap")}
@@ -444,7 +463,7 @@ export default function RiderPage() {
               <div key={order.id} className="card">
                 <div className="flex justify-between items-start mb-3">
                   <span className="text-xs text-slate-400 font-mono" dir="ltr">{order.order_number}</span>
-                  <span className="font-bold text-blue-700">{formatFee(order.delivery_fee)}</span>
+                  <span className="font-bold text-indigo-600">{formatFee(order.delivery_fee)}</span>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm text-slate-700 mb-1.5">
@@ -459,7 +478,7 @@ export default function RiderPage() {
                       href={`https://www.google.com/maps?q=${order.customer_lat},${order.customer_lng}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full text-xs font-medium border border-blue-200"
+                      className="inline-flex items-center gap-1 bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full text-xs font-medium border border-indigo-200"
                     >
                       <MapPin className="w-3 h-3" />
                       {t("viewOnMap")}
@@ -487,7 +506,7 @@ export default function RiderPage() {
                 <div className="flex justify-between items-center mb-3">
                   <a
                     href={`tel:${order.customer_phone}`}
-                    className="inline-flex items-center gap-2 border border-blue-700 text-blue-700 px-4 py-2.5 rounded-xl text-sm font-bold no-underline hover:bg-blue-50 transition-colors"
+                    className="inline-flex items-center gap-2 border border-indigo-600 text-indigo-600 px-4 py-2.5 rounded-xl text-sm font-bold no-underline hover:bg-indigo-50 transition-colors"
                     dir="ltr"
                   >
                     <Phone className="w-4 h-4" />
@@ -499,7 +518,7 @@ export default function RiderPage() {
                 {/* Price adjustment */}
                 <div className="bg-white border border-slate-200 rounded-xl p-3 mb-3">
                   <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-2">
-                    <DollarSign className="w-4 h-4 text-blue-700" />
+                    <DollarSign className="w-4 h-4 text-indigo-600" />
                     {t("adjustPrice")}
                   </div>
                   <div className="space-y-2">
@@ -512,7 +531,7 @@ export default function RiderPage() {
                         placeholder="0.000"
                         value={priceInputs[order.id] || ""}
                         onChange={e => setPriceInputs(prev => ({ ...prev, [order.id]: e.target.value }))}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
+                        className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400"
                         dir="ltr"
                       />
                     </div>
@@ -523,13 +542,13 @@ export default function RiderPage() {
                         placeholder={t("priceNote")}
                         value={noteInputs[order.id] || ""}
                         onChange={e => setNoteInputs(prev => ({ ...prev, [order.id]: e.target.value }))}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
+                        className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400"
                       />
                     </div>
                     <button
                       onClick={() => updateActualPrice(order.id)}
                       disabled={priceUpdating[order.id] || !priceInputs[order.id]}
-                      className="w-full py-2 rounded-xl text-sm font-semibold bg-blue-700 text-white hover:bg-blue-800 disabled:opacity-50 transition-colors"
+                      className="w-full py-2 rounded-xl text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors"
                     >
                       {t("updatePrice")}
                     </button>

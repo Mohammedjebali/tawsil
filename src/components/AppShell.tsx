@@ -106,14 +106,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div dir={dir} className="min-h-screen bg-slate-50">
+    <div dir={dir} className="min-h-screen" style={{ backgroundColor: "#f1f5f9" }}>
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-40">
+      <header className="bg-white/90 backdrop-blur-md border-b border-white/60 px-4 py-3 flex items-center justify-between sticky top-0 z-40">
         <a href="/" className="flex items-center gap-2.5 no-underline">
-          <div className="w-9 h-9 bg-blue-700 rounded-xl flex items-center justify-center">
+          <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center">
             <Package className="w-5 h-5 text-white" />
           </div>
-          <span className="font-bold text-base text-slate-900">Tawsil</span>
+          <div>
+            <span className="font-bold text-base text-indigo-600 block leading-tight">Tawsil</span>
+            <span className="text-xs text-slate-400">{t("appTagline")}</span>
+          </div>
         </a>
 
         <div className="flex items-center gap-2">
@@ -132,7 +135,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 onClick={() => setLang(l.code)}
                 className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
                   lang === l.code
-                    ? "bg-white text-blue-700 shadow-sm"
+                    ? "bg-white text-indigo-600 shadow-sm"
                     : "text-slate-500 hover:text-slate-700"
                 }`}
               >
@@ -161,81 +164,88 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Bottom nav for riders */}
       {ready && role === "rider" && (
-        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40">
-          <div className="max-w-lg mx-auto flex">
+        <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-center pb-4 px-4">
+          <nav className="bg-white/90 backdrop-blur-md border border-white/60 shadow-xl rounded-2xl flex w-full max-w-lg overflow-hidden">
             <a
               href="/rider"
-              className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
-                pathname === "/rider" ? "text-blue-700" : "text-slate-400 hover:text-slate-600"
+              className={`relative flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
+                pathname === "/rider" ? "text-indigo-600" : "text-slate-400 hover:text-slate-600"
               }`}
             >
               <Package className="w-5 h-5" />
               {t("orders")}
+              {pathname === "/rider" && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-indigo-600 rounded-full" />}
             </a>
             <a
               href="/rider/stats"
-              className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
-                pathname === "/rider/stats" ? "text-blue-700" : "text-slate-400 hover:text-slate-600"
+              className={`relative flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
+                pathname === "/rider/stats" ? "text-indigo-600" : "text-slate-400 hover:text-slate-600"
               }`}
             >
               <TrendingUp className="w-5 h-5" />
               {t("myStats")}
+              {pathname === "/rider/stats" && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-indigo-600 rounded-full" />}
             </a>
-          </div>
-        </nav>
+          </nav>
+        </div>
       )}
 
       {/* Bottom nav for customers */}
       {ready && role === "customer" && (
-        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40">
-          <div className="max-w-lg mx-auto flex">
+        <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-center pb-4 px-4">
+          <nav className="bg-white/90 backdrop-blur-md border border-white/60 shadow-xl rounded-2xl flex w-full max-w-lg overflow-hidden">
             <a
               href="/"
-              className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
-                pathname === "/" ? "text-blue-700" : "text-slate-400 hover:text-slate-600"
+              className={`relative flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
+                pathname === "/" ? "text-indigo-600" : "text-slate-400 hover:text-slate-600"
               }`}
             >
               <ShoppingBag className="w-5 h-5" />
               {t("orderTab")}
+              {pathname === "/" && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-indigo-600 rounded-full" />}
             </a>
             <a
               href="/track"
-              className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
-                pathname === "/track" ? "text-blue-700" : "text-slate-400 hover:text-slate-600"
+              className={`relative flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
+                pathname === "/track" ? "text-indigo-600" : "text-slate-400 hover:text-slate-600"
               }`}
             >
               <MapPin className="w-5 h-5" />
               {t("trackTab")}
+              {pathname === "/track" && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-indigo-600 rounded-full" />}
             </a>
             <a
               href="/orders"
-              className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
-                pathname === "/orders" ? "text-blue-700" : "text-slate-400 hover:text-slate-600"
+              className={`relative flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
+                pathname === "/orders" ? "text-indigo-600" : "text-slate-400 hover:text-slate-600"
               }`}
             >
               <ClipboardList className="w-5 h-5" />
               {t("myOrders")}
+              {pathname === "/orders" && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-indigo-600 rounded-full" />}
             </a>
             <a
               href="/rewards"
-              className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
-                pathname === "/rewards" ? "text-blue-700" : "text-slate-400 hover:text-slate-600"
+              className={`relative flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
+                pathname === "/rewards" ? "text-indigo-600" : "text-slate-400 hover:text-slate-600"
               }`}
             >
               <Star className="w-5 h-5" />
               {t("rewards")}
+              {pathname === "/rewards" && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-indigo-600 rounded-full" />}
             </a>
             <a
               href="/profile"
-              className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
-                pathname === "/profile" ? "text-blue-700" : "text-slate-400 hover:text-slate-600"
+              className={`relative flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors no-underline ${
+                pathname === "/profile" ? "text-indigo-600" : "text-slate-400 hover:text-slate-600"
               }`}
             >
               <User className="w-5 h-5" />
               {t("profile")}
+              {pathname === "/profile" && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-indigo-600 rounded-full" />}
             </a>
-          </div>
-        </nav>
+          </nav>
+        </div>
       )}
     </div>
   );

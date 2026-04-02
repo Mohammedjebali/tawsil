@@ -41,7 +41,7 @@ function LandingPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-10">
-          <div className="w-24 h-24 bg-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <div className="w-24 h-24 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <Package className="w-12 h-12 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-slate-900 mb-1">{t("appName")}</h1>
@@ -60,8 +60,8 @@ function LandingPage() {
             href="/register/customer"
             className="card-hover flex items-center gap-4 no-underline"
           >
-            <div className="w-14 h-14 bg-blue-50 border border-blue-200 rounded-2xl flex items-center justify-center">
-              <ShoppingBag className="w-7 h-7 text-blue-700" />
+            <div className="w-14 h-14 bg-indigo-50 border border-indigo-200 rounded-2xl flex items-center justify-center">
+              <ShoppingBag className="w-7 h-7 text-indigo-600" />
             </div>
             <div className="flex-1">
               <div className="text-base font-bold text-slate-900">{t("iAmCustomer")}</div>
@@ -74,8 +74,8 @@ function LandingPage() {
             href="/register/rider"
             className="card-hover flex items-center gap-4 no-underline"
           >
-            <div className="w-14 h-14 bg-blue-50 border border-blue-200 rounded-2xl flex items-center justify-center">
-              <Bike className="w-7 h-7 text-blue-700" />
+            <div className="w-14 h-14 bg-indigo-50 border border-indigo-200 rounded-2xl flex items-center justify-center">
+              <Bike className="w-7 h-7 text-indigo-600" />
             </div>
             <div className="flex-1">
               <div className="text-base font-bold text-slate-900">{t("iAmRider")}</div>
@@ -103,7 +103,7 @@ function StepProgress({ current, total }: { current: number; total: number }) {
       </div>
       <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
         <div
-          className="h-full bg-blue-700 rounded-full transition-all duration-500 ease-out"
+          className="h-full bg-indigo-600 rounded-full transition-all duration-500 ease-out"
           style={{ width: `${(current / total) * 100}%` }}
         />
       </div>
@@ -117,6 +117,7 @@ export default function OrderPage() {
   const [ready, setReady] = useState(false);
 
   const [stores, setStores] = useState<StoreItem[]>([]);
+  const [storesLoading, setStoresLoading] = useState(true);
   const [storeSearch, setStoreSearch] = useState("");
   const [step, setStep] = useState<"store" | "details" | "info" | "review" | "success">("store");
 
@@ -166,7 +167,8 @@ export default function OrderPage() {
     if (user) {
       fetch("/api/stores")
         .then((r) => r.json())
-        .then((d) => setStores(d.stores || []));
+        .then((d) => setStores(d.stores || []))
+        .finally(() => setStoresLoading(false));
     }
   }, [user]);
 
@@ -250,14 +252,14 @@ export default function OrderPage() {
     <div>
       {/* Announcement banner */}
       {announcement && !announcementDismissed && announcementMessage && (
-        <div className="bg-blue-700 text-white rounded-xl mx-4 mb-4 px-4 py-3 flex justify-between items-center">
+        <div className="bg-indigo-600 text-white rounded-xl mx-4 mb-4 px-4 py-3 flex justify-between items-center">
           <span className="text-sm font-medium">{announcementMessage}</span>
           <button
             onClick={() => {
               localStorage.setItem(`tawsil_dismissed_announcement_${announcement.id}`, "true");
               setAnnouncementDismissed(true);
             }}
-            className="text-white hover:text-blue-200 transition-colors flex-shrink-0 ml-3"
+            className="text-white hover:text-indigo-200 transition-colors flex-shrink-0 ml-3"
           >
             <X className="w-4 h-4" />
           </button>
@@ -267,6 +269,13 @@ export default function OrderPage() {
       {/* Step 1: Pick store */}
       {step === "store" && (
         <div>
+          {/* Gradient header */}
+          <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-2xl p-5 mb-6 text-white">
+            <div className="text-xs font-medium opacity-75 mb-1">{t("appTagline")}</div>
+            <div className="text-2xl font-bold">Tawsil 🛵</div>
+            {user && <div className="text-sm opacity-90 mt-1">{t("hi")} {user.name?.split(" ")[0]} 👋</div>}
+          </div>
+
           <StepProgress current={1} total={4} />
           <div className="mb-5">
             <h1 className="text-xl font-bold text-slate-900 mb-1">{t("selectStore")}</h1>
@@ -286,8 +295,21 @@ export default function OrderPage() {
             />
           </div>
 
+          {/* Skeleton loaders */}
+          {storesLoading && (
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="card">
+                  <div className="skeleton w-12 h-12 rounded-xl mb-3" />
+                  <div className="skeleton h-4 w-3/4 mb-2" />
+                  <div className="skeleton h-3 w-1/2" />
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Store grid */}
-          <div className="grid grid-cols-2 gap-2.5 mb-4">
+          {!storesLoading && <div className="grid grid-cols-2 gap-2.5 mb-4">
             {filteredStores.map((store) => {
               const IconComp = CATEGORY_ICONS[store.category] || Package;
               return (
@@ -296,17 +318,17 @@ export default function OrderPage() {
                   onClick={() => { setSelectedStore(store); setCustomStore(""); setStep("details"); }}
                   className="card-hover flex flex-col items-center gap-2 text-center !p-4"
                 >
-                  <div className="w-12 h-12 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-center overflow-hidden">
+                  <div className="w-12 h-12 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center overflow-hidden">
                     {store.image_url
                       ? <img src={store.image_url} alt={store.name} className="w-12 h-12 object-cover rounded-xl" />
-                      : <IconComp className="w-6 h-6 text-blue-700" />}
+                      : <IconComp className="w-6 h-6 text-indigo-600" />}
                   </div>
                   <div className="font-semibold text-sm text-slate-900 leading-tight">{store.name}</div>
                   {store.address && <div className="text-xs text-slate-400 truncate w-full">{store.address}</div>}
                 </button>
               );
             })}
-          </div>
+          </div>}
 
           <div className="relative my-5">
             <div className="border-t border-slate-200" />
@@ -336,15 +358,15 @@ export default function OrderPage() {
       {step === "details" && (
         <div>
           <StepProgress current={2} total={4} />
-          <button onClick={() => setStep("store")} className="flex items-center gap-1 text-blue-700 text-sm mb-4 hover:text-blue-800 transition-colors font-medium">
+          <button onClick={() => setStep("store")} className="flex items-center gap-1 text-indigo-600 text-sm mb-4 hover:text-indigo-700 transition-colors font-medium">
             <BackArrow className="w-4 h-4" />
             {t("back")}
           </button>
 
           {/* Store pill */}
-          <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-full px-4 py-1.5 mb-4">
-            <Store className="w-4 h-4 text-blue-700" />
-            <span className="text-sm text-blue-700 font-medium">{storeName}</span>
+          <div className="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-200 rounded-full px-4 py-1.5 mb-4">
+            <Store className="w-4 h-4 text-indigo-600" />
+            <span className="text-sm text-indigo-600 font-medium">{storeName}</span>
           </div>
 
           <div className="mb-5">
@@ -393,7 +415,7 @@ export default function OrderPage() {
       {step === "info" && (
         <div>
           <StepProgress current={3} total={4} />
-          <button onClick={() => setStep("details")} className="flex items-center gap-1 text-blue-700 text-sm mb-4 hover:text-blue-800 transition-colors font-medium">
+          <button onClick={() => setStep("details")} className="flex items-center gap-1 text-indigo-600 text-sm mb-4 hover:text-indigo-700 transition-colors font-medium">
             <BackArrow className="w-4 h-4" />
             {t("back")}
           </button>
@@ -434,7 +456,7 @@ export default function OrderPage() {
               className={`w-full py-3.5 rounded-xl text-sm font-semibold border-2 transition-all flex items-center justify-center gap-2 ${
                 gpsStatus === "done"
                   ? "border-emerald-300 bg-emerald-50 text-emerald-700"
-                  : "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
+                  : "border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
               }`}
             >
               <MapPin className="w-4 h-4" />
@@ -464,7 +486,7 @@ export default function OrderPage() {
                     <button
                       type="button"
                       onClick={() => setCustomerAddress(addr)}
-                      className="text-xs font-semibold text-blue-700 hover:text-blue-800 transition-colors"
+                      className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
                     >
                       {t("useSavedAddress")}
                     </button>
@@ -495,7 +517,7 @@ export default function OrderPage() {
       {step === "review" && (
         <div>
           <StepProgress current={4} total={4} />
-          <button onClick={() => setStep("info")} className="flex items-center gap-1 text-blue-700 text-sm mb-4 hover:text-blue-800 transition-colors font-medium">
+          <button onClick={() => setStep("info")} className="flex items-center gap-1 text-indigo-600 text-sm mb-4 hover:text-indigo-700 transition-colors font-medium">
             <BackArrow className="w-4 h-4" />
             {t("back")}
           </button>
@@ -521,7 +543,7 @@ export default function OrderPage() {
           </div>
 
           {/* Fee breakdown */}
-          <div className="card border-blue-200 bg-blue-50/50 mb-4">
+          <div className="card border-indigo-200 bg-indigo-50/50 mb-4">
             <div className="text-sm font-bold text-slate-900 mb-3">{t("paymentDetails")}</div>
             <div className="flex justify-between text-sm text-slate-600">
               <span>{t("goodsPrice")}</span>
@@ -529,7 +551,7 @@ export default function OrderPage() {
             </div>
             <div className="flex justify-between text-sm text-slate-600 mt-2">
               <span>{t("deliveryFee")}</span>
-              <span className="text-blue-700 font-bold">
+              <span className="text-indigo-600 font-bold">
                 {customerLat && customerLng
                   ? formatFee(calculateDeliveryFee(getDistanceKm(
                       selectedStore?.lat ?? 36.5333, selectedStore?.lng ?? 10.5167,
@@ -538,7 +560,7 @@ export default function OrderPage() {
                   : `${t("fromPrice")} ${formatFee(2000)}`}
               </span>
             </div>
-            <div className="border-t border-blue-200 mt-3 pt-3 text-xs text-slate-500">
+            <div className="border-t border-indigo-200 mt-3 pt-3 text-xs text-slate-500">
               {t("cashOnDelivery")}
             </div>
           </div>
@@ -564,9 +586,9 @@ export default function OrderPage() {
           <h1 className="text-2xl font-bold text-slate-900 mb-2">{t("orderConfirmed")}</h1>
           <p className="text-slate-500 mb-6">{t("riderWillContact")}</p>
 
-          <div className="card border-blue-200 mb-5">
+          <div className="card border-indigo-200 mb-5">
             <div className="text-sm text-slate-500 mb-1">{t("orderNumber")}</div>
-            <div className="text-2xl font-bold text-blue-700" dir="ltr">{orderResult.order_number}</div>
+            <div className="text-2xl font-bold text-indigo-600" dir="ltr">{orderResult.order_number}</div>
             <div className="text-xs text-slate-400 mt-1">{t("keepOrderNumber")}</div>
           </div>
 
@@ -576,7 +598,7 @@ export default function OrderPage() {
               <span>{t("store")}</span><span className="font-medium text-slate-900">{storeName}</span>
             </div>
             <div className="flex justify-between text-sm text-slate-600 mt-2">
-              <span>{t("deliveryFee")}</span><span className="font-bold text-blue-700">{formatFee(orderResult.delivery_fee)}</span>
+              <span>{t("deliveryFee")}</span><span className="font-bold text-indigo-600">{formatFee(orderResult.delivery_fee)}</span>
             </div>
           </div>
 

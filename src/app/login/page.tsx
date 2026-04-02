@@ -120,7 +120,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-3">
+          <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
             <Package className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 mb-1">{t("loginTitle")}</h1>
@@ -138,7 +138,7 @@ export default function LoginPage() {
           <button
             onClick={() => setTab("customer")}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-              tab === "customer" ? "bg-white text-blue-700 shadow-sm" : "text-slate-500"
+              tab === "customer" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500"
             }`}
           >
             <Mail className="w-4 h-4" />
@@ -147,7 +147,7 @@ export default function LoginPage() {
           <button
             onClick={() => setTab("rider")}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-              tab === "rider" ? "bg-white text-blue-700 shadow-sm" : "text-slate-500"
+              tab === "rider" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500"
             }`}
           >
             <Bike className="w-4 h-4" />
@@ -170,7 +170,7 @@ export default function LoginPage() {
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="label !mb-0">{t("password")}</label>
-                <a href="/forgot-password" className="text-xs text-blue-700 hover:underline font-medium">
+                <a href="/forgot-password" className="text-xs text-indigo-600 hover:underline font-medium">
                   {t("forgotPassword")}
                 </a>
               </div>
@@ -195,7 +195,7 @@ export default function LoginPage() {
 
             <p className="text-center text-sm text-slate-500">
               {t("noAccount")}{" "}
-              <a href="/register/customer" className="text-blue-700 font-medium hover:underline">
+              <a href="/register/customer" className="text-indigo-600 font-medium hover:underline">
                 {t("signUp")}
               </a>
             </p>
@@ -205,8 +205,8 @@ export default function LoginPage() {
         {/* Rider login */}
         {tab === "rider" && (
           <div className="card space-y-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
-              <p className="text-blue-700 text-sm font-medium">{t("riderLoginInfo")}</p>
+            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 text-center">
+              <p className="text-indigo-600 text-sm font-medium">{t("riderLoginInfo")}</p>
             </div>
 
             <div>
@@ -226,7 +226,7 @@ export default function LoginPage() {
 
             <p className="text-center text-sm text-slate-500">
               {t("areYouRider")}{" "}
-              <a href="/register/rider" className="text-blue-600 font-medium hover:underline">
+              <a href="/register/rider" className="text-indigo-600 font-medium hover:underline">
                 {t("registerAsRiderLink")}
               </a>
             </p>

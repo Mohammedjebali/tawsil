@@ -1,32 +1,58 @@
 @import "tailwindcss";
 
+@theme {
+  --color-primary-50: #eef2ff;
+  --color-primary-100: #e0e7ff;
+  --color-primary-200: #c7d2fe;
+  --color-primary-500: #6366f1;
+  --color-primary-600: #4f46e5;
+  --color-primary-700: #4338ca;
+  --color-cyan-400: #22d3ee;
+  --color-cyan-500: #06b6d4;
+  --color-cyan-600: #0891b2;
+}
+
 @layer base {
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html { -webkit-text-size-adjust: 100%; }
   button, a { touch-action: manipulation; }
-  body { @apply bg-slate-50 text-slate-900 antialiased; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; overflow-x: hidden; }
+  body { background-color: #f1f5f9; @apply text-slate-900 antialiased; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; overflow-x: hidden; }
 }
 
 @layer components {
-  .card { @apply bg-white border border-slate-200 rounded-2xl p-5 shadow-sm; }
-  .card-hover { @apply bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-blue-300 transition-all duration-200 cursor-pointer; }
-  .btn-primary { @apply w-full bg-blue-700 hover:bg-blue-800 active:bg-blue-900 text-white font-semibold py-3.5 px-6 rounded-xl transition-all duration-200 text-base flex items-center justify-center gap-2 shadow-sm; }
-  .btn-secondary { @apply w-full bg-white hover:bg-slate-50 border border-slate-200 hover:border-blue-300 text-slate-700 font-semibold py-3.5 px-6 rounded-xl transition-all duration-200 text-base flex items-center justify-center gap-2; }
+  .card { @apply bg-white/90 border border-white/60 rounded-2xl p-4 shadow-sm; backdrop-filter: blur(4px); }
+  .card-hover { @apply bg-white/90 border border-white/60 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all duration-200 cursor-pointer; backdrop-filter: blur(4px); }
+  .btn-primary { @apply w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 text-base flex items-center justify-center gap-2; }
+  .btn-primary:active { transform: scale(0.95); }
+  .btn-secondary { @apply w-full bg-white hover:bg-slate-50 border border-slate-200 hover:border-indigo-300 text-slate-700 font-semibold py-3.5 px-6 rounded-xl transition-all duration-200 text-base flex items-center justify-center gap-2; }
   .btn-ghost { @apply w-full text-slate-500 hover:text-slate-700 hover:bg-slate-100 font-medium py-3 px-4 rounded-xl transition-all duration-200 text-sm flex items-center justify-center gap-2; }
-  .input { @apply w-full bg-white border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-xl px-4 py-3.5 text-slate-900 placeholder-slate-400 outline-none transition-all text-sm; }
-  .label { @apply text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5 block; }
+  .input { @apply w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 outline-none transition-all text-sm; background: rgba(255,255,255,0.8); }
+  .input:focus { @apply ring-2 ring-indigo-500 border-indigo-500; }
+  .label { @apply text-sm font-semibold text-slate-700 mb-1.5 block; }
   .badge { @apply inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full; }
   .badge-pending { @apply bg-amber-50 text-amber-700 border border-amber-200; }
   .badge-accepted { @apply bg-blue-50 text-blue-700 border border-blue-200; }
   .badge-picked_up { @apply bg-purple-50 text-purple-700 border border-purple-200; }
   .badge-delivered { @apply bg-emerald-50 text-emerald-700 border border-emerald-200; }
   .badge-cancelled { @apply bg-red-50 text-red-700 border border-red-200; }
+  .glass-card { @apply rounded-2xl shadow-lg; background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); }
+  .skeleton {
+    background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 0.5rem;
+  }
 }
 
 .btn-primary:disabled { @apply bg-slate-200 text-slate-400 cursor-not-allowed shadow-none; }
 
 @keyframes pulse-dot {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(29, 78, 216, 0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(29, 78, 216, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
 }
 .pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
