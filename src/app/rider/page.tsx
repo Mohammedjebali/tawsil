@@ -102,7 +102,7 @@ export default function RiderPage() {
   useEffect(() => {
     if (!ready) return;
     fetchOrders();
-    const interval = setInterval(fetchOrders, 15000);
+    const interval = setInterval(fetchOrders, 4000); // fast poll so taken orders vanish quickly
     return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
@@ -147,11 +147,17 @@ export default function RiderPage() {
 
   async function acceptOrder(orderId: string) {
     if (!rider) return;
-    await fetch(`/api/orders/${orderId}`, {
+    const res = await fetch(`/api/orders/${orderId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "accepted", rider_name: rider.name, rider_phone: rider.phone }),
     });
+    if (res.status === 409) {
+      // Someone else was faster — refresh orders to remove this one
+      alert(t("orderTaken"));
+      fetchOrders();
+      return;
+    }
     fetchOrders();
     startSharing(orderId);
   }

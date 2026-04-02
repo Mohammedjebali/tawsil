@@ -21,14 +21,21 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       update[STATUS_TIMESTAMPS[body.status]] = new Date().toISOString();
     }
 
-    const { data, error } = await supabase
-      .from("orders")
-      .update(update)
-      .eq("id", id)
-      .select()
-      .single();
+    // Atomic "first click wins" lock for accept
+    // If status is being set to 'accepted', only update if current status is still 'pending'
+    let query = supabase.from("orders").update(update).eq("id", id);
+    if (body.status === "accepted") {
+      query = query.eq("status", "pending");
+    }
+
+    const { data, error } = await query.select().single();
 
     if (error) return NextResponse.json({ error: error.message, details: error.details, hint: error.hint }, { status: 500 });
+
+    // If accept but no data returned — someone else was faster
+    if (!data && body.status === "accepted") {
+      return NextResponse.json({ error: "order_taken", message: "Too late — another rider accepted this order first" }, { status: 409 });
+    }
 
     // Award 10 loyalty points on delivery
     if (body.status === "delivered" && data?.customer_phone) {

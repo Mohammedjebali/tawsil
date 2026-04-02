@@ -218,6 +218,7 @@ const translations: Record<string, Record<Lang, string>> = {
   riderStats: { ar: "حالة الراكبين", fr: "État des livreurs", en: "Rider status" },
   busy: { ar: "مشغول", fr: "Occupé", en: "Busy" },
   available: { ar: "متاح", fr: "Disponible", en: "Available" },
+  orderTaken: { ar: "للأسف، راكب آخر أخذ هذا الطلب أولاً!", fr: "Trop tard — un autre livreur a pris cette commande!", en: "Too late — another rider accepted this order first!" },
   goOnline: { ar: "ابدأ العمل", fr: "Commencer", en: "Go Online" },
   goOffline: { ar: "أنهِ الدوام", fr: "Terminer", en: "Go Offline" },
   youAreOnline: { ar: "أنت متصل — ستصلك الطلبات", fr: "Vous êtes en ligne — commandes visibles", en: "You are online — orders visible" },
