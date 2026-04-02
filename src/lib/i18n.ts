@@ -240,6 +240,15 @@ const translations: Record<string, Record<Lang, string>> = {
   fromYou: { ar: "منك", fr: "de vous", en: "from you" },
   orderFlagged: { ar: "طلب مُبلَّغ عنه", fr: "Commande signalée", en: "Flagged order" },
   flaggedOrders: { ar: "طلبات مُبلَّغ عنها", fr: "Commandes signalées", en: "Flagged orders" },
+  referFriend: { ar: "أدعُ صديقاً", fr: "Inviter un ami", en: "Refer a friend" },
+  yourReferralCode: { ar: "كودك الخاص", fr: "Votre code", en: "Your referral code" },
+  shareCode: { ar: "شارك الكود", fr: "Partager le code", en: "Share code" },
+  codeCopied: { ar: "تم نسخ الكود", fr: "Code copié", en: "Code copied" },
+  referralCodeOptional: { ar: "كود الدعوة (اختياري)", fr: "Code de parrainage (optionnel)", en: "Referral code (optional)" },
+  friendsReferred: { ar: "أصدقاء انضموا بكودك", fr: "Amis inscrits avec votre code", en: "Friends joined with your code" },
+  claimBonus: { ar: "استلم 50 نقطة مكافأة", fr: "Réclamer 50 points bonus", en: "Claim 50 bonus points" },
+  bonusClaimed: { ar: "تم استلام المكافأة", fr: "Bonus réclamé", en: "Bonus claimed" },
+  referralBonusTitle: { ar: "أحضرت 5 أصدقاء!", fr: "Vous avez parrainé 5 amis!", en: "You referred 5 friends!" },
 };
 
 export function t(lang: Lang, key: string): string {

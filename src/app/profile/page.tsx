@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, CheckCircle2, Star } from "lucide-react";
+import { User, CheckCircle2, Star, Share2, Copy, Gift } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
 
 export default function ProfilePage() {
@@ -14,6 +14,13 @@ export default function ProfilePage() {
   const [points, setPoints] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  // Referral state
+  const [referralCode, setReferralCode] = useState("");
+  const [successfulReferrals, setSuccessfulReferrals] = useState(0);
+  const [referralBonusClaimed, setReferralBonusClaimed] = useState(false);
+  const [codeCopied, setCodeCopied] = useState(false);
+  const [claimingBonus, setClaimingBonus] = useState(false);
 
   useEffect(() => {
     const raw = localStorage.getItem("tawsil_user");
@@ -32,11 +39,18 @@ export default function ProfilePage() {
     setPhone(user.phone || "");
     setSavedAddress(user.savedAddress || "");
 
-    // Fetch points
+    // Fetch points + referral info
     if (user.email) {
       fetch(`/api/customers?email=${encodeURIComponent(user.email)}`)
         .then(r => r.json())
-        .then(d => { if (d.customer) setPoints(d.customer.points || 0); })
+        .then(d => {
+          if (d.customer) {
+            setPoints(d.customer.points || 0);
+            setReferralCode(d.customer.referral_code || "");
+            setSuccessfulReferrals(d.customer.successful_referrals_count || 0);
+            setReferralBonusClaimed(d.customer.referral_bonus_claimed || false);
+          }
+        })
         .catch(() => {});
     }
   }, []);
@@ -70,6 +84,44 @@ export default function ProfilePage() {
     setTimeout(() => setSaved(false), 3000);
   }
 
+  async function handleShare() {
+    const shareText = `استخدم كودي ${referralCode} على تطبيق Tawsil وإرباح 20 نقطة مجاناً! أحسن توصيل في منزل النور 🛵 tawsil.vercel.app`;
+    const shareUrl = `https://tawsil.vercel.app/register?ref=${referralCode}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "Tawsil", text: shareText, url: shareUrl });
+      } catch (_) {}
+    } else {
+      await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+      setCodeCopied(true);
+      setTimeout(() => setCodeCopied(false), 3000);
+    }
+  }
+
+  async function handleCopyCode() {
+    await navigator.clipboard.writeText(referralCode);
+    setCodeCopied(true);
+    setTimeout(() => setCodeCopied(false), 3000);
+  }
+
+  async function handleClaimBonus() {
+    setClaimingBonus(true);
+    try {
+      const res = await fetch("/api/customers", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, claim_referral_bonus: true }),
+      });
+      const data = await res.json();
+      if (data.customer) {
+        setPoints(data.customer.points || 0);
+        setReferralBonusClaimed(data.customer.referral_bonus_claimed || false);
+      }
+    } catch (_) {}
+    setClaimingBonus(false);
+  }
+
   return (
     <div>
       <div className="mb-6">
@@ -94,6 +146,69 @@ export default function ProfilePage() {
         </div>
         <span className="text-lg font-bold text-blue-700">{points} pts</span>
       </a>
+
+      {/* Referral card */}
+      {referralCode && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+          <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+            <Share2 className="w-4 h-4 text-blue-700" />
+            {t("referFriend")}
+          </h3>
+          <p className="text-xs text-slate-500 mb-2">{t("yourReferralCode")}</p>
+          <div className="flex items-center gap-2 mb-3">
+            <button
+              onClick={handleCopyCode}
+              className="flex-1 bg-white border border-blue-200 rounded-lg py-2.5 px-4 text-center cursor-pointer hover:bg-blue-50 transition-colors"
+            >
+              <span className="text-2xl font-bold text-blue-700 tracking-widest font-mono">
+                {referralCode}
+              </span>
+            </button>
+            <button
+              onClick={handleCopyCode}
+              className="p-2.5 bg-white border border-blue-200 rounded-lg text-blue-700 hover:bg-blue-100 transition-colors"
+            >
+              <Copy className="w-5 h-5" />
+            </button>
+          </div>
+          {codeCopied && (
+            <p className="text-xs text-emerald-600 font-medium mb-2">{t("codeCopied")}</p>
+          )}
+          <button
+            onClick={handleShare}
+            className="btn-primary !py-2.5 flex items-center justify-center gap-2"
+          >
+            <Share2 className="w-4 h-4" />
+            {t("shareCode")}
+          </button>
+          <p className="text-xs text-slate-500 mt-3">
+            {successfulReferrals} {t("friendsReferred")}
+          </p>
+
+          {/* Bonus claim */}
+          {successfulReferrals >= 5 && !referralBonusClaimed && (
+            <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Gift className="w-4 h-4 text-amber-600" />
+                <span className="text-sm font-semibold text-amber-800">{t("referralBonusTitle")}</span>
+              </div>
+              <button
+                onClick={handleClaimBonus}
+                disabled={claimingBonus}
+                className="w-full py-2 rounded-lg bg-amber-500 text-white font-semibold text-sm hover:bg-amber-600 transition-colors disabled:opacity-50"
+              >
+                {claimingBonus ? "..." : t("claimBonus")}
+              </button>
+            </div>
+          )}
+          {referralBonusClaimed && (
+            <p className="text-xs text-emerald-600 font-medium mt-2 flex items-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              {t("bonusClaimed")}
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="space-y-4">
         {/* First Name */}

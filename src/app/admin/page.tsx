@@ -72,7 +72,7 @@ export default function AdminPage() {
   const [riders, setRiders] = useState<Rider[]>([]);
   const [ridersLoading, setRidersLoading] = useState(false);
 
-  const [customers, setCustomers] = useState<{ id: string; first_name: string; last_name: string; email: string; phone: string; points?: number; created_at: string }[]>([]);
+  const [customers, setCustomers] = useState<{ id: string; first_name: string; last_name: string; email: string; phone: string; points?: number; created_at: string; referred_by?: string; successful_referrals_count?: number }[]>([]);
   const [customersLoading, setCustomersLoading] = useState(false);
   const [customerSearch, setCustomerSearch] = useState("");
   const [pointsDelta, setPointsDelta] = useState<Record<string, string>>({});
@@ -675,7 +675,17 @@ export default function AdminPage() {
                       </div>
                       <div className="text-right">
                         <div className="text-sm font-mono text-slate-600" dir="ltr">{c.phone}</div>
-                        <div className="text-xs text-slate-400">{new Date(c.created_at).toLocaleDateString()}</div>
+                        {c.referred_by && (
+                          <div className="text-xs text-blue-600">Referred by: {c.referred_by}</div>
+                        )}
+                        <div className="flex items-center justify-end gap-2">
+                          <div className="text-xs text-slate-400">{new Date(c.created_at).toLocaleDateString()}</div>
+                          {(c.successful_referrals_count || 0) > 0 && (
+                            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                              {c.successful_referrals_count} referrals
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 mt-2 pt-2 border-t border-slate-100">

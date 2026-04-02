@@ -49,18 +49,60 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ error: "order_taken", message: "Too late — another rider accepted this order first" }, { status: 409 });
     }
 
-    // Award 10 loyalty points on delivery
+    // Award 10 loyalty points on delivery + referrer rewards
     if (body.status === "delivered" && data?.customer_phone) {
       const { data: customer } = await supabase
         .from("customers")
-        .select("id, points")
+        .select("id, points, referred_by")
         .eq("phone", data.customer_phone)
         .single();
       if (customer) {
+        // Award 10 points to the customer
         await supabase
           .from("customers")
           .update({ points: (customer.points || 0) + 10 })
           .eq("id", customer.id);
+
+        // Referrer rewards on first delivery
+        if (customer.referred_by) {
+          // Count delivered orders for this customer (including the one just delivered)
+          const { count } = await supabase
+            .from("orders")
+            .select("id", { count: "exact", head: true })
+            .eq("customer_phone", data.customer_phone)
+            .eq("status", "delivered");
+
+          if (count === 1) {
+            // First delivered order — reward the referrer
+            const { data: referrer } = await supabase
+              .from("customers")
+              .select("id, points, successful_referrals_count, referral_bonus_claimed")
+              .eq("referral_code", customer.referred_by)
+              .single();
+
+            if (referrer) {
+              const newCount = (referrer.successful_referrals_count || 0) + 1;
+              let bonusPoints = 20;
+              const updates: Record<string, unknown> = {
+                points: (referrer.points || 0) + 20,
+                successful_referrals_count: newCount,
+              };
+
+              // Auto-award 50 bonus at 5 referrals
+              if (newCount >= 5 && !referrer.referral_bonus_claimed) {
+                updates.points = (referrer.points || 0) + 20 + 50;
+                updates.referral_bonus_claimed = true;
+                bonusPoints = 70;
+              }
+
+              void bonusPoints;
+              await supabase
+                .from("customers")
+                .update(updates)
+                .eq("id", referrer.id);
+            }
+          }
+        }
       }
     }
 

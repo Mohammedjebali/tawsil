@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, Phone, Mail, Lock, Eye, EyeOff, Package } from "lucide-react";
+import { User, Phone, Mail, Lock, Eye, EyeOff, Package, Gift } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
 import { supabaseClient } from "@/lib/supabase-client";
 
@@ -13,6 +13,7 @@ export default function CustomerRegister() {
   const [phone, setPhone] = useState("+216");
   const [password, setPassword] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
+  const [referralCode, setReferralCode] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -27,6 +28,11 @@ export default function CustomerRegister() {
       const user = JSON.parse(saved);
       if (user.role === "customer") window.location.href = "/";
     }
+
+    // Pre-fill referral code from URL param
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("ref");
+    if (ref) setReferralCode(ref);
   }, []);
 
   function validate() {
@@ -54,7 +60,12 @@ export default function CustomerRegister() {
       email,
       password,
       options: {
-        data: { first_name: firstName, last_name: lastName, phone },
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+          phone,
+          ...(referralCode.trim() ? { referred_by: referralCode.trim().toUpperCase() } : {}),
+        },
       },
     });
 
@@ -281,6 +292,26 @@ export default function CustomerRegister() {
             {errors.confirmPw && (
               <p className="text-red-500 text-xs mt-1">{errors.confirmPw}</p>
             )}
+          </div>
+
+          {/* Referral code */}
+          <div>
+            <label className="label">{t("referralCodeOptional")}</label>
+            <div className="relative">
+              <Gift
+                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+                style={{ left: "14px" }}
+              />
+              <input
+                type="text"
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                placeholder="AMIN47"
+                className="input !pl-10"
+                dir="ltr"
+                maxLength={6}
+              />
+            </div>
           </div>
 
           {errors.form && (

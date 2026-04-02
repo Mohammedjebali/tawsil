@@ -70,6 +70,7 @@ export default function LoginPage() {
             last_name: meta.last_name || "",
             email: user.email,
             phone: meta.phone || "",
+            ...(meta.referred_by ? { referred_by: meta.referred_by } : {}),
           }),
         });
       } catch (_) {}

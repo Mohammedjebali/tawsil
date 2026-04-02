@@ -58,6 +58,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               last_name: lastName,
               email: user.email,
               phone: meta.phone || "",
+              ...(meta.referred_by ? { referred_by: meta.referred_by } : {}),
             }),
           });
         } catch (_) {}
