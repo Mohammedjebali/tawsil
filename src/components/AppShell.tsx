@@ -111,6 +111,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return <div dir="ltr">{children}</div>;
   }
 
+  // Landing page: skip AppShell entirely
+  if (pathname === "/") {
+    return <>{children}</>;
+  }
+
   const dir = isRtl ? "rtl" : "ltr";
 
   async function logout() {
