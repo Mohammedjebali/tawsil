@@ -10,6 +10,7 @@ import { AppWrapper } from "@/components/AppWrapper";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.tawsildelivery.com"),
   title: "Tawsil — خدمة التوصيل السريع",
   description: "اختر من أي متجر في المنستير — مندوبنا يشتري ويوصل لك. الدفع عند الاستلام.",
   openGraph: {
@@ -27,7 +28,10 @@ export const metadata: Metadata = {
   },
   icons: {
     apple: "/icon-192.png",
-    icon: "/icon-512.png",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icon-512.png", type: "image/png" },
+    ],
   },
 };
 
