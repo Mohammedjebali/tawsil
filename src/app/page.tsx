@@ -50,7 +50,7 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div dir="ltr" style={{ fontFamily: "'Inter', sans-serif", background: "#060818", color: "#fff", overflowX: "hidden" }}>
+    <div dir="ltr" style={{ fontFamily: "'Inter', sans-serif", background: "#060818", color: "#fff", overflowX: "hidden", minHeight: "100vh" }}>
 
       {/* NAV */}
       <nav style={{
