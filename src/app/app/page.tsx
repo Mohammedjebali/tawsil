@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Package, ShoppingBag, Bike, ChevronRight, ChevronLeft, Globe, Store, Coffee, Pill, ShoppingCart, UtensilsCrossed, Search, MapPin, CheckCircle2, ArrowLeft, ArrowRight, X } from "lucide-react";
+import SplashScreen from "@/components/SplashScreen";
 import { formatFee, calculateDeliveryFee, getDistanceKm } from "@/lib/fees";
 import { useLang } from "@/components/LangProvider";
 
@@ -131,6 +132,8 @@ export default function OrderPage() {
   const { t, isRtl, lang } = useLang();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [ready, setReady] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
+  const [splashDone, setSplashDone] = useState(false);
 
   const [stores, setStores] = useState<StoreItem[]>([]);
   const [storesLoading, setStoresLoading] = useState(true);
@@ -180,10 +183,19 @@ export default function OrderPage() {
 
   useEffect(() => {
     if (user) {
+      // Prefetch stores while splash shows
       fetch("/api/stores")
         .then((r) => r.json())
-        .then((d) => setStores(d.stores || []))
-        .finally(() => setStoresLoading(false));
+        .then((d) => {
+          setStores(d.stores || []);
+          setStoresLoading(false);
+          // Hide splash once data is ready (min 1.8s enforced in SplashScreen)
+          setTimeout(() => setSplashDone(true), 100);
+        })
+        .catch(() => {
+          setStoresLoading(false);
+          setSplashDone(true);
+        });
     }
   }, [user]);
 
@@ -250,6 +262,15 @@ export default function OrderPage() {
   }
 
   if (!ready) return null;
+
+  if (showSplash) {
+    return (
+      <SplashScreen
+        splashDone={splashDone}
+        onDismiss={() => setShowSplash(false)}
+      />
+    );
+  }
   if (!user) return <LandingPage />;
 
   const storeName = selectedStore ? selectedStore.name : customStore;
