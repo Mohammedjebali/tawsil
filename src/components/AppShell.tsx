@@ -229,13 +229,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 <Link key={tab.href} href={tab.href}
                   onClick={() => { if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(20); }}
                   style={{
-                    display: "flex", flexDirection: "column", alignItems: "center", gap: "3px",
-                    padding: "8px 16px", borderRadius: "999px",
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: "2px",
+                    padding: "7px 6px", borderRadius: "999px",
+                    minWidth: 0, flex: 1,
                     background: active ? "#eef2ff" : "transparent",
                     transition: "all 0.15s ease", textDecoration: "none",
                   }}>
-                  <tab.icon size={19} style={{ color: active ? "#6366f1" : "#94a3b8" }} />
-                  <span style={{ fontSize: "10px", fontWeight: active ? 700 : 500, color: active ? "#6366f1" : "#94a3b8" }}>
+                  <tab.icon size={18} style={{ color: active ? "#6366f1" : "#94a3b8", flexShrink: 0 }} />
+                  <span style={{ fontSize: "9px", fontWeight: active ? 700 : 500, color: active ? "#6366f1" : "#94a3b8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%", textAlign: "center" }}>
                     {t(tab.labelKey)}
                   </span>
                 </Link>
