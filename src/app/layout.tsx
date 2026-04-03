@@ -19,6 +19,13 @@ export const metadata: Metadata = {
     url: "https://www.tawsildelivery.com",
     siteName: "Tawsil",
     type: "website",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Tawsil - Fast Delivery" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Tawsil — خدمة التوصيل السريع",
+    description: "اختر من أي متجر في المنستير — مندوبنا يشتري ويوصل لك.",
+    images: ["/og-image.png"],
   },
   manifest: "/manifest.json",
   appleWebApp: {
