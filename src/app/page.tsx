@@ -290,7 +290,7 @@ export default function OrderPage() {
               {user ? `${t("hi")}, ${user.name?.split(" ")[0]}` : t("appName")}
             </div>
             <div style={{ fontSize: "0.875rem", color: "#64748b", marginTop: 4 }}>
-              {t("appTagline")}
+              {t("chooseStore")}
             </div>
           </div>
 
