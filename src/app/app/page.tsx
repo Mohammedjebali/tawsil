@@ -137,6 +137,18 @@ export default function OrderPage() {
   const [showSplash, setShowSplash] = useState(true);
   const [splashDone, setSplashDone] = useState(false);
 
+  // Re-show splash when app comes back from background (iPhone PWA bfcache restore)
+  useEffect(() => {
+    const handlePageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) {
+        setShowSplash(true);
+        setSplashDone(false);
+      }
+    };
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
+  }, []);
+
   const [stores, setStores] = useState<StoreItem[]>([]);
   const [storesLoading, setStoresLoading] = useState(true);
   const [storeSearch, setStoreSearch] = useState("");
