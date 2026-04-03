@@ -136,6 +136,7 @@ export default function OrderPage() {
   // Client-side navigations won't trigger this since the component stays mounted
   const [showSplash, setShowSplash] = useState(true);
   const [splashDone, setSplashDone] = useState(false);
+  const pendingRedirect = useRef<string | null>(null);
 
   // Re-show splash when app comes back from background (iPhone PWA bfcache restore)
   useEffect(() => {
@@ -143,6 +144,7 @@ export default function OrderPage() {
       if (e.persisted) {
         setShowSplash(true);
         setSplashDone(false);
+        pendingRedirect.current = null;
       }
     };
     window.addEventListener('pageshow', handlePageShow);
@@ -185,11 +187,15 @@ export default function OrderPage() {
           setCustomerAddress(parsed.savedAddress);
         }
       } else if (parsed.role === "rider") {
-        window.location.href = "/rider";
+        // Delay redirect until after splash finishes
+        pendingRedirect.current = "/rider";
+        setSplashDone(true);
         return;
       }
     } else {
-      window.location.href = "/login";
+      // Delay redirect until after splash finishes
+      pendingRedirect.current = "/login";
+      setSplashDone(true);
       return;
     }
     setReady(true);
@@ -281,7 +287,13 @@ export default function OrderPage() {
     return (
       <SplashScreen
         splashDone={splashDone}
-        onDismiss={() => setShowSplash(false)}
+        onDismiss={() => {
+          if (pendingRedirect.current) {
+            window.location.href = pendingRedirect.current;
+          } else {
+            setShowSplash(false);
+          }
+        }}
       />
     );
   }
