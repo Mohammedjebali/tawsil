@@ -40,7 +40,7 @@ function IconArrow() {
 
 export default function LandingPage() {
   const [scrollY, setScrollY] = useState(0);
-  const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState(true);
 
   useEffect(() => {
     setMounted(true);
