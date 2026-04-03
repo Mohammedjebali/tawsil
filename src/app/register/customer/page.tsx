@@ -79,6 +79,17 @@ export default function CustomerRegister() {
       return;
     }
 
+    // Send welcome email via Brevo
+    try {
+      await fetch("/api/send-welcome", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, firstName }),
+      });
+    } catch {
+      // Non-blocking — don't fail registration if email fails
+    }
+
     setSuccess(true);
   }
 
