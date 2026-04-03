@@ -54,8 +54,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ar" className={inter.variable}>
-      <body>
+    <html lang="ar" className={inter.variable} style={{ background: "#ffffff" }}>
+      <body style={{ background: "#ffffff" }}>
         <LangProvider>
           <AppWrapper>
             <UpdateNotifier />
