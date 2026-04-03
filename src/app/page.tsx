@@ -183,7 +183,7 @@ export default function LandingPage() {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "#e2e8f0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s}</div>
-                    <div style={{ fontSize: "0.55rem", color: "#475569", marginTop: 2 }}</div>
+                    <div style={{ fontSize: "0.55rem", color: "#475569", marginTop: 2 }}>المنستير</div>
                   </div>
                   <div style={{ width: 20, height: 20, borderRadius: 6, background: "#6366f1", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
