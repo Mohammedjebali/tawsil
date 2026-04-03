@@ -29,6 +29,7 @@ function formatFee(m: number) { return `${(m/1000).toFixed(3)} DT`; }
 export default function RiderStatsPage() {
   const { t } = useLang();
   const [riderId, setRiderId] = useState<string | null>(null);
+  const [riderPhone, setRiderPhone] = useState<string | null>(null);
   const [stats, setStats] = useState<RiderStats | null>(null);
   const [historyOrders, setHistoryOrders] = useState<Order[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -38,6 +39,7 @@ export default function RiderStatsPage() {
     if (!saved) { window.location.href = "/rider"; return; }
     const user = JSON.parse(saved);
     if (user.role !== "rider") { window.location.href = "/rider"; return; }
+    setRiderPhone(user.phone);
 
     // Get db_id from status endpoint
     fetch(`/api/riders/status?phone=${encodeURIComponent(user.phone)}`)
@@ -49,11 +51,11 @@ export default function RiderStatsPage() {
       .catch(() => { window.location.href = "/rider"; });
   }, []);
 
-  // Fetch stats
+  // Fetch stats — use phone since rider_id FK is to auth.users, not riders
   useEffect(() => {
-    if (!riderId) return;
+    if (!riderPhone) return;
     function fetchStats() {
-      fetch(`/api/riders/stats?id=${riderId}`)
+      fetch(`/api/riders/stats?phone=${encodeURIComponent(riderPhone!)}`)
         .then(r => r.json())
         .then(data => { if (data.totalDelivered !== undefined) setStats(data); })
         .catch(() => {});
@@ -63,11 +65,11 @@ export default function RiderStatsPage() {
     return () => clearInterval(interval);
   }, [riderId]);
 
-  // Fetch today's history
+  // Fetch today's history — use phone since rider_id FK is to auth.users, not riders
   useEffect(() => {
-    if (!riderId) return;
+    if (!riderPhone) return;
     setHistoryLoading(true);
-    fetch(`/api/orders?rider_id=${riderId}&status=delivered`)
+    fetch(`/api/orders?rider_phone=${encodeURIComponent(riderPhone)}&status=delivered`)
       .then(r => r.json())
       .then(data => {
         const today = new Date();

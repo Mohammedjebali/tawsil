@@ -104,6 +104,7 @@ export async function GET(req: NextRequest) {
     const phone = searchParams.get("phone");
 
     const rider_id = searchParams.get("rider_id");
+    const rider_phone = searchParams.get("rider_phone");
     const excludePassedBy = searchParams.get("exclude_passed_by");
 
     let query = supabase.from("orders").select("*");
@@ -132,6 +133,9 @@ export async function GET(req: NextRequest) {
 
     if (rider_id) {
       query = query.eq("rider_id", rider_id);
+    }
+    if (rider_phone) {
+      query = query.eq("rider_phone", rider_phone);
     }
     if (status && status !== "pending") {
       query = query.eq("status", status);
