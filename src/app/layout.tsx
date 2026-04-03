@@ -10,7 +10,7 @@ import { AppWrapper } from "@/components/AppWrapper";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Tawsil — توصيل منزل النور",
+  title: "Tawsil — التوصيل السريع",
   description: "اطلب من أي محل وسيصلك في أسرع وقت",
   manifest: "/manifest.json",
   appleWebApp: {

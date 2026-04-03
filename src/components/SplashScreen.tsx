@@ -28,7 +28,7 @@ export default function SplashScreen({ onDone }: { onDone: () => void }) {
         Tawsil
       </div>
       <div style={{ color: "#94a3b8", fontSize: "0.875rem", marginTop: 8, opacity: phase === "enter" ? 0 : 1, transition: "opacity 0.3s ease 0.2s" }}>
-        توصيل منزل النور
+        التوصيل السريع
       </div>
       {/* Progress bar */}
       <div style={{
