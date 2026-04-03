@@ -4,8 +4,8 @@
   "description": "Service de livraison — Manzel Ennour",
   "start_url": "/app",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#1e40af",
+  "background_color": "#6366f1",
+  "theme_color": "#6366f1",
   "orientation": "portrait",
   "icons": [
     {
