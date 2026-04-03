@@ -3,6 +3,7 @@ export type Lang = "ar" | "fr" | "en";
 const translations: Record<string, Record<Lang, string>> = {
   appName: { ar: "Tawsil", fr: "Tawsil", en: "Tawsil" },
   appTagline: { ar: "", fr: "", en: "" },
+  chooseStore: { ar: "اختر محلاً وأرسل طلبك", fr: "Choisissez un magasin", en: "Choose a store and order" },
   welcome: { ar: "مرحباً بك", fr: "Bienvenue", en: "Welcome" },
   chooseRole: { ar: "اختر دورك", fr: "Choisissez votre r\u00f4le", en: "Choose your role" },
   iAmCustomer: { ar: "أنا زبون", fr: "Je suis client", en: "I'm a customer" },
