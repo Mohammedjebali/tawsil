@@ -10,8 +10,15 @@ import { AppWrapper } from "@/components/AppWrapper";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Tawsil — التوصيل السريع",
-  description: "اطلب من أي محل وسيصلك في أسرع وقت",
+  title: "Tawsil — خدمة التوصيل السريع",
+  description: "اختر من أي متجر في المنستير — مندوبنا يشتري ويوصل لك. الدفع عند الاستلام.",
+  openGraph: {
+    title: "Tawsil — خدمة التوصيل السريع",
+    description: "اختر من أي متجر في المنستير — مندوبنا يشتري ويوصل لك. الدفع عند الاستلام.",
+    url: "https://www.tawsildelivery.com",
+    siteName: "Tawsil",
+    type: "website",
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

@@ -100,7 +100,7 @@ export default function LandingPage() {
           transition: "all 0.6s ease",
         }}>
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#6366f1", boxShadow: "0 0 8px #6366f1", display: "inline-block", flexShrink: 0 }} />
-          منزل النور، المنستير — التوصيل السريع
+          المنستير — خدمة التوصيل السريع
         </div>
 
         <h1 dir="rtl" style={{
@@ -109,9 +109,9 @@ export default function LandingPage() {
           opacity: mounted ? 1 : 0, transform: mounted ? "translateY(0)" : "translateY(30px)",
           transition: "all 0.7s ease 0.1s",
         }}>
-          كل حاجة تجيك<br />
+          كل ما تحتاجه<br />
           <span style={{ background: "linear-gradient(135deg, #818cf8, #c084fc)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-            على بابك
+            يصل إلى بابك
           </span>
         </h1>
 
@@ -121,7 +121,7 @@ export default function LandingPage() {
           opacity: mounted ? 1 : 0, transform: mounted ? "translateY(0)" : "translateY(30px)",
           transition: "all 0.7s ease 0.2s",
         }}>
-          اختر من أي محل في المنستير — راكبنا يشري ويوصّل. دفع عند الاستلام.
+          اختر من أي محل في المنستير — مندوبنا يشتري ويوصلك. الدفع عند الاستلام.
         </p>
 
         <div style={{
@@ -142,7 +142,7 @@ export default function LandingPage() {
             color: "#e2e8f0", padding: "16px 36px", borderRadius: 50, fontWeight: 700,
             fontSize: "1rem", textDecoration: "none",
           }}>
-            كيف تشتغل؟
+            كيف يعمل؟
           </a>
         </div>
 
@@ -169,7 +169,7 @@ export default function LandingPage() {
                 </div>
               </div>
               <div dir="rtl" style={{ background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: "8px 12px", display: "flex", alignItems: "center", gap: 8, marginBottom: 20, border: "1px solid rgba(255,255,255,0.06)" }}>
-                <span style={{ fontSize: "0.7rem", color: "#475569" }}>ابحث عن محل...</span>
+                <span style={{ fontSize: "0.7rem", color: "#475569" }}>ابحث عن متجر...</span>
               </div>
               {STORES.slice(0, 4).map((s, i) => (
                 <div key={s} dir="rtl" style={{
@@ -183,7 +183,7 @@ export default function LandingPage() {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "#e2e8f0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s}</div>
-                    <div style={{ fontSize: "0.55rem", color: "#475569", marginTop: 2 }}>منزل النور</div>
+                    <div style={{ fontSize: "0.55rem", color: "#475569", marginTop: 2 }}</div>
                   </div>
                   <div style={{ width: 20, height: 20, borderRadius: 6, background: "#6366f1", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -200,7 +200,7 @@ export default function LandingPage() {
             animation: "floatRight 3s ease-in-out infinite", whiteSpace: "nowrap", direction: "rtl",
           }}>
             <div style={{ fontSize: "0.65rem", color: "#a5b4fc", fontWeight: 700 }}>طلب جديد ✓</div>
-            <div style={{ fontSize: "0.55rem", color: "#64748b", marginTop: 2 }}>يتم التوصيل الآن</div>
+            <div style={{ fontSize: "0.55rem", color: "#64748b", marginTop: 2 }}>جاري التوصيل</div>
           </div>
 
           <div style={{
@@ -209,8 +209,8 @@ export default function LandingPage() {
             borderRadius: 16, padding: "10px 14px", backdropFilter: "blur(12px)",
             animation: "floatLeft 3.5s ease-in-out infinite", whiteSpace: "nowrap", direction: "rtl",
           }}>
-            <div style={{ fontSize: "0.65rem", color: "#6ee7b7", fontWeight: 700 }}>تم التوصيل</div>
-            <div style={{ fontSize: "0.55rem", color: "#64748b", marginTop: 2 }}>خلال 25 دقيقة</div>
+            <div style={{ fontSize: "0.65rem", color: "#6ee7b7", fontWeight: 700 }}>تم التسليم</div>
+            <div style={{ fontSize: "0.55rem", color: "#64748b", marginTop: 2 }}>في 25 دقيقة</div>
           </div>
         </div>
       </section>
@@ -218,14 +218,14 @@ export default function LandingPage() {
       {/* HOW IT WORKS */}
       <section id="how" style={{ padding: "100px 24px", maxWidth: 1000, margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: 60 }}>
-          <p style={{ color: "#818cf8", fontWeight: 700, fontSize: "0.8rem", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>كيف يشتغل</p>
+          <p style={{ color: "#818cf8", fontWeight: 700, fontSize: "0.8rem", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>كيف يعمل</p>
           <h2 style={{ fontSize: "clamp(2rem, 5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.04em" }}>ثلاث خطوات بسيطة</h2>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 24 }}>
           {[
-            { Icon: IconStore, num: "01", title: "اختر المحل", desc: "ابحث واختر من بين المحلات المتاحة في منزل النور" },
-            { Icon: IconRider, num: "02", title: "الراكب يشري", desc: "راكبنا يروح للمحل، يشري المنتجات ويدفع عنك" },
-            { Icon: IconDelivery, num: "03", title: "يوصل عندك", desc: "تدفع عند الاستلام. سهل وسريع في أقل من 30 دقيقة" },
+            { Icon: IconStore, num: "01", title: "اختر المتجر", desc: "ابحث واختر من بين المتاجر المتاحة في المنستير" },
+            { Icon: IconRider, num: "02", title: "المندوب يشتري", desc: "مندوبنا يذهب إلى المتجر ويشتري المنتجات" },
+            { Icon: IconDelivery, num: "03", title: "التوصيل لبابك", desc: "الدفع عند الاستلام. سهل وسريع خلال 30 دقيقة" },
           ].map(({ Icon, num, title, desc }, i) => (
             <div key={i} style={{
               background: "linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
@@ -246,15 +246,15 @@ export default function LandingPage() {
       {/* FEATURES */}
       <section style={{ padding: "80px 24px", maxWidth: 1000, margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: 60 }}>
-          <p style={{ color: "#818cf8", fontWeight: 700, fontSize: "0.8rem", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>لماذا تواصل</p>
+          <p style={{ color: "#818cf8", fontWeight: 700, fontSize: "0.8rem", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>لماذا Tawsil</p>
           <h2 style={{ fontSize: "clamp(2rem, 5vw, 3rem)", fontWeight: 900, letterSpacing: "-0.04em" }}>مزايا تفرّقنا</h2>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
           {[
-            { Icon: IconCash, title: "دفع عند الاستلام", desc: "ما فيه حاجة لبطاقة بنكية" },
-            { Icon: IconMap, title: "تتبع حي", desc: "اعرف وين الراكب في الوقت الحقيقي" },
-            { Icon: IconBolt, title: "توصيل سريع", desc: "في أقل من 30 دقيقة" },
-            { Icon: IconGift, title: "نقاط ولاء", desc: "اجمع نقاط واربح مكافآت" },
+            { Icon: IconCash, title: "دفع عند الاستلام", desc: "لا حاجة لبطاقة بنكية" },
+            { Icon: IconMap, title: "التتبع المباشر", desc: "تتبع موقع المندوب في الوقت الفعلي" },
+            { Icon: IconBolt, title: "توصيل سريع", desc: "خلال 30 دقيقة" },
+            { Icon: IconGift, title: "نقاط الولاء", desc: "اجمع نقاطاً واحصل على مكافآت" },
           ].map(({ Icon, title, desc }, i) => (
             <div key={i} style={{
               background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
@@ -273,14 +273,14 @@ export default function LandingPage() {
       {/* STORES */}
       <section style={{ padding: "80px 24px", maxWidth: 1000, margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: 48 }}>
-          <p style={{ color: "#818cf8", fontWeight: 700, fontSize: "0.8rem", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>المحلات المتاحة</p>
-          <h2 style={{ fontSize: "clamp(1.8rem, 4vw, 2.5rem)", fontWeight: 900, letterSpacing: "-0.04em" }}>نوصّل منها كلها</h2>
+          <p style={{ color: "#818cf8", fontWeight: 700, fontSize: "0.8rem", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>المتاجر المتاحة</p>
+          <h2 style={{ fontSize: "clamp(1.8rem, 4vw, 2.5rem)", fontWeight: 900, letterSpacing: "-0.04em" }}>نوصل من جميعها</h2>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
           {STORES.map((s) => (
             <div key={s} style={{ background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.2)", borderRadius: 50, padding: "10px 20px", fontSize: "0.9rem", fontWeight: 600, color: "#a5b4fc" }}>{s}</div>
           ))}
-          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 50, padding: "10px 20px", fontSize: "0.9rem", color: "#334155" }}>+ قريباً المزيد</div>
+          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 50, padding: "10px 20px", fontSize: "0.9rem", color: "#334155" }}>+ المزيد قريباً</div>
         </div>
       </section>
 
@@ -293,15 +293,15 @@ export default function LandingPage() {
           position: "relative", overflow: "hidden",
         }}>
           <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 400, height: 400, background: "radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)", pointerEvents: "none" }} />
-          <h2 style={{ fontSize: "clamp(1.8rem, 5vw, 2.8rem)", fontWeight: 900, letterSpacing: "-0.04em", marginBottom: 16 }}>جاهز تطلب؟</h2>
-          <p style={{ color: "#64748b", fontSize: "1.05rem", marginBottom: 40, lineHeight: 1.7 }}>ما تحتاج تنزّل أي شيء — يشتغل مباشرة من متصفحك</p>
+          <h2 style={{ fontSize: "clamp(1.8rem, 5vw, 2.8rem)", fontWeight: 900, letterSpacing: "-0.04em", marginBottom: 16 }}>هل أنت مستعد للطلب؟</h2>
+          <p style={{ color: "#64748b", fontSize: "1.05rem", marginBottom: 40, lineHeight: 1.7 }}>ثبّت التطبيق على هاتفك للحصول على أفضل تجربة</p>
           <Link href="/app" style={{
             background: "linear-gradient(135deg, #6366f1, #8b5cf6)", color: "#fff",
             padding: "18px 48px", borderRadius: 50, fontWeight: 800, fontSize: "1.1rem",
             textDecoration: "none", boxShadow: "0 0 50px rgba(99,102,241,0.5)",
             display: "inline-flex", alignItems: "center", gap: 10, letterSpacing: "-0.02em",
           }}>
-            افتح التطبيق <IconArrow />
+            ثبّت التطبيق <IconArrow />
           </Link>
         </div>
       </section>
@@ -327,7 +327,7 @@ export default function LandingPage() {
           </a>
         </div>
         <div style={{ borderTop: "1px solid rgba(255,255,255,0.04)", paddingTop: 20, textAlign: "center" }}>
-          <span style={{ color: "#334155", fontSize: "0.8rem" }}>© 2026 Tawsil — منزل النور، المنستير، تونس</span>
+          <span style={{ color: "#334155", fontSize: "0.8rem" }}>© 2026 Tawsil — المنستير، تونس</span>
         </div>
       </footer>
 
