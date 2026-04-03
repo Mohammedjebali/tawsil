@@ -11,8 +11,10 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.tawsildelivery.com"),
-  title: "Tawsil — خدمة التوصيل السريع",
-  description: "اختر من أي متجر في المنستير — مندوبنا يشتري ويوصل لك. الدفع عند الاستلام.",
+  title: "Tawsil — خدمة التوصيل | Tawsil Delivery",
+  description: "Tawsil - خدمة توصيل سريعة في منزل النور، المنستير. اطلب من أي متجر ويصلك المندوب إلى بابك. Tawsil delivery app - fast local delivery, cash on delivery.",
+  keywords: ["Tawsil", "Tawsil delivery", "توصيل", "منزل النور", "المنستير", "Monastir delivery", "Manzel Ennour", "tawsildelivery.com"],
+
   openGraph: {
     title: "Tawsil — خدمة التوصيل السريع",
     description: "اختر من أي متجر في المنستير — مندوبنا يشتري ويوصل لك. الدفع عند الاستلام.",

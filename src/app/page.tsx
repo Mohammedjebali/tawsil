@@ -331,6 +331,37 @@ export default function LandingPage() {
         </div>
       </footer>
 
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          "name": "Tawsil",
+          "description": "Tawsil - Fast local delivery service in Manzel Ennour, Monastir, Tunisia. Order from local stores, our rider buys and delivers. Cash on delivery.",
+          "url": "https://www.tawsildelivery.com",
+          "logo": "https://www.tawsildelivery.com/icon-512.png",
+          "image": "https://www.tawsildelivery.com/og-image.png",
+          "telephone": "+216",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Manzel Ennour",
+            "addressRegion": "Monastir",
+            "addressCountry": "TN"
+          },
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 35.7643,
+            "longitude": 10.8113
+          },
+          "sameAs": [
+            "https://tawsil.vercel.app",
+            "https://www.tawsildelivery.com"
+          ],
+          "priceRange": "2-10 DT",
+          "servesCuisine": "Delivery Service",
+          "openingHours": "Mo-Su 08:00-22:00"
+        }) }}
+      />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
