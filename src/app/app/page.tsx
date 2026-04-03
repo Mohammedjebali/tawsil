@@ -132,7 +132,11 @@ export default function OrderPage() {
   const { t, isRtl, lang } = useLang();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [ready, setReady] = useState(false);
-  const [showSplash, setShowSplash] = useState(true);
+  // Only show splash on first visit per session
+  const [showSplash, setShowSplash] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return !sessionStorage.getItem("tawsil_splash_shown");
+  });
   const [splashDone, setSplashDone] = useState(false);
 
   const [stores, setStores] = useState<StoreItem[]>([]);
@@ -267,7 +271,10 @@ export default function OrderPage() {
     return (
       <SplashScreen
         splashDone={splashDone}
-        onDismiss={() => setShowSplash(false)}
+        onDismiss={() => {
+          sessionStorage.setItem("tawsil_splash_shown", "1");
+          setShowSplash(false);
+        }}
       />
     );
   }
