@@ -151,6 +151,7 @@ export default function LandingPage() {
           marginTop: 80, position: "relative",
           opacity: mounted ? 1 : 0, transform: mounted ? "translateY(0)" : "translateY(50px)",
           transition: "all 0.9s ease 0.4s",
+          overflow: "hidden",
         }}>
           <div style={{
             width: 260, height: 520,
@@ -194,7 +195,7 @@ export default function LandingPage() {
           </div>
 
           <div style={{
-            position: "absolute", top: 80, right: -80,
+            position: "absolute", top: 80, right: 12,
             background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)",
             borderRadius: 16, padding: "10px 14px", backdropFilter: "blur(12px)",
             animation: "floatRight 3s ease-in-out infinite", whiteSpace: "nowrap", direction: "rtl",
@@ -204,7 +205,7 @@ export default function LandingPage() {
           </div>
 
           <div style={{
-            position: "absolute", bottom: 120, left: -90,
+            position: "absolute", bottom: 120, left: 12,
             background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.25)",
             borderRadius: 16, padding: "10px 14px", backdropFilter: "blur(12px)",
             animation: "floatLeft 3.5s ease-in-out infinite", whiteSpace: "nowrap", direction: "rtl",
