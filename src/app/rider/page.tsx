@@ -266,7 +266,12 @@ export default function RiderPage() {
     const res = await fetch(`/api/orders/${orderId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "accepted", rider_name: rider.name, rider_phone: rider.phone }),
+      body: JSON.stringify({
+        status: "accepted",
+        rider_name: rider.name,
+        rider_phone: rider.phone,
+        rider_id: rider.db_id,
+      }),
     });
     if (res.status === 409) {
       const err = await res.json();
