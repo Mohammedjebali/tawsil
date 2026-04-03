@@ -26,7 +26,7 @@ export default function CustomerRegister() {
     const saved = localStorage.getItem("tawsil_user");
     if (saved) {
       const user = JSON.parse(saved);
-      if (user.role === "customer") window.location.href = "/";
+      if (user.role === "customer") window.location.href = "/app";
     }
 
     const params = new URLSearchParams(window.location.search);

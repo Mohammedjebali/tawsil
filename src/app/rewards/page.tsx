@@ -13,7 +13,7 @@ export default function RewardsPage() {
     const raw = localStorage.getItem("tawsil_user");
     if (!raw) { window.location.href = "/login"; return; }
     const user = JSON.parse(raw);
-    if (user.role !== "customer") { window.location.href = "/"; return; }
+    if (user.role !== "customer") { window.location.href = "/app"; return; }
 
     async function fetchPoints() {
       try {

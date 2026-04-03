@@ -158,7 +158,7 @@ export default function RiderPage() {
     }
     const user = JSON.parse(saved);
     if (user.role !== "rider") {
-      window.location.href = "/";
+      window.location.href = "/app";
       return;
     }
     if (user.status === "pending" || user.status === "rejected") {

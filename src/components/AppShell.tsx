@@ -18,7 +18,7 @@ const LANGS: { code: Lang; label: string }[] = [
 const PUBLIC_PATHS = ["/login", "/register", "/forgot-password", "/reset-password", "/auth/callback", "/admin", "/rider"];
 
 const customerTabs = [
-  { href: "/", icon: ShoppingBag, labelKey: "orderTab" },
+  { href: "/app", icon: ShoppingBag, labelKey: "orderTab" },
   { href: "/track", icon: MapPin, labelKey: "trackTab" },
   { href: "/orders", icon: ClipboardList, labelKey: "myOrders" },
   { href: "/rewards", icon: Star, labelKey: "rewards" },
@@ -89,14 +89,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             localStorage.removeItem("tawsil_user");
             // Redirect to login if on a protected page
             const isPublic = PUBLIC_PATHS.some((p) => pathname?.startsWith(p));
-            if (!isPublic && pathname !== "/") {
+            if (!isPublic && pathname !== "/" && pathname !== "/app") {
               window.location.href = "/login";
             }
           }
         } else {
           // No user at all — redirect to login for protected pages
           const isPublic = PUBLIC_PATHS.some((p) => pathname?.startsWith(p));
-          if (!isPublic && pathname !== "/") {
+          if (!isPublic && pathname !== "/" && pathname !== "/app") {
             window.location.href = "/login";
           }
         }
@@ -134,7 +134,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         position: "sticky", top: 0, zIndex: 40,
         display: "flex", alignItems: "center", justifyContent: "space-between",
       }}>
-        <a href="/" className="no-underline">
+        <a href="/app" className="no-underline">
           <span style={{ fontWeight: 800, fontSize: "1.375rem", letterSpacing: "-0.04em", color: "#6366f1" }}>
             Tawsil
           </span>

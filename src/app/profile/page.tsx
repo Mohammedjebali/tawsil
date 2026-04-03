@@ -30,7 +30,7 @@ export default function ProfilePage() {
     }
     const user = JSON.parse(raw);
     if (user.role !== "customer") {
-      window.location.href = "/";
+      window.location.href = "/app";
       return;
     }
     setFirstName(user.firstName || "");

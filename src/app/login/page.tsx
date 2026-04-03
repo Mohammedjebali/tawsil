@@ -30,7 +30,7 @@ export default function LoginPage() {
     if (saved) {
       try {
         const user = JSON.parse(saved);
-        if (user.role === "customer") { window.location.href = "/"; return; }
+        if (user.role === "customer") { window.location.href = "/app"; return; }
         if (user.role === "rider" && user.status === "active") { window.location.href = "/rider"; return; }
       } catch (_) {}
     }
@@ -74,7 +74,7 @@ export default function LoginPage() {
           }),
         });
       } catch (_) {}
-      window.location.href = "/";
+      window.location.href = "/app";
     }
   }
 

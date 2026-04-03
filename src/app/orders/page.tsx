@@ -45,7 +45,7 @@ export default function OrdersPage() {
     const saved = localStorage.getItem("tawsil_user");
     if (!saved) { window.location.href = "/login"; return; }
     const user = JSON.parse(saved);
-    if (user.role !== "customer") { window.location.href = "/"; return; }
+    if (user.role !== "customer") { window.location.href = "/app"; return; }
     fetchOrders(user.phone);
     const interval = setInterval(() => fetchOrders(user.phone), 8000);
     return () => clearInterval(interval);
@@ -112,7 +112,7 @@ export default function OrdersPage() {
           <div className="text-center py-16">
             <Package className="w-14 h-14 text-slate-300 mx-auto mb-3" />
             <p className="text-slate-500 text-sm">{t("noOrdersYet")}</p>
-            <a href="/" className="mt-4 inline-block text-indigo-600 font-semibold text-sm hover:underline">
+            <a href="/app" className="mt-4 inline-block text-indigo-600 font-semibold text-sm hover:underline">
               {t("orderNow")}
             </a>
           </div>

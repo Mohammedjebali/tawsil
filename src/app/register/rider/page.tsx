@@ -118,7 +118,7 @@ export default function RiderRegister() {
         <h1 style={{ color: "#0f172a", fontSize: "1.5rem", fontWeight: 800, marginBottom: 8, textAlign: "center" }}>{t("rejected")}</h1>
         <p style={{ color: "#64748b", fontSize: "0.875rem", textAlign: "center", maxWidth: 320, marginBottom: 32 }}>{t("rejectedDesc")}</p>
         <button
-          onClick={() => { localStorage.removeItem("tawsil_user"); window.location.href = "/"; }}
+          onClick={() => { localStorage.removeItem("tawsil_user"); window.location.href = "/app"; }}
           className="btn-secondary"
           style={{ maxWidth: 240, cursor: "pointer" }}
         >
@@ -153,7 +153,7 @@ export default function RiderRegister() {
           {checking ? t("checking") : t("checkStatus")}
         </button>
         <button
-          onClick={() => { localStorage.removeItem("tawsil_user"); window.location.href = "/"; }}
+          onClick={() => { localStorage.removeItem("tawsil_user"); window.location.href = "/app"; }}
           style={{
             background: "transparent", border: "1px solid #E2E8F0",
             color: "#64748b", padding: "10px 24px", borderRadius: 12,
