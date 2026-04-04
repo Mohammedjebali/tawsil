@@ -2,13 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase-server";
 import webpush from "web-push";
 
-webpush.setVapidDetails(
-  process.env.VAPID_EMAIL || "mailto:admin@tawsil.tn",
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
+const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
+
+if (vapidPublicKey && vapidPrivateKey) {
+  webpush.setVapidDetails(
+    process.env.VAPID_EMAIL || "mailto:admin@tawsil.tn",
+    vapidPublicKey,
+    vapidPrivateKey
+  );
+}
 
 export async function POST(req: NextRequest) {
+  if (!vapidPublicKey || !vapidPrivateKey) {
+    return NextResponse.json({ error: "Push notifications not configured" }, { status: 503 });
+  }
   try {
     const { order_number, store_name, delivery_fee } = await req.json();
     const supabase = getSupabase();
