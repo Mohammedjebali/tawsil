@@ -199,6 +199,26 @@ function LoginContent() {
               {t("continueWithGoogle")}
             </button>
 
+            {/* Facebook OAuth */}
+            <button
+              onClick={async () => {
+                await supabaseClient.auth.signInWithOAuth({
+                  provider: "facebook",
+                  options: { redirectTo: window.location.origin + "/auth/callback" },
+                });
+              }}
+              style={{
+                width: "100%", padding: "12px 16px", borderRadius: 10,
+                border: "1px solid #E2E8F0", background: "#1877F2",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+                fontSize: "0.9rem", fontWeight: 600, color: "#ffffff",
+                cursor: "pointer", transition: "background 0.15s",
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 48 48" fill="white"><path d="M48 24C48 10.7 37.3 0 24 0S0 10.7 0 24c0 11.8 8.6 21.7 19.9 23.6v-16.7h-5.9V24h5.9v-5.1c0-5.9 3.5-9.1 8.9-9.1 2.6 0 5.3.5 5.3.5v5.8h-3c-2.9 0-3.8 1.8-3.8 3.7V24h6.5l-1 6.9h-5.5v16.7C39.4 45.7 48 35.8 48 24z"/></svg>
+              Continue with Facebook
+            </button>
+
             {/* Divider */}
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ flex: 1, height: 1, background: "#E2E8F0" }} />
