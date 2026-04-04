@@ -273,6 +273,7 @@ export default function OrderPage() {
         return;
       }
       if (data.error) throw new Error(data.error);
+      if (!data.order) throw new Error("No order returned from server");
       setOrderResult({ order_number: data.order.order_number, delivery_fee: data.order.delivery_fee });
       setStep("success");
     } catch (e) {

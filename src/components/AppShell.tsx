@@ -134,11 +134,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         position: "sticky", top: 0, zIndex: 40,
         display: "flex", alignItems: "center", justifyContent: "space-between",
       }}>
-        <a href="/app" className="no-underline">
+        <Link href="/app" className="no-underline">
           <span style={{ fontWeight: 800, fontSize: "1.375rem", letterSpacing: "-0.04em", color: "#6366f1" }}>
             Tawsil
           </span>
-        </a>
+        </Link>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {/* Language switcher */}
