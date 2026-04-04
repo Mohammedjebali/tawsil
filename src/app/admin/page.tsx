@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Store, Package, Users, Plus, Trash2, RefreshCw, XCircle, CheckCircle2, ShoppingCart, Coffee, Pill, UtensilsCrossed, Bike, UserCheck, Search, Star, LayoutDashboard, TrendingUp, Clock, Download, Pencil, Megaphone } from "lucide-react";
+import { Store, Package, Users, Plus, Trash2, RefreshCw, XCircle, CheckCircle2, ShoppingCart, Coffee, Pill, UtensilsCrossed, Bike, UserCheck, Search, Star, LayoutDashboard, TrendingUp, Clock, Download, Pencil, Megaphone, DollarSign } from "lucide-react";
 
 interface DashboardData {
   today: { total: number; delivered: number; cancelled: number; active: number; revenue: number; flagged: number };
@@ -105,7 +105,7 @@ function formatDate(iso: string) { return new Date(iso).toLocaleDateString("en-U
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [password, setPassword] = useState("");
-  const [tab, setTab] = useState<"dashboard" | "stores" | "orders" | "riders" | "customers" | "broadcast">("dashboard");
+  const [tab, setTab] = useState<"dashboard" | "stores" | "orders" | "riders" | "customers" | "broadcast" | "fees">("dashboard");
 
   const [stores, setStores] = useState<StoreItem[]>([]);
   const [newName, setNewName] = useState("");
@@ -135,6 +135,18 @@ export default function AdminPage() {
   const [broadcastFr, setBroadcastFr] = useState("");
   const [broadcastEn, setBroadcastEn] = useState("");
   const [broadcastSending, setBroadcastSending] = useState(false);
+
+  // Fees state
+  const [feeTiers, setFeeTiers] = useState([
+    { id: 1, label: "0 – 2 km", minKm: 0, maxKm: 2, fee: 2500, estMinutes: 15 },
+    { id: 2, label: "2 – 5 km", minKm: 2, maxKm: 5, fee: 4000, estMinutes: 25 },
+    { id: 3, label: "5 – 10 km", minKm: 5, maxKm: 10, fee: 6000, estMinutes: 35 },
+    { id: 4, label: "10 km+", minKm: 10, maxKm: Infinity, fee: 8000, estMinutes: 50 },
+  ]);
+  const [editingFee, setEditingFee] = useState<number | null>(null);
+  const [editFeeValue, setEditFeeValue] = useState("");
+  const [editEstMinutes, setEditEstMinutes] = useState("");
+  const [feesSaved, setFeesSaved] = useState(false);
 
   const [dash, setDash] = useState<DashboardData | null>(null);
   const [dashLoading, setDashLoading] = useState(false);
@@ -461,6 +473,7 @@ export default function AdminPage() {
     { key: "riders" as const, label: "Riders", icon: Users, badge: pendingRiders.length },
     { key: "customers" as const, label: "Clients", icon: UserCheck },
     { key: "broadcast" as const, label: "Broadcast", icon: Megaphone },
+    { key: "fees" as const, label: "Fees", icon: DollarSign },
   ];
 
   return (
@@ -1172,6 +1185,133 @@ export default function AdminPage() {
               {announcements.length === 0 && (
                 <p className="text-slate-500 text-center py-8">No announcements yet</p>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Fees Tab */}
+        {tab === "fees" && (
+          <div>
+            <div className="card">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2">
+                  <DollarSign className="w-4 h-4" /> Delivery Fee Tiers
+                </h2>
+                {feesSaved && (
+                  <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-lg">
+                    Saved!
+                  </span>
+                )}
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200">
+                      <th className="text-left py-2 px-3 text-slate-500 font-medium">Distance Range</th>
+                      <th className="text-left py-2 px-3 text-slate-500 font-medium">Delivery Fee</th>
+                      <th className="text-left py-2 px-3 text-slate-500 font-medium">Est. Time</th>
+                      <th className="text-right py-2 px-3 text-slate-500 font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {feeTiers.map((tier) => (
+                      <tr key={tier.id} className="border-b border-slate-100 last:border-0">
+                        <td className="py-3 px-3 font-medium text-slate-900">{tier.label}</td>
+                        <td className="py-3 px-3">
+                          {editingFee === tier.id ? (
+                            <input
+                              type="number"
+                              value={editFeeValue}
+                              onChange={(e) => setEditFeeValue(e.target.value)}
+                              className="input !w-28 !py-1"
+                              placeholder="millimes"
+                            />
+                          ) : (
+                            <span className="text-slate-700">{formatFee(tier.fee)}</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-3">
+                          {editingFee === tier.id ? (
+                            <input
+                              type="number"
+                              value={editEstMinutes}
+                              onChange={(e) => setEditEstMinutes(e.target.value)}
+                              className="input !w-20 !py-1"
+                              placeholder="min"
+                            />
+                          ) : (
+                            <span className="text-slate-500">{tier.estMinutes} min</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-3 text-right">
+                          {editingFee === tier.id ? (
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => {
+                                  const newFee = parseInt(editFeeValue);
+                                  const newMin = parseInt(editEstMinutes);
+                                  if (!isNaN(newFee) && newFee > 0 && !isNaN(newMin) && newMin > 0) {
+                                    setFeeTiers((prev) =>
+                                      prev.map((t) =>
+                                        t.id === tier.id ? { ...t, fee: newFee, estMinutes: newMin } : t
+                                      )
+                                    );
+                                  }
+                                  setEditingFee(null);
+                                }}
+                                className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5 inline mr-1" />
+                                OK
+                              </button>
+                              <button
+                                onClick={() => setEditingFee(null)}
+                                className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-500 hover:bg-slate-100 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                setEditingFee(tier.id);
+                                setEditFeeValue(String(tier.fee));
+                                setEditEstMinutes(String(tier.estMinutes));
+                              }}
+                              className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors"
+                            >
+                              <Pencil className="w-3.5 h-3.5 inline mr-1" />
+                              Edit
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-4 pt-4 border-t border-slate-200">
+                <button
+                  onClick={() => {
+                    setFeesSaved(true);
+                    setTimeout(() => setFeesSaved(false), 2000);
+                  }}
+                  className="btn-primary"
+                >
+                  Save Fee Configuration
+                </button>
+              </div>
+            </div>
+
+            {/* Current formula info */}
+            <div className="card mt-4 border-indigo-100 bg-indigo-50/30">
+              <h3 className="text-sm font-semibold text-indigo-700 mb-2">Current Calculation Formula</h3>
+              <p className="text-sm text-slate-600">
+                Base fee: <span className="font-mono font-semibold">2.000 DT</span> + <span className="font-mono font-semibold">0.500 DT</span> per km (rounded up).
+              </p>
+              <p className="text-xs text-slate-400 mt-1">
+                This formula is defined in <span className="font-mono">src/lib/fees.ts</span> and applied at order creation. The tiers above are for reference and future override.
+              </p>
             </div>
           </div>
         )}
