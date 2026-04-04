@@ -140,12 +140,16 @@ export default function AdminPage() {
   const FEE_PER_DELIVERY = 500; // millimes (service fee per delivery — rider owes weekly)
   const FLAT_DELIVERY_FEE = 1500; // millimes (customer pays)
   const RIDER_TAKE = 1000; // millimes (rider earns per delivery)
-  const [paidRiders, setPaidRiders] = useState<Record<string, boolean>>(() => {
-    if (typeof window !== "undefined") {
-      try { return JSON.parse(localStorage.getItem("tawsil_paid_riders") || "{}"); } catch { return {}; }
-    }
-    return {};
-  });
+  const [feePayments, setFeePayments] = useState<Array<{ id: string; rider_phone: string; order_id: string; order_number: string; store_name: string; fee_amount: number; is_paid: boolean; paid_at: string | null; created_at: string }>>([]);
+
+  // Fetch fee payments from DB
+  useEffect(() => {
+    if (tab !== "fees") return;
+    fetch("/api/rider-fees")
+      .then(r => r.json())
+      .then(data => { if (data.fees) setFeePayments(data.fees); })
+      .catch(() => {});
+  }, [tab]);
 
   const [dash, setDash] = useState<DashboardData | null>(null);
   const [dashLoading, setDashLoading] = useState(false);
@@ -1190,27 +1194,35 @@ export default function AdminPage() {
 
         {/* Fees Tab */}
         {tab === "fees" && (() => {
-          const riderFeeData = approvedRiders.map((r) => {
-            const stats = riderStats[r.phone];
-            const totalDeliveries = stats?.total_deliveries || 0;
-            const feesOwed = totalDeliveries * FEE_PER_DELIVERY;
-            const isPaid = !!paidRiders[r.id];
-            return { ...r, totalDeliveries, feesOwed, isPaid };
-          });
-          const totalCollected = riderFeeData.filter(r => r.isPaid).reduce((sum, r) => sum + r.feesOwed, 0);
-          const totalOutstanding = riderFeeData.filter(r => !r.isPaid).reduce((sum, r) => sum + r.feesOwed, 0);
-          const unpaidCount = riderFeeData.filter(r => !r.isPaid && r.feesOwed > 0).length;
+          const totalCollected = feePayments.filter(f => f.is_paid).reduce((s, f) => s + f.fee_amount, 0);
+          const totalOutstanding = feePayments.filter(f => !f.is_paid).reduce((s, f) => s + f.fee_amount, 0);
+          const unpaidRiderPhones = [...new Set(feePayments.filter(f => !f.is_paid).map(f => f.rider_phone))];
 
-          function markAsPaid(riderId: string) {
-            const next = { ...paidRiders, [riderId]: true };
-            setPaidRiders(next);
-            localStorage.setItem("tawsil_paid_riders", JSON.stringify(next));
+          // Group by rider
+          const byRider: Record<string, typeof feePayments> = {};
+          feePayments.forEach(f => {
+            if (!byRider[f.rider_phone]) byRider[f.rider_phone] = [];
+            byRider[f.rider_phone].push(f);
+          });
+
+          async function markFeePaid(feeId: string) {
+            await fetch("/api/rider-fees", {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ fee_ids: [feeId] }),
+            });
+            setFeePayments(prev => prev.map(f => f.id === feeId ? { ...f, is_paid: true, paid_at: new Date().toISOString() } : f));
           }
-          function markAsUnpaid(riderId: string) {
-            const next = { ...paidRiders };
-            delete next[riderId];
-            setPaidRiders(next);
-            localStorage.setItem("tawsil_paid_riders", JSON.stringify(next));
+
+          async function markAllPaidForRider(riderPhone: string) {
+            const unpaidIds = feePayments.filter(f => f.rider_phone === riderPhone && !f.is_paid).map(f => f.id);
+            if (unpaidIds.length === 0) return;
+            await fetch("/api/rider-fees", {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ fee_ids: unpaidIds }),
+            });
+            setFeePayments(prev => prev.map(f => unpaidIds.includes(f.id) ? { ...f, is_paid: true, paid_at: new Date().toISOString() } : f));
           }
 
           return (
@@ -1227,7 +1239,7 @@ export default function AdminPage() {
               </div>
               <div className="card text-center">
                 <div className="text-xs text-slate-500 mb-1">Unpaid Riders</div>
-                <div className="text-lg font-bold text-red-600">{unpaidCount}</div>
+                <div className="text-lg font-bold text-red-600">{unpaidRiderPhones.length}</div>
               </div>
             </div>
 
@@ -1255,70 +1267,84 @@ export default function AdminPage() {
               </div>
             </div>
 
-            <div className="card">
-              <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2 mb-4">
-                <Wallet className="w-4 h-4" /> Rider Fee Tracker
-                <span className="text-xs font-normal text-slate-400 ml-auto">{formatFee(FEE_PER_DELIVERY)} / delivery (weekly)</span>
-              </h2>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-200">
-                      <th className="text-left py-2 px-3 text-slate-500 font-medium">Name</th>
-                      <th className="text-left py-2 px-3 text-slate-500 font-medium">Phone</th>
-                      <th className="text-center py-2 px-3 text-slate-500 font-medium">Deliveries</th>
-                      <th className="text-right py-2 px-3 text-slate-500 font-medium">Fees Owed</th>
-                      <th className="text-center py-2 px-3 text-slate-500 font-medium">Status</th>
-                      <th className="text-right py-2 px-3 text-slate-500 font-medium">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {riderFeeData.map((r) => (
-                      <tr key={r.id} className="border-b border-slate-100 last:border-0">
-                        <td className="py-3 px-3 font-medium text-slate-900">{r.name}</td>
-                        <td className="py-3 px-3 text-slate-600 font-mono text-xs" dir="ltr">{r.phone}</td>
-                        <td className="py-3 px-3 text-center text-slate-700">{r.totalDeliveries}</td>
-                        <td className="py-3 px-3 text-right font-semibold text-slate-900">{formatFee(r.feesOwed)}</td>
-                        <td className="py-3 px-3 text-center">
-                          {r.isPaid ? (
-                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                              <CheckCircle2 className="w-3 h-3" /> Paid
-                            </span>
-                          ) : r.feesOwed > 0 ? (
-                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
-                              Unpaid
-                            </span>
-                          ) : (
-                            <span className="text-xs text-slate-400">—</span>
-                          )}
-                        </td>
-                        <td className="py-3 px-3 text-right">
-                          {r.isPaid ? (
-                            <button
-                              onClick={() => markAsUnpaid(r.id)}
-                              className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-500 hover:bg-slate-100 transition-colors"
-                            >
-                              Undo
-                            </button>
-                          ) : r.feesOwed > 0 ? (
-                            <button
-                              onClick={() => markAsPaid(r.id)}
-                              className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5 inline mr-1" />
-                              Mark as Paid
-                            </button>
-                          ) : null}
-                        </td>
-                      </tr>
-                    ))}
-                    {riderFeeData.length === 0 && (
-                      <tr><td colSpan={6} className="py-8 text-center text-slate-400">No active riders</td></tr>
+            {/* Per-rider fee details */}
+            {Object.entries(byRider).sort().map(([phone, fees]) => {
+              const rider = approvedRiders.find(r => r.phone === phone);
+              const riderName = rider?.name || phone;
+              const unpaid = fees.filter(f => !f.is_paid);
+              const totalOwed = unpaid.reduce((s, f) => s + f.fee_amount, 0);
+              return (
+              <div key={phone} className="card mb-3">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <div className="font-semibold text-slate-900">{riderName}</div>
+                    <div className="text-xs text-slate-400 font-mono" dir="ltr">{phone}</div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-amber-600">{formatFee(totalOwed)} owed</span>
+                    {unpaid.length > 0 && (
+                      <button
+                        onClick={() => markAllPaidForRider(phone)}
+                        className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5 inline mr-1" />
+                        Mark All Paid
+                      </button>
                     )}
-                  </tbody>
-                </table>
+                  </div>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-slate-200">
+                        <th className="text-left py-1.5 px-2 text-slate-500 font-medium">Order</th>
+                        <th className="text-left py-1.5 px-2 text-slate-500 font-medium">Store</th>
+                        <th className="text-left py-1.5 px-2 text-slate-500 font-medium">Date</th>
+                        <th className="text-right py-1.5 px-2 text-slate-500 font-medium">Fee</th>
+                        <th className="text-center py-1.5 px-2 text-slate-500 font-medium">Status</th>
+                        <th className="text-right py-1.5 px-2 text-slate-500 font-medium">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {fees.map((f) => (
+                        <tr key={f.id} className={`border-b border-slate-50 ${f.is_paid ? "opacity-60" : ""}`}>
+                          <td className="py-2 px-2 font-mono text-slate-600">{f.order_number || "—"}</td>
+                          <td className="py-2 px-2 text-slate-600">{f.store_name || "—"}</td>
+                          <td className="py-2 px-2 text-slate-500">{new Date(f.created_at).toLocaleDateString()}</td>
+                          <td className="py-2 px-2 text-right font-semibold">{formatFee(f.fee_amount)}</td>
+                          <td className="py-2 px-2 text-center">
+                            {f.is_paid ? (
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full">
+                                <CheckCircle2 className="w-3 h-3" /> Paid
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full">
+                                Unpaid
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-2 px-2 text-right">
+                            {!f.is_paid && (
+                              <button
+                                onClick={() => markFeePaid(f.id)}
+                                className="text-xs px-2 py-1 rounded border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                              >
+                                Pay
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
+              );
+            })}
+
+            {feePayments.length === 0 && (
+              <div className="card text-center text-slate-400 py-8">No fee payments recorded yet. Fees are created automatically when orders are delivered.</div>
+            )}
           </div>
           );
         })()}

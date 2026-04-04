@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { TrendingUp, Package, MapPin, Clock } from "lucide-react";
+import { TrendingUp, Package, MapPin, Clock, Wallet, CheckCircle2 } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
 
 interface RiderStats {
@@ -24,6 +24,17 @@ interface Order {
   created_at: string;
 }
 
+interface FeePayment {
+  id: string;
+  order_id: string;
+  order_number: string;
+  store_name: string;
+  fee_amount: number;
+  is_paid: boolean;
+  paid_at: string | null;
+  created_at: string;
+}
+
 function formatFee(m: number) { return `${(m/1000).toFixed(3)} DT`; }
 
 export default function RiderStatsPage() {
@@ -32,6 +43,7 @@ export default function RiderStatsPage() {
   const [riderPhone, setRiderPhone] = useState<string | null>(null);
   const [stats, setStats] = useState<RiderStats | null>(null);
   const [historyOrders, setHistoryOrders] = useState<Order[]>([]);
+  const [feePayments, setFeePayments] = useState<FeePayment[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
 
   useEffect(() => {
@@ -41,7 +53,6 @@ export default function RiderStatsPage() {
     if (user.role !== "rider") { window.location.href = "/rider"; return; }
     setRiderPhone(user.phone);
 
-    // Get db_id from status endpoint
     fetch(`/api/riders/status?phone=${encodeURIComponent(user.phone)}`)
       .then(r => r.json())
       .then(data => {
@@ -51,7 +62,6 @@ export default function RiderStatsPage() {
       .catch(() => { window.location.href = "/rider"; });
   }, []);
 
-  // Fetch stats — use phone since rider_id FK is to auth.users, not riders
   useEffect(() => {
     if (!riderPhone) return;
     function fetchStats() {
@@ -65,7 +75,6 @@ export default function RiderStatsPage() {
     return () => clearInterval(interval);
   }, [riderId]);
 
-  // Fetch today's history — use phone since rider_id FK is to auth.users, not riders
   useEffect(() => {
     if (!riderPhone) return;
     setHistoryLoading(true);
@@ -80,6 +89,18 @@ export default function RiderStatsPage() {
       .catch(() => {})
       .finally(() => setHistoryLoading(false));
   }, [riderId]);
+
+  // Fetch fee payments
+  useEffect(() => {
+    if (!riderPhone) return;
+    fetch(`/api/rider-fees?rider_phone=${encodeURIComponent(riderPhone)}`)
+      .then(r => r.json())
+      .then(data => { if (data.fees) setFeePayments(data.fees); })
+      .catch(() => {});
+  }, [riderPhone]);
+
+  const totalFeesPaid = feePayments.filter(f => f.is_paid).reduce((s, f) => s + f.fee_amount, 0);
+  const totalFeesOwed = feePayments.filter(f => !f.is_paid).reduce((s, f) => s + f.fee_amount, 0);
 
   return (
     <div>
@@ -122,6 +143,44 @@ export default function RiderStatsPage() {
               <span>Customer pays</span>
               <span className="font-semibold text-indigo-600">1.500 DT</span>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Fee payment status */}
+      {feePayments.length > 0 && (
+        <div className="card mb-4">
+          <div className="flex items-center gap-2 text-sm font-bold text-slate-900 mb-3">
+            <Wallet className="w-4 h-4 text-indigo-600" />
+            Fee Payments
+          </div>
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            <div className="bg-emerald-50 rounded-lg p-2.5 border border-emerald-100 text-center">
+              <div className="text-lg font-bold text-emerald-700">{formatFee(totalFeesPaid)}</div>
+              <div className="text-xs text-slate-500">Paid</div>
+            </div>
+            <div className="bg-amber-50 rounded-lg p-2.5 border border-amber-100 text-center">
+              <div className="text-lg font-bold text-amber-700">{formatFee(totalFeesOwed)}</div>
+              <div className="text-xs text-slate-500">Outstanding</div>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {feePayments.map(fee => (
+              <div key={fee.id} className={`flex items-center justify-between py-2 px-3 rounded-lg border ${fee.is_paid ? 'border-slate-100 bg-slate-50' : 'border-amber-200 bg-amber-50'}`}>
+                <div>
+                  <div className="text-sm font-semibold text-slate-700">{fee.store_name || "—"}</div>
+                  <div className="text-xs text-slate-400 font-mono">{fee.order_number} · {new Date(fee.created_at).toLocaleDateString()}</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-sm">{formatFee(fee.fee_amount)}</span>
+                  {fee.is_paid ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                  ) : (
+                    <span className="w-4 h-4 rounded-full border-2 border-amber-400 inline-block" />
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
