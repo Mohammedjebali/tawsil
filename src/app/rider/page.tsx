@@ -256,7 +256,7 @@ export default function RiderPage() {
       if (rider) {
         setMyOrders((allData.orders || []).filter((o: Order) =>
           ["accepted","picked_up"].includes(o.status) &&
-          o.customer_phone
+          o.rider_phone === rider.phone
         ));
       }
     } finally {
@@ -277,28 +277,38 @@ export default function RiderPage() {
   async function acceptOrder(orderId: string) {
     if (!rider) return;
     if (navigator.vibrate) navigator.vibrate([50, 30, 100]);
-    const res = await fetch(`/api/orders/${orderId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        status: "accepted",
-        rider_name: rider.name,
-        rider_phone: rider.phone,
-        rider_id: rider.db_id,
-      }),
-    });
-    if (res.status === 409) {
-      const err = await res.json();
-      if (err.error === "rider_busy") {
-        alert(t("riderBusy"));
-      } else {
-        alert(t("orderTaken"));
+    try {
+      const res = await fetch(`/api/orders/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: "accepted",
+          rider_name: rider.name,
+          rider_phone: rider.phone,
+          rider_id: rider.db_id,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        if (err.error === "rider_busy") {
+          alert(t("riderBusy"));
+        } else if (err.error === "order_taken") {
+          alert(t("orderTaken"));
+        } else if (err.error === "account_blocked") {
+          alert(err.message || "Account blocked");
+        } else {
+          alert("Error accepting order. Please try again.");
+        }
+        fetchOrders();
+        return;
       }
       fetchOrders();
-      return;
+      setTab("mine");
+      startSharing(orderId);
+    } catch (e) {
+      console.error("acceptOrder error:", e);
+      alert("Network error. Check your connection and try again.");
     }
-    fetchOrders();
-    startSharing(orderId);
   }
 
   function startSharing(orderId: string) {
