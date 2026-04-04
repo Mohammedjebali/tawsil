@@ -31,7 +31,7 @@ export async function GET(req: Request) {
   return NextResponse.json({
     totalDelivered: all.length,
     todayDelivered: todayDelivered.length,
-    totalEarnings: all.length * 1500,
-    todayEarnings: todayDelivered.length * 1500,
+    totalEarnings: all.length * 1000,
+    todayEarnings: todayDelivered.length * 1000,
   });
 }

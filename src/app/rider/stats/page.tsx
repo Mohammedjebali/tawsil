@@ -90,7 +90,7 @@ export default function RiderStatsPage() {
             <TrendingUp className="w-4 h-4" />
             {t("myStats")}
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 mb-3">
             <div className="bg-white rounded-lg p-2.5 border border-indigo-100 text-center">
               <div className="text-lg font-bold text-slate-900">{stats.totalDelivered}</div>
               <div className="text-xs text-slate-500">{t("totalDelivered")}</div>
@@ -99,13 +99,28 @@ export default function RiderStatsPage() {
               <div className="text-lg font-bold text-slate-900">{stats.todayDelivered}</div>
               <div className="text-xs text-slate-500">{t("todayDelivered")}</div>
             </div>
-            <div className="bg-white rounded-lg p-2.5 border border-indigo-100 text-center">
+            <div className="bg-white rounded-lg p-2.5 border border-emerald-100 text-center">
               <div className="text-lg font-bold text-emerald-700">{formatFee(stats.totalEarnings)}</div>
               <div className="text-xs text-slate-500">{t("totalEarnings")}</div>
             </div>
-            <div className="bg-white rounded-lg p-2.5 border border-indigo-100 text-center">
+            <div className="bg-white rounded-lg p-2.5 border border-emerald-100 text-center">
               <div className="text-lg font-bold text-emerald-700">{formatFee(stats.todayEarnings)}</div>
               <div className="text-xs text-slate-500">{t("todayEarnings")}</div>
+            </div>
+          </div>
+          {/* Fee breakdown */}
+          <div className="bg-white rounded-lg p-3 border border-slate-200 text-xs text-slate-500">
+            <div className="flex justify-between mb-1">
+              <span>Per delivery you earn</span>
+              <span className="font-semibold text-emerald-600">1.000 DT</span>
+            </div>
+            <div className="flex justify-between mb-1">
+              <span>Service fee (paid weekly)</span>
+              <span className="font-semibold text-amber-600">0.500 DT</span>
+            </div>
+            <div className="flex justify-between border-t border-slate-100 pt-1">
+              <span>Customer pays</span>
+              <span className="font-semibold text-indigo-600">1.500 DT</span>
             </div>
           </div>
         </div>
@@ -137,7 +152,7 @@ export default function RiderStatsPage() {
             </div>
             <div className="flex justify-between items-center pt-2 border-t border-slate-100">
               <span className="text-xs text-slate-500">{t("earnedPerOrder")}</span>
-              <span className="text-sm font-bold text-emerald-700">1.500 DT</span>
+              <span className="text-sm font-bold text-emerald-700">1.000 DT</span>
             </div>
           </div>
         ))}
