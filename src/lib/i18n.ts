@@ -282,6 +282,9 @@ const translations: Record<string, Record<Lang, string>> = {
   noActiveBroadcast: { ar: "لا يوجد إعلان نشط", fr: "Aucune annonce active", en: "No active broadcast" },
   broadcastHistory: { ar: "السجل", fr: "Historique", en: "History" },
   slideToAccept: { ar: "اسحب للقبول ←", fr: "Glisser pour accepter →", en: "Slide to accept →" },
+  continueWithGoogle: { ar: "تسجيل الدخول بحساب Google", fr: "Continuer avec Google", en: "Continue with Google" },
+  completeProfile: { ar: "أكمل ملفك الشخصي", fr: "Complétez votre profil", en: "Complete your profile" },
+  completeProfileDesc: { ar: "نحتاج بعض المعلومات الإضافية", fr: "Quelques informations supplémentaires", en: "We need a few more details" },
 };
 
 export function t(lang: Lang, key: string): string {
