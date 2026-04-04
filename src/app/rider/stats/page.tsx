@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { TrendingUp, Package, MapPin, Clock, Wallet, CheckCircle2 } from "lucide-react";
+import { TrendingUp, Package, MapPin, Clock, CheckCircle2 } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
 
 interface RiderStats {
@@ -45,6 +45,7 @@ export default function RiderStatsPage() {
   const [historyOrders, setHistoryOrders] = useState<Order[]>([]);
   const [feePayments, setFeePayments] = useState<FeePayment[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [riderTab, setRiderTab] = useState<"stats" | "fees">("stats");
 
   useEffect(() => {
     const saved = localStorage.getItem("tawsil_user");
@@ -104,6 +105,30 @@ export default function RiderStatsPage() {
 
   return (
     <div>
+      {/* Tab switcher: Stats / Fees */}
+      <div className="flex bg-slate-100 rounded-xl p-1 mb-4">
+        <button
+          onClick={() => setRiderTab("stats")}
+          className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+            riderTab === "stats" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500"
+          }`}
+        >
+          <TrendingUp className="w-4 h-4 inline mr-1" />
+          {t("myStats")}
+        </button>
+        <button
+          onClick={() => setRiderTab("fees")}
+          className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+            riderTab === "fees" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500"
+          }`}
+        >
+          <Package className="w-4 h-4 inline mr-1" />
+          Fee Payments
+        </button>
+      </div>
+
+      {/* Stats tab */}
+      {riderTab === "stats" && <>
       {/* My Stats */}
       {stats && (
         <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 mb-4">
@@ -147,12 +172,15 @@ export default function RiderStatsPage() {
         </div>
       )}
 
-      {/* Fee payment status */}
-      {feePayments.length > 0 && (
+      </>
+      }
+
+      {/* Fees tab */}
+      {riderTab === "fees" && <>
+      {feePayments.length > 0 ? (
         <div className="card mb-4">
           <div className="flex items-center gap-2 text-sm font-bold text-slate-900 mb-3">
-            <Wallet className="w-4 h-4 text-indigo-600" />
-            Fee Payments
+            {t("feePayments")}
           </div>
           <div className="grid grid-cols-2 gap-3 mb-3">
             <div className="bg-emerald-50 rounded-lg p-2.5 border border-emerald-100 text-center">
@@ -183,7 +211,10 @@ export default function RiderStatsPage() {
             ))}
           </div>
         </div>
+      ) : (
+        <div className="card text-center text-slate-400 py-8">No fee payments yet</div>
       )}
+      </>}
 
       {/* Today's delivery history */}
       <h2 className="text-sm font-bold text-slate-700 mb-3">{t("history")}</h2>
