@@ -428,28 +428,10 @@ export default function RiderPage() {
         </div>
       )}
 
-      {/* Fee & earnings info banner */}
+      {/* Delivery count for header, no summary banner */}
       {deliveryCount > 0 && (
-        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-4 space-y-2">
-          <div className="flex items-center gap-2 text-indigo-800 text-sm font-semibold">
-            <Wallet className="w-4 h-4 flex-shrink-0" />
-            Your Delivery Summary
-          </div>
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div>
-              <div className="text-lg font-bold text-indigo-600">{deliveryCount}</div>
-              <div className="text-xs text-slate-500">Deliveries</div>
-            </div>
-            <div>
-              <div className="text-lg font-bold text-emerald-600">{formatFee(deliveryCount * 1000)}</div>
-              <div className="text-xs text-slate-500">Earned</div>
-            </div>
-            <div>
-              <div className="text-lg font-bold text-amber-600">{formatFee(deliveryCount * FEE_PER_DELIVERY)}</div>
-              <div className="text-xs text-slate-500">Fees Owed</div>
-            </div>
-          </div>
-          <div className="text-xs text-slate-400 text-center">Fees are paid weekly — {formatFee(1500)} per delivery ({formatFee(1000)} yours + {formatFee(500)} service fee)</div>
+        <div className="flex items-center gap-2 text-sm text-slate-500 mb-2">
+          <span className="font-semibold">🛵 {deliveryCount} deliveries completed</span>
         </div>
       )}
 
