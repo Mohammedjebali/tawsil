@@ -19,7 +19,7 @@ export async function GET() {
         map[phone] = { total_deliveries: 0, total_earned: 0, last_delivery_at: null };
       }
       map[phone].total_deliveries++;
-      map[phone].total_earned += 1500;
+      map[phone].total_earned += 1000;
       if (o.delivered_at && (!map[phone].last_delivery_at || o.delivered_at > map[phone].last_delivery_at!)) {
         map[phone].last_delivery_at = o.delivered_at;
       }
