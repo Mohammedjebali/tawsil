@@ -216,7 +216,7 @@ function LoginContent() {
               }}
             >
               <svg width="20" height="20" viewBox="0 0 48 48" fill="white"><path d="M48 24C48 10.7 37.3 0 24 0S0 10.7 0 24c0 11.8 8.6 21.7 19.9 23.6v-16.7h-5.9V24h5.9v-5.1c0-5.9 3.5-9.1 8.9-9.1 2.6 0 5.3.5 5.3.5v5.8h-3c-2.9 0-3.8 1.8-3.8 3.7V24h6.5l-1 6.9h-5.5v16.7C39.4 45.7 48 35.8 48 24z"/></svg>
-              Continue with Facebook
+              {t("continueWithFacebook")}
             </button>
 
             {/* Divider */}

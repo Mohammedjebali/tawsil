@@ -283,6 +283,7 @@ const translations: Record<string, Record<Lang, string>> = {
   broadcastHistory: { ar: "السجل", fr: "Historique", en: "History" },
   slideToAccept: { ar: "اسحب للقبول ←", fr: "Glisser pour accepter →", en: "Slide to accept →" },
   continueWithGoogle: { ar: "تسجيل الدخول بحساب Google", fr: "Continuer avec Google", en: "Continue with Google" },
+  continueWithFacebook: { ar: "تسجيل الدخول بحساب Facebook", fr: "Continuer avec Facebook", en: "Continue with Facebook" },
   completeProfile: { ar: "أكمل ملفك الشخصي", fr: "Complétez votre profil", en: "Complete your profile" },
   completeProfileDesc: { ar: "نحتاج بعض المعلومات الإضافية", fr: "Quelques informations supplémentaires", en: "We need a few more details" },
 };
