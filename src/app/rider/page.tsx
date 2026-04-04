@@ -287,7 +287,6 @@ export default function RiderPage() {
           status: "accepted",
           rider_name: rider.name,
           rider_phone: rider.phone,
-          rider_id: rider.db_id,
         }),
       });
       if (!res.ok) {
