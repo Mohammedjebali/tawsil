@@ -431,7 +431,7 @@ export default function RiderPage() {
       {/* Delivery count for header, no summary banner */}
       {deliveryCount > 0 && (
         <div className="flex items-center gap-2 text-sm text-slate-500 mb-2">
-          <span className="font-semibold">🛵 {deliveryCount} deliveries completed</span>
+          <span className="font-semibold">📦 {deliveryCount} deliveries completed</span>
         </div>
       )}
 
