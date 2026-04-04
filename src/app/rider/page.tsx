@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { User, Bell, BellOff, Package, MapPin, Phone, Navigation, CheckCircle2, DollarSign } from "lucide-react";
+import { User, Bell, BellOff, Package, MapPin, Phone, Navigation, CheckCircle2, Wallet } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
 import dynamic from "next/dynamic";
 const RiderMapView = dynamic(() => import("@/components/RiderMapView"), { ssr: false });
@@ -419,8 +419,8 @@ export default function RiderPage() {
       {/* Fee notice banner */}
       {deliveryCount > 0 && (
         <div className="flex items-center gap-2 text-amber-800 text-sm mb-4 bg-amber-50 border border-amber-300 rounded-xl py-3 px-4 font-medium">
-          <DollarSign className="w-4 h-4 flex-shrink-0" />
-          <span>You have <strong>{formatFee(deliveryCount * FEE_PER_DELIVERY)}</strong> in unpaid fees ({deliveryCount} deliveries)</span>
+          <Wallet className="w-4 h-4 flex-shrink-0" />
+          <span>لديك <strong>{formatFee(deliveryCount * FEE_PER_DELIVERY)}</strong> رسوم غير مدفوعة ({deliveryCount} توصيلات)</span>
         </div>
       )}
 
@@ -557,8 +557,10 @@ export default function RiderPage() {
                 </button>
               </div>
               <button
+                type="button"
                 onClick={() => acceptOrder(order.id)}
                 className="btn-primary mt-2"
+                style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
               >
                 {t("acceptOrder")}
               </button>
@@ -634,7 +636,7 @@ export default function RiderPage() {
                 {/* Price adjustment */}
                 <div className="bg-white border border-slate-200 rounded-xl p-3 mb-3">
                   <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-2">
-                    <DollarSign className="w-4 h-4 text-indigo-600" />
+                    <Wallet className="w-4 h-4 text-indigo-600" />
                     {t("adjustPrice")}
                   </div>
                   <div className="space-y-2">

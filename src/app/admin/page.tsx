@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Store, Package, Users, Plus, Trash2, RefreshCw, XCircle, CheckCircle2, ShoppingCart, Coffee, Pill, UtensilsCrossed, Bike, UserCheck, Search, Star, LayoutDashboard, TrendingUp, Clock, Download, Pencil, Megaphone, DollarSign } from "lucide-react";
+import { Store, Package, Users, Plus, Trash2, RefreshCw, XCircle, CheckCircle2, ShoppingCart, Coffee, Pill, UtensilsCrossed, Bike, UserCheck, Search, Star, LayoutDashboard, TrendingUp, Clock, Download, Pencil, Megaphone, Wallet } from "lucide-react";
 
 interface DashboardData {
   today: { total: number; delivered: number; cancelled: number; active: number; revenue: number; flagged: number };
@@ -470,7 +470,7 @@ export default function AdminPage() {
     { key: "riders" as const, label: "Riders", icon: Users, badge: pendingRiders.length },
     { key: "customers" as const, label: "Clients", icon: UserCheck },
     { key: "broadcast" as const, label: "Broadcast", icon: Megaphone },
-    { key: "fees" as const, label: "Fees", icon: DollarSign },
+    { key: "fees" as const, label: "Fees", icon: Wallet },
   ];
 
   return (
@@ -1231,7 +1231,7 @@ export default function AdminPage() {
 
             <div className="card">
               <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2 mb-4">
-                <DollarSign className="w-4 h-4" /> Rider Fee Tracker
+                <Wallet className="w-4 h-4" /> Rider Fee Tracker
                 <span className="text-xs font-normal text-slate-400 ml-auto">{formatFee(FEE_PER_DELIVERY)} / delivery</span>
               </h2>
               <div className="overflow-x-auto">
