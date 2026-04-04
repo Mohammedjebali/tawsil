@@ -242,7 +242,8 @@ export default function OrderPage() {
     return () => clearInterval(interval);
   }, [user]);
 
-  async function submitOrder() {
+  async function submitOrder(e?: React.MouseEvent) {
+    e?.preventDefault();
     if (!user) return;
     setLoading(true);
     setError(null);
@@ -648,6 +649,7 @@ export default function OrderPage() {
           {error && <div className="card border-red-200 text-red-600 text-sm mb-3">{error}</div>}
 
           <button
+            type="button"
             onClick={submitOrder}
             disabled={loading}
             className="btn-primary"
