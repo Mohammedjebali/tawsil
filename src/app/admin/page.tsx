@@ -137,7 +137,9 @@ export default function AdminPage() {
   const [broadcastSending, setBroadcastSending] = useState(false);
 
   // Rider fee payment tracker state
-  const FEE_PER_DELIVERY = 500; // millimes
+  const FEE_PER_DELIVERY = 500; // millimes (service fee per delivery — rider owes weekly)
+  const FLAT_DELIVERY_FEE = 1500; // millimes (customer pays)
+  const RIDER_TAKE = 1000; // millimes (rider earns per delivery)
   const [paidRiders, setPaidRiders] = useState<Record<string, boolean>>(() => {
     if (typeof window !== "undefined") {
       try { return JSON.parse(localStorage.getItem("tawsil_paid_riders") || "{}"); } catch { return {}; }
@@ -1229,10 +1231,34 @@ export default function AdminPage() {
               </div>
             </div>
 
+            {/* Fee breakdown card */}
+            <div className="card mb-4">
+              <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2 mb-3">
+                <Wallet className="w-4 h-4" /> Fee Breakdown
+              </h2>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-indigo-50 rounded-xl p-3 text-center border border-indigo-100">
+                  <div className="text-xs text-indigo-500 mb-1">Customer Pays</div>
+                  <div className="text-lg font-bold text-indigo-600">{formatFee(FLAT_DELIVERY_FEE)}</div>
+                  <div className="text-xs text-slate-400">flat per delivery</div>
+                </div>
+                <div className="bg-emerald-50 rounded-xl p-3 text-center border border-emerald-100">
+                  <div className="text-xs text-emerald-500 mb-1">Rider Earns</div>
+                  <div className="text-lg font-bold text-emerald-600">{formatFee(RIDER_TAKE)}</div>
+                  <div className="text-xs text-slate-400">per delivery</div>
+                </div>
+                <div className="bg-amber-50 rounded-xl p-3 text-center border border-amber-100">
+                  <div className="text-xs text-amber-500 mb-1">Service Fee</div>
+                  <div className="text-lg font-bold text-amber-600">{formatFee(FEE_PER_DELIVERY)}</div>
+                  <div className="text-xs text-slate-400">rider pays weekly</div>
+                </div>
+              </div>
+            </div>
+
             <div className="card">
               <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2 mb-4">
                 <Wallet className="w-4 h-4" /> Rider Fee Tracker
-                <span className="text-xs font-normal text-slate-400 ml-auto">{formatFee(FEE_PER_DELIVERY)} / delivery</span>
+                <span className="text-xs font-normal text-slate-400 ml-auto">{formatFee(FEE_PER_DELIVERY)} / delivery (weekly)</span>
               </h2>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">

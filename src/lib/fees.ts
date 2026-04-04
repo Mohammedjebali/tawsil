@@ -1,8 +1,17 @@
-const BASE_FEE = Number(process.env.NEXT_PUBLIC_BASE_FEE) || 2000; // millimes
-const PER_KM_FEE = Number(process.env.NEXT_PUBLIC_PER_KM_FEE) || 500; // millimes per km
+const BASE_FEE = Number(process.env.NEXT_PUBLIC_BASE_FEE) || 1500; // millimes — fixed 1.500 DT per delivery, no per-km extra
+const SERVICE_FEE = Number(process.env.NEXT_PUBLIC_SERVICE_FEE) || 500; // millimes — platform cut per delivery
+const RIDER_EARNINGS = Number(process.env.NEXT_PUBLIC_RIDER_EARNINGS) || 1000; // millimes — rider keeps per delivery
 
-export function calculateDeliveryFee(distanceKm: number): number {
-  return BASE_FEE + Math.ceil(distanceKm) * PER_KM_FEE;
+export function calculateDeliveryFee(_distanceKm: number): number {
+  return BASE_FEE; // flat fee, no per-km
+}
+
+export function getServiceFee(): number {
+  return SERVICE_FEE;
+}
+
+export function getRiderEarnings(): number {
+  return RIDER_EARNINGS;
 }
 
 export function formatFee(millimes: number): string {
