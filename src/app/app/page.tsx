@@ -281,8 +281,6 @@ export default function OrderPage() {
     }
   }
 
-  if (!ready) return null;
-
   if (showSplash) {
     return (
       <SplashScreen
@@ -297,6 +295,7 @@ export default function OrderPage() {
       />
     );
   }
+  if (!ready) return null;
   if (!user) return <LandingPage />;
 
   const storeName = selectedStore ? selectedStore.name : customStore;
