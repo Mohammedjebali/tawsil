@@ -146,9 +146,11 @@ export default function RiderPage() {
   const [isOnline, setIsOnline] = useState(false);
   const [toggling, setToggling] = useState(false);
   const [riderPos, setRiderPos] = useState<{lat: number; lng: number} | null>(null);
+  const [deliveryCount, setDeliveryCount] = useState(0);
   const watchIds = useRef<Record<string, number>>({});
   const prevOrderCount = useRef(0);
   const posWatchId = useRef<number | null>(null);
+  const FEE_PER_DELIVERY = 500; // millimes
 
   useEffect(() => {
     const saved = localStorage.getItem("tawsil_user");
@@ -199,6 +201,18 @@ export default function RiderPage() {
     return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
+
+  // Fetch rider delivery count for fee notice
+  useEffect(() => {
+    if (!rider?.phone) return;
+    fetch("/api/admin/riders/stats")
+      .then(r => r.json())
+      .then(data => {
+        const stats = (data.stats || []).find((s: { phone: string; total_deliveries: number }) => s.phone === rider.phone);
+        if (stats) setDeliveryCount(stats.total_deliveries || 0);
+      })
+      .catch(() => {});
+  }, [rider?.phone]);
 
   // Track rider position for distance-to-store calculation
   useEffect(() => {
@@ -399,6 +413,14 @@ export default function RiderPage() {
       ) : (
         <div className="text-amber-700 text-sm mb-4 bg-amber-50 border border-amber-200 rounded-xl py-2.5 px-4 font-medium text-center">
           {t("youAreOffline")}
+        </div>
+      )}
+
+      {/* Fee notice banner */}
+      {deliveryCount > 0 && (
+        <div className="flex items-center gap-2 text-amber-800 text-sm mb-4 bg-amber-50 border border-amber-300 rounded-xl py-3 px-4 font-medium">
+          <DollarSign className="w-4 h-4 flex-shrink-0" />
+          <span>You have <strong>{formatFee(deliveryCount * FEE_PER_DELIVERY)}</strong> in unpaid fees ({deliveryCount} deliveries)</span>
         </div>
       )}
 

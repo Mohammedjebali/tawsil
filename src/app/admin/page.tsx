@@ -136,17 +136,14 @@ export default function AdminPage() {
   const [broadcastEn, setBroadcastEn] = useState("");
   const [broadcastSending, setBroadcastSending] = useState(false);
 
-  // Fees state
-  const [feeTiers, setFeeTiers] = useState([
-    { id: 1, label: "0 – 2 km", minKm: 0, maxKm: 2, fee: 2500, estMinutes: 15 },
-    { id: 2, label: "2 – 5 km", minKm: 2, maxKm: 5, fee: 4000, estMinutes: 25 },
-    { id: 3, label: "5 – 10 km", minKm: 5, maxKm: 10, fee: 6000, estMinutes: 35 },
-    { id: 4, label: "10 km+", minKm: 10, maxKm: Infinity, fee: 8000, estMinutes: 50 },
-  ]);
-  const [editingFee, setEditingFee] = useState<number | null>(null);
-  const [editFeeValue, setEditFeeValue] = useState("");
-  const [editEstMinutes, setEditEstMinutes] = useState("");
-  const [feesSaved, setFeesSaved] = useState(false);
+  // Rider fee payment tracker state
+  const FEE_PER_DELIVERY = 500; // millimes
+  const [paidRiders, setPaidRiders] = useState<Record<string, boolean>>(() => {
+    if (typeof window !== "undefined") {
+      try { return JSON.parse(localStorage.getItem("tawsil_paid_riders") || "{}"); } catch { return {}; }
+    }
+    return {};
+  });
 
   const [dash, setDash] = useState<DashboardData | null>(null);
   const [dashLoading, setDashLoading] = useState(false);
@@ -1190,131 +1187,115 @@ export default function AdminPage() {
         )}
 
         {/* Fees Tab */}
-        {tab === "fees" && (
+        {tab === "fees" && (() => {
+          const riderFeeData = approvedRiders.map((r) => {
+            const stats = riderStats[r.phone];
+            const totalDeliveries = stats?.total_deliveries || 0;
+            const feesOwed = totalDeliveries * FEE_PER_DELIVERY;
+            const isPaid = !!paidRiders[r.id];
+            return { ...r, totalDeliveries, feesOwed, isPaid };
+          });
+          const totalCollected = riderFeeData.filter(r => r.isPaid).reduce((sum, r) => sum + r.feesOwed, 0);
+          const totalOutstanding = riderFeeData.filter(r => !r.isPaid).reduce((sum, r) => sum + r.feesOwed, 0);
+          const unpaidCount = riderFeeData.filter(r => !r.isPaid && r.feesOwed > 0).length;
+
+          function markAsPaid(riderId: string) {
+            const next = { ...paidRiders, [riderId]: true };
+            setPaidRiders(next);
+            localStorage.setItem("tawsil_paid_riders", JSON.stringify(next));
+          }
+          function markAsUnpaid(riderId: string) {
+            const next = { ...paidRiders };
+            delete next[riderId];
+            setPaidRiders(next);
+            localStorage.setItem("tawsil_paid_riders", JSON.stringify(next));
+          }
+
+          return (
           <div>
-            <div className="card">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2">
-                  <DollarSign className="w-4 h-4" /> Delivery Fee Tiers
-                </h2>
-                {feesSaved && (
-                  <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-lg">
-                    Saved!
-                  </span>
-                )}
+            {/* Summary cards */}
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className="card text-center">
+                <div className="text-xs text-slate-500 mb-1">Total Collected</div>
+                <div className="text-lg font-bold text-emerald-600">{formatFee(totalCollected)}</div>
               </div>
+              <div className="card text-center">
+                <div className="text-xs text-slate-500 mb-1">Outstanding</div>
+                <div className="text-lg font-bold text-amber-600">{formatFee(totalOutstanding)}</div>
+              </div>
+              <div className="card text-center">
+                <div className="text-xs text-slate-500 mb-1">Unpaid Riders</div>
+                <div className="text-lg font-bold text-red-600">{unpaidCount}</div>
+              </div>
+            </div>
+
+            <div className="card">
+              <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2 mb-4">
+                <DollarSign className="w-4 h-4" /> Rider Fee Tracker
+                <span className="text-xs font-normal text-slate-400 ml-auto">{formatFee(FEE_PER_DELIVERY)} / delivery</span>
+              </h2>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-slate-200">
-                      <th className="text-left py-2 px-3 text-slate-500 font-medium">Distance Range</th>
-                      <th className="text-left py-2 px-3 text-slate-500 font-medium">Delivery Fee</th>
-                      <th className="text-left py-2 px-3 text-slate-500 font-medium">Est. Time</th>
+                      <th className="text-left py-2 px-3 text-slate-500 font-medium">Name</th>
+                      <th className="text-left py-2 px-3 text-slate-500 font-medium">Phone</th>
+                      <th className="text-center py-2 px-3 text-slate-500 font-medium">Deliveries</th>
+                      <th className="text-right py-2 px-3 text-slate-500 font-medium">Fees Owed</th>
+                      <th className="text-center py-2 px-3 text-slate-500 font-medium">Status</th>
                       <th className="text-right py-2 px-3 text-slate-500 font-medium">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {feeTiers.map((tier) => (
-                      <tr key={tier.id} className="border-b border-slate-100 last:border-0">
-                        <td className="py-3 px-3 font-medium text-slate-900">{tier.label}</td>
-                        <td className="py-3 px-3">
-                          {editingFee === tier.id ? (
-                            <input
-                              type="number"
-                              value={editFeeValue}
-                              onChange={(e) => setEditFeeValue(e.target.value)}
-                              className="input !w-28 !py-1"
-                              placeholder="millimes"
-                            />
+                    {riderFeeData.map((r) => (
+                      <tr key={r.id} className="border-b border-slate-100 last:border-0">
+                        <td className="py-3 px-3 font-medium text-slate-900">{r.name}</td>
+                        <td className="py-3 px-3 text-slate-600 font-mono text-xs" dir="ltr">{r.phone}</td>
+                        <td className="py-3 px-3 text-center text-slate-700">{r.totalDeliveries}</td>
+                        <td className="py-3 px-3 text-right font-semibold text-slate-900">{formatFee(r.feesOwed)}</td>
+                        <td className="py-3 px-3 text-center">
+                          {r.isPaid ? (
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                              <CheckCircle2 className="w-3 h-3" /> Paid
+                            </span>
+                          ) : r.feesOwed > 0 ? (
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                              Unpaid
+                            </span>
                           ) : (
-                            <span className="text-slate-700">{formatFee(tier.fee)}</span>
-                          )}
-                        </td>
-                        <td className="py-3 px-3">
-                          {editingFee === tier.id ? (
-                            <input
-                              type="number"
-                              value={editEstMinutes}
-                              onChange={(e) => setEditEstMinutes(e.target.value)}
-                              className="input !w-20 !py-1"
-                              placeholder="min"
-                            />
-                          ) : (
-                            <span className="text-slate-500">{tier.estMinutes} min</span>
+                            <span className="text-xs text-slate-400">—</span>
                           )}
                         </td>
                         <td className="py-3 px-3 text-right">
-                          {editingFee === tier.id ? (
-                            <div className="flex items-center justify-end gap-2">
-                              <button
-                                onClick={() => {
-                                  const newFee = parseInt(editFeeValue);
-                                  const newMin = parseInt(editEstMinutes);
-                                  if (!isNaN(newFee) && newFee > 0 && !isNaN(newMin) && newMin > 0) {
-                                    setFeeTiers((prev) =>
-                                      prev.map((t) =>
-                                        t.id === tier.id ? { ...t, fee: newFee, estMinutes: newMin } : t
-                                      )
-                                    );
-                                  }
-                                  setEditingFee(null);
-                                }}
-                                className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
-                              >
-                                <CheckCircle2 className="w-3.5 h-3.5 inline mr-1" />
-                                OK
-                              </button>
-                              <button
-                                onClick={() => setEditingFee(null)}
-                                className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-500 hover:bg-slate-100 transition-colors"
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          ) : (
+                          {r.isPaid ? (
                             <button
-                              onClick={() => {
-                                setEditingFee(tier.id);
-                                setEditFeeValue(String(tier.fee));
-                                setEditEstMinutes(String(tier.estMinutes));
-                              }}
-                              className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors"
+                              onClick={() => markAsUnpaid(r.id)}
+                              className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-500 hover:bg-slate-100 transition-colors"
                             >
-                              <Pencil className="w-3.5 h-3.5 inline mr-1" />
-                              Edit
+                              Undo
                             </button>
-                          )}
+                          ) : r.feesOwed > 0 ? (
+                            <button
+                              onClick={() => markAsPaid(r.id)}
+                              className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5 inline mr-1" />
+                              Mark as Paid
+                            </button>
+                          ) : null}
                         </td>
                       </tr>
                     ))}
+                    {riderFeeData.length === 0 && (
+                      <tr><td colSpan={6} className="py-8 text-center text-slate-400">No active riders</td></tr>
+                    )}
                   </tbody>
                 </table>
               </div>
-              <div className="mt-4 pt-4 border-t border-slate-200">
-                <button
-                  onClick={() => {
-                    setFeesSaved(true);
-                    setTimeout(() => setFeesSaved(false), 2000);
-                  }}
-                  className="btn-primary"
-                >
-                  Save Fee Configuration
-                </button>
-              </div>
-            </div>
-
-            {/* Current formula info */}
-            <div className="card mt-4 border-indigo-100 bg-indigo-50/30">
-              <h3 className="text-sm font-semibold text-indigo-700 mb-2">Current Calculation Formula</h3>
-              <p className="text-sm text-slate-600">
-                Base fee: <span className="font-mono font-semibold">2.000 DT</span> + <span className="font-mono font-semibold">0.500 DT</span> per km (rounded up).
-              </p>
-              <p className="text-xs text-slate-400 mt-1">
-                This formula is defined in <span className="font-mono">src/lib/fees.ts</span> and applied at order creation. The tiers above are for reference and future override.
-              </p>
             </div>
           </div>
-        )}
+          );
+        })()}
       </div>
     </div>
   );
