@@ -172,6 +172,38 @@ export default function RiderStatsPage() {
         </div>
       )}
 
+      {/* Today's delivery history */}
+      <h2 className="text-sm font-bold text-slate-700 mb-3">{t("history")}</h2>
+      <div className="space-y-3">
+        {historyLoading && <div className="text-center text-slate-500 py-8">{t("loading")}</div>}
+        {!historyLoading && historyOrders.length === 0 && (
+          <div className="card text-center text-slate-500 py-8">{t("noDeliveriesToday")}</div>
+        )}
+        {historyOrders.map((order) => (
+          <div key={order.id} className="card">
+            <div className="flex justify-between items-start mb-2">
+              <span className="text-xs text-slate-400 font-mono" dir="ltr">{order.order_number}</span>
+              <span className="text-xs text-slate-400">
+                <Clock className="w-3 h-3 inline mr-1" />
+                {new Date(order.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-700 mb-1">
+              <Package className="w-4 h-4 text-slate-400 flex-shrink-0" />
+              <span className="font-semibold">{order.store_name}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-700 mb-2">
+              <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0" />
+              <span>{order.customer_address}</span>
+            </div>
+            <div className="flex justify-between items-center pt-2 border-t border-slate-100">
+              <span className="text-xs text-slate-500">{t("earnedPerOrder")}</span>
+              <span className="text-sm font-bold text-emerald-700">1.000 DT</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
       </>
       }
 
@@ -180,7 +212,7 @@ export default function RiderStatsPage() {
       {feePayments.length > 0 ? (
         <div className="card mb-4">
           <div className="flex items-center gap-2 text-sm font-bold text-slate-900 mb-3">
-            {t("feePayments")}
+            Fee Payments
           </div>
           <div className="grid grid-cols-2 gap-3 mb-3">
             <div className="bg-emerald-50 rounded-lg p-2.5 border border-emerald-100 text-center">
@@ -215,38 +247,6 @@ export default function RiderStatsPage() {
         <div className="card text-center text-slate-400 py-8">No fee payments yet</div>
       )}
       </>}
-
-      {/* Today's delivery history */}
-      <h2 className="text-sm font-bold text-slate-700 mb-3">{t("history")}</h2>
-      <div className="space-y-3">
-        {historyLoading && <div className="text-center text-slate-500 py-8">{t("loading")}</div>}
-        {!historyLoading && historyOrders.length === 0 && (
-          <div className="card text-center text-slate-500 py-8">{t("noDeliveriesToday")}</div>
-        )}
-        {historyOrders.map((order) => (
-          <div key={order.id} className="card">
-            <div className="flex justify-between items-start mb-2">
-              <span className="text-xs text-slate-400 font-mono" dir="ltr">{order.order_number}</span>
-              <span className="text-xs text-slate-400">
-                <Clock className="w-3 h-3 inline mr-1" />
-                {new Date(order.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-slate-700 mb-1">
-              <Package className="w-4 h-4 text-slate-400 flex-shrink-0" />
-              <span className="font-semibold">{order.store_name}</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-slate-700 mb-2">
-              <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0" />
-              <span>{order.customer_address}</span>
-            </div>
-            <div className="flex justify-between items-center pt-2 border-t border-slate-100">
-              <span className="text-xs text-slate-500">{t("earnedPerOrder")}</span>
-              <span className="text-sm font-bold text-emerald-700">1.000 DT</span>
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
