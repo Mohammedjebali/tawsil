@@ -21,6 +21,8 @@ interface Order {
   store_lng: number | null;
   items_description: string;
   delivery_fee: number;
+  rider_name?: string;
+  rider_phone?: string;
   rider_lat: number | null;
   rider_lng: number | null;
   distance_km: number | null;
