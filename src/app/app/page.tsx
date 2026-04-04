@@ -132,16 +132,21 @@ export default function OrderPage() {
   const { t, isRtl, lang } = useLang();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [ready, setReady] = useState(false);
-  // Show splash on every fresh app open (full page load)
-  // Client-side navigations won't trigger this since the component stays mounted
-  const [showSplash, setShowSplash] = useState(true);
+  // Show splash only on the first visit per session (new tab / PWA launch)
+  const [showSplash, setShowSplash] = useState(() => {
+    if (typeof window !== "undefined" && sessionStorage.getItem("tawsil_splash_shown")) {
+      return false;
+    }
+    return true;
+  });
   const [splashDone, setSplashDone] = useState(false);
   const pendingRedirect = useRef<string | null>(null);
 
   // Re-show splash when app comes back from background (iPhone PWA bfcache restore)
+  // but only if this is a fresh session (splash hasn't been shown yet)
   useEffect(() => {
     const handlePageShow = (e: PageTransitionEvent) => {
-      if (e.persisted) {
+      if (e.persisted && !sessionStorage.getItem("tawsil_splash_shown")) {
         setShowSplash(true);
         setSplashDone(false);
         pendingRedirect.current = null;
@@ -288,6 +293,7 @@ export default function OrderPage() {
       <SplashScreen
         splashDone={splashDone}
         onDismiss={() => {
+          sessionStorage.setItem("tawsil_splash_shown", "1");
           if (pendingRedirect.current) {
             window.location.href = pendingRedirect.current;
           } else {
