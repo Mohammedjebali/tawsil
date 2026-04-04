@@ -292,6 +292,7 @@ export default function RiderPage() {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
+        console.error("acceptOrder API error:", res.status, err);
         if (err.error === "rider_busy") {
           alert(t("riderBusy"));
         } else if (err.error === "order_taken") {
@@ -299,7 +300,7 @@ export default function RiderPage() {
         } else if (err.error === "account_blocked") {
           alert(err.message || "Account blocked");
         } else {
-          alert("Error accepting order. Please try again.");
+          alert(`Error: ${err.error || err.message || res.status}. ${err.details || err.hint || ''}`);
         }
         fetchOrders();
         return;
