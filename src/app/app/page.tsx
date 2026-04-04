@@ -637,7 +637,7 @@ export default function OrderPage() {
                       selectedStore?.lat ?? 36.5333, selectedStore?.lng ?? 10.5167,
                       customerLat, customerLng
                     )))
-                  : `${t("fromPrice")} ${formatFee(2000)}`}
+                  : `${t("fromPrice")} ${formatFee(1500)}`}}
               </span>
             </div>
             <div className="border-t border-indigo-200 mt-3 pt-3 text-xs text-slate-500">
