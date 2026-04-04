@@ -190,7 +190,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             boxShadow: "0 4px 16px rgb(0 0 0 / 0.08)",
           }}>
             {riderTabs.map(tab => {
-              const active = pathname === tab.href || (tab.href !== "/" && pathname.startsWith(tab.href));
+              const active = pathname === tab.href;
               return (
                 <Link key={tab.href} href={tab.href}
                   onClick={() => { if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(20); }}
