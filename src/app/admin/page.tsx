@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Store, Package, Users, Plus, Trash2, RefreshCw, XCircle, CheckCircle2, ShoppingCart, Coffee, Pill, UtensilsCrossed, Bike, UserCheck, Search, Star, LayoutDashboard, TrendingUp, Clock, Download, Pencil, Megaphone, Wallet } from "lucide-react";
 
 interface DashboardData {
-  today: { total: number; delivered: number; cancelled: number; active: number; revenue: number; flagged: number };
+  today: { total: number; delivered: number; cancelled: number; active: number; revenue: number; flagged: number; overallRevenue: number };
   riders: { total: number; online: number; busy: number; available: number };
   topStores: { name: string; count: number }[];
   recentOrders: { id: string; order_number: string; store_name: string; status: string; created_at: string }[];
@@ -566,7 +566,8 @@ export default function AdminPage() {
                       </div>
                       <span className="text-xs font-medium text-slate-500">Revenue</span>
                     </div>
-                    <div className="text-2xl font-bold text-indigo-600">{formatFee(dash.today.revenue)}</div>
+                    <div className="text-2xl font-bold text-indigo-600">{formatFee(dash.today.overallRevenue)}</div>
+                    <div className="text-xs text-slate-400 mt-1">Today: {formatFee(dash.today.revenue)}</div>
                   </div>
                   <div className="rounded-xl border border-slate-200 bg-white p-4">
                     <div className="flex items-center gap-2 mb-2">
