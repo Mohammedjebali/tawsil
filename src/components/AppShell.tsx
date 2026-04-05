@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Package, LogOut, ShoppingBag, MapPin, ClipboardList, User, Star, TrendingUp } from "lucide-react";
-import TestSentryButton from "./TestSentryButton";
 import { useLang } from "./LangProvider";
 import { supabaseClient } from "@/lib/supabase-client";
 import type { Lang } from "@/lib/i18n";
@@ -176,7 +175,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {/* Main */}
       <main className="max-w-lg mx-auto px-3 py-4 sm:px-4 sm:py-6 pb-28">
         {children}
-        <TestSentryButton />
       </main>
 
       {/* Bottom nav for riders */}
