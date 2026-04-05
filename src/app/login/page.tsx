@@ -34,6 +34,7 @@ function LoginContent() {
   const confirmed = searchParams.get("confirmed") === "1";
 
   useEffect(() => {
+    if (confirmed) return; // Let the confirmed=1 handler check metadata first
     const saved = localStorage.getItem("tawsil_user");
     if (saved) {
       try {
@@ -42,7 +43,7 @@ function LoginContent() {
         if (user.role === "rider" && user.status === "active") { window.location.href = "/rider"; return; }
       } catch (_) {}
     }
-  }, []);
+  }, [confirmed]);
 
   // Rebuild localStorage from Supabase metadata for OAuth returning users
   useEffect(() => {

@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     const supabase = getSupabase();
     const { first_name, last_name, email, phone, user_id, referred_by } = await req.json();
 
-    if (!first_name || !last_name || !email || !phone) {
+    if (!first_name || !email || !phone) {
       captureApiError("Missing required fields", 400);
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Upsert by email — if email exists, update phone/name/user_id
-    const row: Record<string, unknown> = { first_name, last_name, email, phone, referral_code: referralCode };
+    const row: Record<string, unknown> = { first_name, last_name: last_name || "", email, phone, referral_code: referralCode };
     if (user_id) row.user_id = user_id;
     if (validReferredBy) row.referred_by = validReferredBy;
 

@@ -31,20 +31,22 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${origin}/register/complete-profile`);
   }
 
-  // Create/update customer in DB
-  try {
-    await fetch(`${origin}/api/customers`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        user_id: user.id,
-        first_name: meta.first_name || meta.full_name?.split(" ")[0] || "",
-        last_name: meta.last_name || meta.full_name?.split(" ").slice(1).join(" ") || "",
-        email: user.email,
-        phone: meta.phone || "",
-      }),
-    });
-  } catch (_) {}
+  // Only create/update customer if profile data is complete
+  if (meta.first_name && meta.phone) {
+    try {
+      await fetch(`${origin}/api/customers`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: user.id,
+          first_name: meta.first_name,
+          last_name: meta.last_name || meta.full_name?.split(" ").slice(1).join(" ") || "",
+          email: user.email,
+          phone: meta.phone,
+        }),
+      });
+    } catch (_) {}
+  }
 
   return NextResponse.redirect(`${origin}/login?confirmed=1`);
 }
