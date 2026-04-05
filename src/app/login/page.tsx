@@ -1,22 +1,16 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
 import { supabaseClient } from "@/lib/supabase-client";
-import { useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
-  return (
-    <Suspense fallback={<div style={{ minHeight: "100dvh", background: "#F8FAFC", display: "flex", alignItems: "center", justifyContent: "center" }}><div style={{ color: "#6366f1", fontSize: "1.1rem", fontWeight: 600 }}>Loading...</div></div>}>
-      <LoginContent />
-    </Suspense>
-  );
+  return <LoginContent />;
 }
 
 function LoginContent() {
   const { t } = useLang();
-  const searchParams = useSearchParams();
   const [tab, setTab] = useState<"customer" | "rider">("customer");
 
   // Customer fields
@@ -31,10 +25,7 @@ function LoginContent() {
   const [riderError, setRiderError] = useState("");
   const [riderLoading, setRiderLoading] = useState(false);
 
-  const confirmed = searchParams.get("confirmed") === "1";
-
   useEffect(() => {
-    if (confirmed) return; // Let the confirmed=1 handler check metadata first
     const saved = localStorage.getItem("tawsil_user");
     if (saved) {
       try {
@@ -43,32 +34,7 @@ function LoginContent() {
         if (user.role === "rider" && user.status === "active") { window.location.href = "/rider"; return; }
       } catch (_) {}
     }
-  }, [confirmed]);
-
-  // Rebuild localStorage from Supabase metadata for OAuth returning users
-  useEffect(() => {
-    if (!confirmed) return;
-    async function rebuildFromAuth() {
-      const { data: { user } } = await supabaseClient.auth.getUser();
-      if (!user) return;
-      const meta = user.user_metadata || {};
-      if (!meta.phone || !meta.first_name) {
-        window.location.href = "/register/complete-profile";
-        return;
-      }
-      localStorage.setItem("tawsil_user", JSON.stringify({
-        user_id: user.id,
-        name: `${meta.first_name || ""} ${meta.last_name || ""}`.trim(),
-        firstName: meta.first_name || "",
-        lastName: meta.last_name || "",
-        email: user.email,
-        phone: meta.phone || "",
-        role: "customer",
-      }));
-      window.location.href = "/app";
-    }
-    rebuildFromAuth();
-  }, [confirmed]);
+  }, []);
 
   async function submitCustomer() {
     if (!email.trim() || !password.trim()) return;
@@ -184,17 +150,6 @@ function LoginContent() {
         padding: "28px 24px", width: "100%", maxWidth: 400,
         boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.07)",
       }}>
-        {/* Confirmed banner */}
-        {confirmed && (
-          <div style={{
-            background: "#ecfdf5", border: "1px solid #a7f3d0", borderRadius: 12,
-            padding: "12px 16px", marginBottom: 20, textAlign: "center",
-            color: "#059669", fontSize: "0.875rem", fontWeight: 600,
-          }}>
-            {t("emailConfirmed")}
-          </div>
-        )}
-
         {/* Tab switcher */}
         <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 12, padding: 4, marginBottom: 24 }}>
           <button style={tabStyle(tab === "customer")} onClick={() => setTab("customer")}>

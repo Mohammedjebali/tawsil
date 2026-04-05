@@ -17,8 +17,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${origin}/login`);
   }
 
-  // Use SSR client to properly set session cookies for the browser
-  const response = NextResponse.redirect(`${origin}/login?confirmed=1`);
+  // Build a redirect response — destination will be set after we inspect the user
+  const response = NextResponse.redirect(`${origin}/app`);
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -53,15 +54,12 @@ export async function GET(req: NextRequest) {
   const missingProfile = !meta.phone || !meta.first_name;
 
   if (isOAuth && missingProfile) {
-    // Reuse `response` so the session cookies from exchangeCodeForSession are preserved
-    response.headers.set(
-      "Location",
-      `${origin}/register/complete-profile#access_token=${data.session.access_token}&refresh_token=${data.session.refresh_token}`
-    );
+    // Redirect to complete-profile — session cookies are already on `response`
+    response.headers.set("Location", `${origin}/register/complete-profile`);
     return response;
   }
 
-  // Create/update customer directly via service-role client (no self-fetch)
+  // Create/update customer directly via service-role client
   if (meta.first_name?.trim() && user.email?.trim() && meta.phone?.trim()) {
     try {
       const db = getSupabase();
@@ -94,5 +92,6 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // Redirect to /app — session cookies are set on the response
   return response;
 }
