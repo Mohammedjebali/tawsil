@@ -4,12 +4,16 @@ import { getSupabase } from "@/lib/supabase-server";
 import { calculateDeliveryFee, getDistanceKm } from "@/lib/fees";
 import webpush from "web-push";
 
-if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
-  webpush.setVapidDetails(
-    process.env.VAPID_EMAIL || "mailto:admin@tawsil.tn",
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
-    process.env.VAPID_PRIVATE_KEY
-  );
+try {
+  if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+    webpush.setVapidDetails(
+      process.env.VAPID_EMAIL || "mailto:admin@tawsil.tn",
+      process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+      process.env.VAPID_PRIVATE_KEY
+    );
+  }
+} catch (_) {
+  // Invalid VAPID keys — push notifications will be disabled but orders still work
 }
 
 const TOWN_CENTER = { lat: 36.5333, lng: 10.5167 };
