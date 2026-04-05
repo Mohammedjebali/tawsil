@@ -15,8 +15,13 @@ export async function POST(req: NextRequest) {
     const { first_name, last_name, email, phone, user_id, referred_by } = await req.json();
 
     if (!first_name || !email || !phone) {
-      captureApiError("Missing required fields", 400);
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      const missing = [
+        !first_name && "first_name",
+        !email && "email",
+        !phone && "phone",
+      ].filter(Boolean).join(", ");
+      captureApiError(`Missing required fields: ${missing}`, 400);
+      return NextResponse.json({ error: `Missing required fields: ${missing}` }, { status: 400 });
     }
 
     // Generate unique referral code
@@ -55,13 +60,20 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       if (error.code === "23505") {
-        // unique constraint — email already exists, just return it
+        // unique constraint violation — try email first, then phone
         const { data: existing } = await supabase
           .from("customers")
           .select()
           .eq("email", email)
-          .single();
-        return NextResponse.json({ customer: existing });
+          .maybeSingle();
+        if (existing) return NextResponse.json({ customer: existing });
+
+        const { data: byPhone } = await supabase
+          .from("customers")
+          .select()
+          .eq("phone", phone)
+          .maybeSingle();
+        if (byPhone) return NextResponse.json({ customer: byPhone });
       }
       throw error;
     }

@@ -43,6 +43,7 @@ export default function CompleteProfilePage() {
     const e: Record<string, string> = {};
     if (!firstName.trim()) e.firstName = t("required");
     if (!lastName.trim()) e.lastName = t("required");
+    if (!email.trim()) e.email = t("required");
     if (!phone.trim() || phone.length < 12) e.phone = t("invalidPhone");
     return e;
   }
@@ -173,11 +174,12 @@ export default function CompleteProfilePage() {
 
           {/* Email (read-only) */}
           <div>
-            <label className="label">{t("email")}</label>
+            <label className="label">{t("email")} *</label>
             <input
               type="email" value={email} readOnly dir="ltr"
-              style={{ ...inputStyle(), background: "#f8fafc", color: "#64748b" }}
+              style={{ ...inputStyle(!!errors.email), background: "#f8fafc", color: "#64748b" }}
             />
+            {errors.email && <p style={{ color: "#ef4444", fontSize: "0.75rem", marginTop: 4 }}>{errors.email}</p>}
           </div>
 
           {/* Phone */}
