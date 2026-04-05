@@ -6,10 +6,9 @@ const nextConfig: NextConfig = {
 };
 
 export default withSentryConfig(nextConfig, {
-  org: "tawsil",
-  project: "tawsil-web",
   silent: !process.env.CI,
   widenClientFileUpload: true,
+  sourcemaps: { deleteSourcemapsAfterUpload: true },
   tunnelRoute: "/monitoring",
-  disableLogger: true,
+  bundleSizeOptimizations: { excludeDebugStatements: true },
 });
