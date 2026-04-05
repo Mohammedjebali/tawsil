@@ -187,6 +187,11 @@ export default function OrderPage() {
     if (saved) {
       const parsed = JSON.parse(saved);
       if (parsed.role === "customer") {
+        if (!parsed.name || !parsed.phone) {
+          pendingRedirect.current = "/register/complete-profile";
+          setSplashDone(true);
+          return;
+        }
         setUser(parsed);
         if (parsed.savedAddress) {
           setCustomerAddress(parsed.savedAddress);

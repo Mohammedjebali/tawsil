@@ -44,6 +44,30 @@ function LoginContent() {
     }
   }, []);
 
+  // Rebuild localStorage from Supabase metadata for OAuth returning users
+  useEffect(() => {
+    if (!confirmed) return;
+    async function rebuildFromAuth() {
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      if (!user) return;
+      const meta = user.user_metadata || {};
+      if (!meta.phone || !meta.first_name) {
+        window.location.href = "/register/complete-profile";
+        return;
+      }
+      localStorage.setItem("tawsil_user", JSON.stringify({
+        name: `${meta.first_name || ""} ${meta.last_name || ""}`.trim(),
+        firstName: meta.first_name || "",
+        lastName: meta.last_name || "",
+        email: user.email,
+        phone: meta.phone || "",
+        role: "customer",
+      }));
+      window.location.href = "/app";
+    }
+    rebuildFromAuth();
+  }, [confirmed]);
+
   async function submitCustomer() {
     if (!email.trim() || !password.trim()) return;
     setCustLoading(true);
