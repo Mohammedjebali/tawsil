@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Only create/update customer if profile data is complete
-  if (meta.first_name && meta.phone) {
+  if (meta.first_name?.trim() && user.email?.trim() && meta.phone?.trim()) {
     try {
       await fetch(`${origin}/api/customers`, {
         method: "POST",

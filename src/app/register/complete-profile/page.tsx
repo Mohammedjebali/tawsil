@@ -72,7 +72,7 @@ export default function CompleteProfilePage() {
 
     // Create customer in DB
     try {
-      await fetch("/api/customers", {
+      const res = await fetch("/api/customers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -83,7 +83,17 @@ export default function CompleteProfilePage() {
           phone: phone.trim(),
         }),
       });
-    } catch (_) {}
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setLoading(false);
+        setErrors({ form: data.error || "Failed to create account. Please try again." });
+        return;
+      }
+    } catch (_) {
+      setLoading(false);
+      setErrors({ form: "Network error. Please try again." });
+      return;
+    }
 
     localStorage.setItem("tawsil_user", JSON.stringify({
       name: `${firstName.trim()} ${lastName.trim()}`.trim(),

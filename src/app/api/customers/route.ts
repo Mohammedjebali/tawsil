@@ -128,8 +128,11 @@ export async function PATCH(req: NextRequest) {
         .from("customers")
         .select("id, points, successful_referrals_count, referral_bonus_claimed")
         .eq("email", email)
-        .single();
+        .maybeSingle();
       if (fetchErr) throw fetchErr;
+      if (!current) {
+        return NextResponse.json({ error: "Customer not found" }, { status: 404 });
+      }
 
       if (
         current &&
@@ -159,8 +162,11 @@ export async function PATCH(req: NextRequest) {
         .from("customers")
         .select("points")
         .eq("email", email)
-        .single();
+        .maybeSingle();
       if (fetchErr) throw fetchErr;
+      if (!current) {
+        return NextResponse.json({ error: "Customer not found" }, { status: 404 });
+      }
 
       const newPoints = (current?.points || 0) + points_delta;
       const { data, error } = await supabase
@@ -183,9 +189,12 @@ export async function PATCH(req: NextRequest) {
       .update(update)
       .eq("email", email)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+    if (!data) {
+      return NextResponse.json({ error: "Customer not found" }, { status: 404 });
+    }
     return NextResponse.json({ customer: data });
   } catch (err) {
     captureError(err);

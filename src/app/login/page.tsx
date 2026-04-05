@@ -93,20 +93,22 @@ function LoginContent() {
         phone: meta.phone || "",
         role: "customer",
       }));
-      try {
-        await fetch("/api/customers", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            user_id: user.id,
-            first_name: meta.first_name || "",
-            last_name: meta.last_name || "",
-            email: user.email,
-            phone: meta.phone || "",
-            ...(meta.referred_by ? { referred_by: meta.referred_by } : {}),
-          }),
-        });
-      } catch (_) {}
+      if (meta.first_name?.trim() && user.email?.trim() && meta.phone?.trim()) {
+        try {
+          await fetch("/api/customers", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_id: user.id,
+              first_name: meta.first_name,
+              last_name: meta.last_name || "",
+              email: user.email,
+              phone: meta.phone,
+              ...(meta.referred_by ? { referred_by: meta.referred_by } : {}),
+            }),
+          });
+        } catch (_) {}
+      }
       window.location.href = "/app";
     }
   }

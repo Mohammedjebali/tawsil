@@ -43,12 +43,33 @@ export default function ProfilePage() {
     if (user.email) {
       fetch(`/api/customers?email=${encodeURIComponent(user.email)}`)
         .then(r => r.json())
-        .then(d => {
+        .then(async (d) => {
           if (d.customer) {
             setPoints(d.customer.points || 0);
             setReferralCode(d.customer.referral_code || "");
             setSuccessfulReferrals(d.customer.successful_referrals_count || 0);
             setReferralBonusClaimed(d.customer.referral_bonus_claimed || false);
+          } else if (user.firstName && user.phone && user.email) {
+            // Customer record missing (e.g. Google OAuth user) — create it
+            try {
+              const res = await fetch("/api/customers", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  first_name: user.firstName,
+                  last_name: user.lastName || "",
+                  email: user.email,
+                  phone: user.phone,
+                }),
+              });
+              const created = await res.json();
+              if (created.customer) {
+                setPoints(created.customer.points || 0);
+                setReferralCode(created.customer.referral_code || "");
+                setSuccessfulReferrals(created.customer.successful_referrals_count || 0);
+                setReferralBonusClaimed(created.customer.referral_bonus_claimed || false);
+              }
+            } catch (_) {}
           }
         })
         .catch(() => {});
