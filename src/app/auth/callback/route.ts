@@ -54,7 +54,10 @@ export async function GET(req: NextRequest) {
 
   if (isOAuth && missingProfile) {
     // Reuse `response` so the session cookies from exchangeCodeForSession are preserved
-    response.headers.set("Location", `${origin}/register/complete-profile`);
+    response.headers.set(
+      "Location",
+      `${origin}/register/complete-profile#access_token=${data.session.access_token}&refresh_token=${data.session.refresh_token}`
+    );
     return response;
   }
 
