@@ -28,19 +28,32 @@ export async function POST(req: NextRequest) {
       store_id, store_name, store_address,
       store_lat, store_lng,
       items_description, estimated_amount,
+      user_id,
     } = body;
 
     if (!customer_name || !customer_phone || !customer_address || !store_name || !items_description) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Check if customer is blocked
-    const { data: customer } = await supabase
-      .from("customers")
-      .select("is_blocked")
-      .eq("phone", customer_phone)
-      .maybeSingle();
-    if (customer?.is_blocked) {
+    // Check if customer is blocked — prefer user_id lookup, fall back to phone
+    let blockedCustomer: { is_blocked?: boolean } | null = null;
+    if (user_id) {
+      const { data } = await supabase
+        .from("customers")
+        .select("is_blocked")
+        .eq("user_id", user_id)
+        .maybeSingle();
+      blockedCustomer = data;
+    }
+    if (!blockedCustomer) {
+      const { data } = await supabase
+        .from("customers")
+        .select("is_blocked")
+        .eq("phone", customer_phone)
+        .maybeSingle();
+      blockedCustomer = data;
+    }
+    if (blockedCustomer?.is_blocked) {
       return NextResponse.json(
         { error: "account_blocked", message: "Your account has been blocked. Contact support." },
         { status: 403 }
@@ -55,19 +68,22 @@ export async function POST(req: NextRequest) {
     const distance_km = getDistanceKm(sLat, sLng, cLat, cLng);
     const delivery_fee = calculateDeliveryFee(distance_km);
 
+    const orderRow: Record<string, unknown> = {
+      customer_name, customer_phone, customer_address,
+      customer_lat: cLat, customer_lng: cLng,
+      store_id: store_id || null, store_name, store_address,
+      store_lat: sLat, store_lng: sLng,
+      items_description,
+      estimated_amount: estimated_amount || null,
+      distance_km: Math.round(distance_km * 100) / 100,
+      delivery_fee,
+      status: "pending",
+    };
+    if (user_id) orderRow.user_id = user_id;
+
     const { data, error } = await supabase
       .from("orders")
-      .insert({
-        customer_name, customer_phone, customer_address,
-        customer_lat: cLat, customer_lng: cLng,
-        store_id: store_id || null, store_name, store_address,
-        store_lat: sLat, store_lng: sLng,
-        items_description,
-        estimated_amount: estimated_amount || null,
-        distance_km: Math.round(distance_km * 100) / 100,
-        delivery_fee,
-        status: "pending",
-      })
+      .insert(orderRow)
       .select()
       .single();
 
@@ -110,6 +126,7 @@ export async function GET(req: NextRequest) {
     const order_number = searchParams.get("order_number");
     const status = searchParams.get("status");
     const phone = searchParams.get("phone");
+    const user_id = searchParams.get("user_id");
 
     const rider_id = searchParams.get("rider_id");
     const rider_phone = searchParams.get("rider_phone");
@@ -131,6 +148,9 @@ export async function GET(req: NextRequest) {
 
     if (order_number) {
       query = query.eq("order_number", order_number);
+    } else if (user_id) {
+      // Secure lookup: filter by authenticated user_id (prevents data leaks)
+      query = query.eq("user_id", user_id).order("created_at", { ascending: false }).limit(50);
     } else if (phone) {
       query = query.eq("customer_phone", phone).order("created_at", { ascending: false }).limit(50);
     } else if (status === "pending") {

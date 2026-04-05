@@ -96,6 +96,7 @@ export default function CompleteProfilePage() {
     }
 
     localStorage.setItem("tawsil_user", JSON.stringify({
+      user_id: userId,
       name: `${firstName.trim()} ${lastName.trim()}`.trim(),
       firstName: firstName.trim(),
       lastName: lastName.trim(),

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { User, CheckCircle2, Star, Share2, Copy, Gift } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
+import { supabaseClient } from "@/lib/supabase-client";
 
 export default function ProfilePage() {
   const { t, isRtl } = useLang();
@@ -39,40 +40,52 @@ export default function ProfilePage() {
     setPhone(user.phone || "");
     setSavedAddress(user.savedAddress || "");
 
-    // Fetch points + referral info
-    if (user.email) {
-      fetch(`/api/customers?email=${encodeURIComponent(user.email)}`)
-        .then(r => r.json())
-        .then(async (d) => {
-          if (d.customer) {
-            setPoints(d.customer.points || 0);
-            setReferralCode(d.customer.referral_code || "");
-            setSuccessfulReferrals(d.customer.successful_referrals_count || 0);
-            setReferralBonusClaimed(d.customer.referral_bonus_claimed || false);
-          } else if (user.firstName && user.phone && user.email) {
-            // Customer record missing (e.g. Google OAuth user) — create it
-            try {
-              const res = await fetch("/api/customers", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  first_name: user.firstName,
-                  last_name: user.lastName || "",
-                  email: user.email,
-                  phone: user.phone,
-                }),
-              });
-              const created = await res.json();
-              if (created.customer) {
-                setPoints(created.customer.points || 0);
-                setReferralCode(created.customer.referral_code || "");
-                setSuccessfulReferrals(created.customer.successful_referrals_count || 0);
-                setReferralBonusClaimed(created.customer.referral_bonus_claimed || false);
-              }
-            } catch (_) {}
+    // Fetch points + referral info — prefer user_id lookup, fall back to email
+    async function fetchCustomer() {
+      let userId = user.user_id;
+      if (!userId) {
+        const { data: { user: authUser } } = await supabaseClient.auth.getUser();
+        userId = authUser?.id;
+      }
+
+      const param = userId
+        ? `user_id=${encodeURIComponent(userId)}`
+        : `email=${encodeURIComponent(user.email)}`;
+      const res = await fetch(`/api/customers?${param}`);
+      const d = await res.json();
+
+      if (d.customer) {
+        setPoints(d.customer.points || 0);
+        setReferralCode(d.customer.referral_code || "");
+        setSuccessfulReferrals(d.customer.successful_referrals_count || 0);
+        setReferralBonusClaimed(d.customer.referral_bonus_claimed || false);
+      } else if (user.firstName && user.phone && user.email) {
+        // Customer record missing — create it with user_id
+        try {
+          const createRes = await fetch("/api/customers", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_id: userId || undefined,
+              first_name: user.firstName,
+              last_name: user.lastName || "",
+              email: user.email,
+              phone: user.phone,
+            }),
+          });
+          const created = await createRes.json();
+          if (created.customer) {
+            setPoints(created.customer.points || 0);
+            setReferralCode(created.customer.referral_code || "");
+            setSuccessfulReferrals(created.customer.successful_referrals_count || 0);
+            setReferralBonusClaimed(created.customer.referral_bonus_claimed || false);
           }
-        })
-        .catch(() => {});
+        } catch (_) {}
+      }
+    }
+
+    if (user.email || user.user_id) {
+      fetchCustomer().catch(() => {});
     }
   }, []);
 

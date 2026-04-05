@@ -87,6 +87,18 @@ export async function GET(req: NextRequest) {
     const supabase = getSupabase();
     const { searchParams } = new URL(req.url);
     const email = searchParams.get("email");
+    const user_id = searchParams.get("user_id");
+
+    // Prefer user_id lookup (secure, tied to auth), fall back to email
+    if (user_id) {
+      const { data, error } = await supabase
+        .from("customers")
+        .select()
+        .eq("user_id", user_id)
+        .maybeSingle();
+      if (error) return NextResponse.json({ customer: null });
+      return NextResponse.json({ customer: data });
+    }
 
     if (email) {
       const { data, error } = await supabase

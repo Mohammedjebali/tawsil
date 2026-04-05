@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createServerClient } from "@supabase/ssr";
+import { getSupabase } from "@/lib/supabase-server";
+
+function generateReferralCode(firstName: string): string {
+  const letters = firstName.replace(/[^a-zA-Z]/g, "").toUpperCase();
+  const prefix = (letters + "TAW").slice(0, 4);
+  const digits = String(Math.floor(Math.random() * 100)).padStart(2, "0");
+  return prefix + digits;
+}
 
 export async function GET(req: NextRequest) {
   const { searchParams, origin } = new URL(req.url);
@@ -9,9 +17,23 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${origin}/login`);
   }
 
-  const supabase = createClient(
+  // Use SSR client to properly set session cookies for the browser
+  const response = NextResponse.redirect(`${origin}/login?confirmed=1`);
+  const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return req.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options);
+          });
+        },
+      },
+    }
   );
 
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
@@ -31,22 +53,38 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${origin}/register/complete-profile`);
   }
 
-  // Only create/update customer if profile data is complete
+  // Create/update customer directly via service-role client (no self-fetch)
   if (meta.first_name?.trim() && user.email?.trim() && meta.phone?.trim()) {
     try {
-      await fetch(`${origin}/api/customers`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: user.id,
-          first_name: meta.first_name,
-          last_name: meta.last_name || meta.full_name?.split(" ").slice(1).join(" ") || "",
-          email: user.email,
-          phone: meta.phone,
-        }),
-      });
-    } catch (_) {}
+      const db = getSupabase();
+      let referralCode = generateReferralCode(meta.first_name);
+      for (let attempt = 0; attempt < 10; attempt++) {
+        const { data: existing } = await db
+          .from("customers")
+          .select("id")
+          .eq("referral_code", referralCode)
+          .maybeSingle();
+        if (!existing) break;
+        referralCode = generateReferralCode(meta.first_name);
+      }
+
+      await db
+        .from("customers")
+        .upsert(
+          {
+            user_id: user.id,
+            first_name: meta.first_name,
+            last_name: meta.last_name || meta.full_name?.split(" ").slice(1).join(" ") || "",
+            email: user.email,
+            phone: meta.phone,
+            referral_code: referralCode,
+          },
+          { onConflict: "email" }
+        );
+    } catch (_) {
+      // Non-fatal: customer will be created on next login or profile visit
+    }
   }
 
-  return NextResponse.redirect(`${origin}/login?confirmed=1`);
+  return response;
 }

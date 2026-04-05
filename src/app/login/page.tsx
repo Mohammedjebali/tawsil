@@ -57,6 +57,7 @@ function LoginContent() {
         return;
       }
       localStorage.setItem("tawsil_user", JSON.stringify({
+        user_id: user.id,
         name: `${meta.first_name || ""} ${meta.last_name || ""}`.trim(),
         firstName: meta.first_name || "",
         lastName: meta.last_name || "",
@@ -86,6 +87,7 @@ function LoginContent() {
     if (user) {
       const meta = user.user_metadata || {};
       localStorage.setItem("tawsil_user", JSON.stringify({
+        user_id: user.id,
         name: `${meta.first_name || ""} ${meta.last_name || ""}`.trim(),
         firstName: meta.first_name || "",
         lastName: meta.last_name || "",

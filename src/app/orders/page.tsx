@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Package, MapPin, Clock, CheckCircle2, XCircle, Loader2, AlertTriangle } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
+import { supabaseClient } from "@/lib/supabase-client";
 import Link from "next/link";
 
 interface Order {
@@ -47,13 +48,43 @@ export default function OrdersPage() {
     if (!saved) { window.location.href = "/login"; return; }
     const user = JSON.parse(saved);
     if (user.role !== "customer") { window.location.href = "/app"; return; }
-    fetchOrders(user.phone);
-    const interval = setInterval(() => fetchOrders(user.phone), 8000);
-    return () => clearInterval(interval);
+
+    // Use user_id from Supabase auth for secure order lookup (prevents data leaks)
+    async function initOrders() {
+      let userId = user.user_id;
+      if (!userId) {
+        const { data: { user: authUser } } = await supabaseClient.auth.getUser();
+        userId = authUser?.id;
+      }
+      if (userId) {
+        fetchOrders(userId);
+        const interval = setInterval(() => fetchOrders(userId), 8000);
+        return () => clearInterval(interval);
+      } else {
+        // Fallback for legacy sessions without user_id
+        fetchOrdersByPhone(user.phone);
+        const interval = setInterval(() => fetchOrdersByPhone(user.phone), 8000);
+        return () => clearInterval(interval);
+      }
+    }
+
+    let cleanup: (() => void) | undefined;
+    initOrders().then(c => { cleanup = c; });
+    return () => { cleanup?.(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function fetchOrders(phone: string) {
+  async function fetchOrders(userId: string) {
+    try {
+      const res = await fetch(`/api/orders?user_id=${encodeURIComponent(userId)}`);
+      const data = await res.json();
+      setOrders(data.orders || []);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function fetchOrdersByPhone(phone: string) {
     try {
       const res = await fetch(`/api/orders?phone=${encodeURIComponent(phone)}`);
       const data = await res.json();

@@ -20,6 +20,7 @@ interface UserProfile {
   name: string;
   phone: string;
   role: string;
+  user_id?: string;
 }
 
 const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string; size?: number; style?: React.CSSProperties }>> = {
@@ -263,6 +264,7 @@ export default function OrderPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          user_id: user.user_id || null,
           customer_name: user.name,
           customer_phone: user.phone,
           customer_address: customerAddress,
