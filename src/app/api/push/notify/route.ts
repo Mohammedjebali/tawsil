@@ -1,3 +1,4 @@
+import { captureError } from "@/lib/sentry";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase-server";
 import webpush from "web-push";
@@ -33,6 +34,7 @@ export async function POST(req: NextRequest) {
     );
     return NextResponse.json({ ok: true });
   } catch (e) {
+    captureError(e);
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }

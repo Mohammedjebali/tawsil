@@ -1,3 +1,4 @@
+import { captureError } from "@/lib/sentry";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase-server";
 
@@ -75,6 +76,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ customer: data });
   } catch (err) {
+    captureError(err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }
@@ -103,6 +105,7 @@ export async function GET(req: NextRequest) {
     if (error) throw error;
     return NextResponse.json({ customers: data });
   } catch (err) {
+    captureError(err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }
@@ -183,6 +186,7 @@ export async function PATCH(req: NextRequest) {
     if (error) throw error;
     return NextResponse.json({ customer: data });
   } catch (err) {
+    captureError(err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }

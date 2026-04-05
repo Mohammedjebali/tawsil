@@ -1,3 +1,4 @@
+import { captureError } from "@/lib/sentry";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase-server";
 
@@ -30,6 +31,7 @@ export async function POST(req: NextRequest) {
     if (error) throw error;
     return NextResponse.json({ rider: data });
   } catch (err) {
+    captureError(err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }

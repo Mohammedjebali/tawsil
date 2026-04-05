@@ -1,3 +1,4 @@
+import { captureError } from "@/lib/sentry";
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase-server";
 
@@ -28,6 +29,7 @@ export async function GET() {
     const stats = Object.entries(map).map(([phone, s]) => ({ phone, ...s }));
     return NextResponse.json({ stats });
   } catch (err) {
+    captureError(err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }
