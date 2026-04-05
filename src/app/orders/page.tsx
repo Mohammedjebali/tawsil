@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Package, MapPin, Clock, CheckCircle2, XCircle, Loader2, ChevronRight, AlertTriangle } from "lucide-react";
+import { Package, MapPin, Clock, CheckCircle2, XCircle, Loader2, AlertTriangle } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
+import Link from "next/link";
 
 interface Order {
   id: string;
@@ -122,7 +123,7 @@ export default function OrdersPage() {
           {orders.map((order) => {
             const canCancel = order.status === "pending";
             return (
-              <div key={order.id} className="card">
+              <Link key={order.id} href={`/track?order=${order.order_number}`} className="card block cursor-pointer hover:shadow-sm transition-shadow">
                 {/* Header */}
                 <div className="flex justify-between items-start mb-3">
                   <span className="text-xs text-slate-400 font-mono" dir="ltr">{order.order_number}</span>
@@ -167,26 +168,17 @@ export default function OrdersPage() {
                     <p className="text-xs text-slate-400 mt-0.5">{formatDate(order.created_at)}</p>
                   </div>
 
-                  {order.status === "picked_up" && (
-                    <a
-                      href={`/track?order=${order.id}`}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full"
-                    >
-                      {t("trackOrder")} <ChevronRight className="w-3 h-3" />
-                    </a>
-                  )}
-
                   {canCancel && (
                     confirmCancel === order.id ? (
-                      <div className="flex gap-2">
+                      <div className="flex gap-2" onClick={(e) => e.preventDefault()}>
                         <button
-                          onClick={() => setConfirmCancel(null)}
+                          onClick={(e) => { e.preventDefault(); setConfirmCancel(null); }}
                           className="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full"
                         >
                           {t("back")}
                         </button>
                         <button
-                          onClick={() => cancelOrder(order.id)}
+                          onClick={(e) => { e.preventDefault(); cancelOrder(order.id); }}
                           disabled={cancelling === order.id}
                           className="inline-flex items-center gap-1 text-xs font-semibold text-red-600 bg-red-50 border border-red-200 px-3 py-1.5 rounded-full"
                         >
@@ -196,7 +188,7 @@ export default function OrdersPage() {
                       </div>
                     ) : (
                       <button
-                        onClick={() => setConfirmCancel(order.id)}
+                        onClick={(e) => { e.preventDefault(); setConfirmCancel(order.id); }}
                         className="inline-flex items-center gap-1 text-xs font-semibold text-red-600 bg-red-50 border border-red-200 px-3 py-1.5 rounded-full"
                       >
                         <AlertTriangle className="w-3 h-3" />
@@ -205,7 +197,7 @@ export default function OrdersPage() {
                     )
                   )}
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>
