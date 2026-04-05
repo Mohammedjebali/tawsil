@@ -46,11 +46,16 @@ export async function GET(req: NextRequest) {
   const meta = user.user_metadata || {};
 
   // Check if this is an OAuth user missing required profile info
-  const isOAuth = user.app_metadata?.provider === "google" || meta.iss?.includes("google");
+  const isOAuth =
+    user.app_metadata?.provider === "google" ||
+    user.app_metadata?.provider === "facebook" ||
+    meta.iss?.includes("google");
   const missingProfile = !meta.phone || !meta.first_name;
 
   if (isOAuth && missingProfile) {
-    return NextResponse.redirect(`${origin}/register/complete-profile`);
+    // Reuse `response` so the session cookies from exchangeCodeForSession are preserved
+    response.headers.set("Location", `${origin}/register/complete-profile`);
+    return response;
   }
 
   // Create/update customer directly via service-role client (no self-fetch)
