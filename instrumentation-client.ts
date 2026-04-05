@@ -39,3 +39,5 @@ if (typeof window !== "undefined") {
     return response;
   };
 }
+
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
