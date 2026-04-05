@@ -286,6 +286,11 @@ const translations: Record<string, Record<Lang, string>> = {
   continueWithFacebook: { ar: "تسجيل الدخول بحساب Facebook", fr: "Continuer avec Facebook", en: "Continue with Facebook" },
   completeProfile: { ar: "أكمل ملفك الشخصي", fr: "Complétez votre profil", en: "Complete your profile" },
   completeProfileDesc: { ar: "نحتاج بعض المعلومات الإضافية", fr: "Quelques informations supplémentaires", en: "We need a few more details" },
+  orderDelivered: { ar: "تم توصيل طلبك!", fr: "Votre commande a été livrée !", en: "Your order has been delivered!" },
+  deliverySummary: { ar: "ملخص التوصيل", fr: "Résumé de la livraison", en: "Delivery summary" },
+  deliveredIn: { ar: "تم التوصيل في", fr: "Livré en", en: "Delivered in" },
+  minutes: { ar: "دقيقة", fr: "min", en: "min" },
+  orderAgain: { ar: "اطلب مرة أخرى", fr: "Commander à nouveau", en: "Order Again" },
 };
 
 export function t(lang: Lang, key: string): string {

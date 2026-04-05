@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
+import Link from "next/link";
 import { Search, Phone, MapPin, Package, CheckCircle2 } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
 import MapView from "./MapView";
@@ -135,17 +136,122 @@ function TrackContent() {
 
       {error && <div className="card border-red-200 text-red-600 text-sm mb-4">{error}</div>}
 
-      {order && (
+      {order && order.status === "delivered" && (
+        <div className="space-y-4">
+          {/* Celebration banner */}
+          <div className="card border-emerald-200 bg-emerald-50">
+            <div className="flex flex-col items-center text-center py-4">
+              <CheckCircle2
+                className="w-14 h-14 text-emerald-500 mb-3"
+                style={{ animation: "scale-in 0.4s ease-out" }}
+              />
+              <div className="text-xl font-bold text-emerald-800">{t("orderDelivered")}</div>
+            </div>
+          </div>
+
+          {/* Delivery summary */}
+          <div className="card space-y-3">
+            <div className="flex items-center justify-between mb-2">
+              <div className="font-bold text-slate-900">{t("deliverySummary")}</div>
+              <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 text-xs font-semibold px-2.5 py-1 rounded-full">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                {STATUS_LABELS["delivered"]}
+              </span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500">{t("orderNumber")}</span>
+              <span className="font-medium text-slate-900" dir="ltr">{order.order_number}</span>
+            </div>
+            <div className="flex justify-between text-sm border-t border-slate-100 pt-3">
+              <span className="text-slate-500">{t("store")}</span>
+              <span className="font-medium text-slate-900">{order.store_name}</span>
+            </div>
+            <div className="border-t border-slate-100 pt-3">
+              <div className="text-xs text-slate-500 mb-1">{t("whatYouOrdered")}</div>
+              <div className="text-sm text-slate-700 whitespace-pre-wrap">{order.items_description}</div>
+            </div>
+            {order.rider_name && (
+              <div className="flex justify-between text-sm border-t border-slate-100 pt-3">
+                <span className="text-slate-500">{t("rider")}</span>
+                <span className="font-medium text-slate-900">{order.rider_name}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-sm border-t border-slate-100 pt-3">
+              <span className="text-slate-500">{t("deliveryFee")}</span>
+              <span className="font-bold text-indigo-600">{formatFee(order.delivery_fee)}</span>
+            </div>
+            {order.delivered_at && order.created_at && (
+              <div className="flex justify-between text-sm border-t border-slate-100 pt-3">
+                <span className="text-slate-500">{t("deliveredIn")}</span>
+                <span className="font-medium text-emerald-600">
+                  {Math.round((new Date(order.delivered_at).getTime() - new Date(order.created_at).getTime()) / 60000)} {t("minutes")}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Step progress tracker */}
+          <div className="card">
+            <div className="space-y-0">
+              {STEPS.map((s, i) => {
+                const isTerminal = ["delivered", "cancelled"].includes(order.status);
+                const isCompleted = i < currentStep || (isTerminal && i === currentStep);
+                const isCurrent = !isTerminal && i === currentStep;
+                return (
+                  <div key={s} className="flex items-start gap-3">
+                    <div className="flex flex-col items-center">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all ${
+                        isCompleted
+                          ? "bg-emerald-50 border-emerald-400 text-emerald-600"
+                          : isCurrent
+                          ? "bg-indigo-100 border-indigo-600 text-indigo-600 pulse-dot"
+                          : "bg-slate-100 border-slate-200 text-slate-400"
+                      }`}>
+                        {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
+                      </div>
+                      {i < STEPS.length - 1 && (
+                        <div className={`w-0.5 h-8 ${
+                          isCompleted ? "bg-emerald-300" : "bg-slate-200"
+                        }`} />
+                      )}
+                    </div>
+                    <div className={`pt-1.5 text-sm font-medium ${
+                      isCompleted ? "text-emerald-600" : isCurrent ? "text-slate-900" : "text-slate-400"
+                    }`}>
+                      {STATUS_LABELS[s]}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Order Again */}
+          <Link
+            href="/app"
+            className="block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-center px-5 py-3 rounded-xl text-sm transition-colors no-underline"
+          >
+            {t("orderAgain")}
+          </Link>
+
+          <style jsx>{`
+            @keyframes scale-in {
+              0% { transform: scale(0); opacity: 0; }
+              100% { transform: scale(1); opacity: 1; }
+            }
+          `}</style>
+        </div>
+      )}
+
+      {order && order.status !== "delivered" && (
         <div className="space-y-4">
           {/* Status badge */}
           <div className="card border-indigo-200 bg-indigo-50/50">
             <div className="flex items-center gap-3">
               <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                order.status === "delivered" ? "bg-emerald-100" : order.status === "cancelled" ? "bg-red-100" : "bg-indigo-100"
+                order.status === "cancelled" ? "bg-red-100" : "bg-indigo-100"
               }`}>
-                {order.status === "delivered" ? (
-                  <CheckCircle2 className="w-6 h-6 text-emerald-600" />
-                ) : order.status === "cancelled" ? (
+                {order.status === "cancelled" ? (
                   <Package className="w-6 h-6 text-red-500" />
                 ) : (
                   <Package className="w-6 h-6 text-indigo-600" />
@@ -162,7 +268,7 @@ function TrackContent() {
           </div>
 
           {/* Live map */}
-          {order.customer_lat && order.customer_lng && order.status !== "delivered" && (
+          {order.customer_lat && order.customer_lng && (
             <div className="card !p-0 overflow-hidden">
               <MapView
                 customerLat={order.customer_lat}
