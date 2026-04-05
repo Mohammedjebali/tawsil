@@ -80,8 +80,9 @@ export async function POST(req: NextRequest) {
         });
         await Promise.allSettled(subs.map((s) => webpush.sendNotification(s.subscription, payload)));
       }
-    } catch (_) {}
+    } catch (_) {
       captureError(_);
+    }
 
     return NextResponse.json({ order: data });
   } catch (err) {
