@@ -1,5 +1,6 @@
 import { getSupabase } from "@/lib/supabase-server";
 import { NextRequest, NextResponse } from "next/server";
+import { captureApiError } from "@/lib/sentry";
 
 export async function GET() {
   const supabase = getSupabase();
@@ -18,7 +19,10 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   await supabase.from("announcements").update({ is_active: false }).eq("is_active", true);
   const { data, error } = await supabase.from("announcements").insert(body).select().single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    captureApiError(error.message, 500, { route: "/api/announcements", method: "POST" });
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
   return NextResponse.json({ announcement: data });
 }
 

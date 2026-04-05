@@ -1,11 +1,15 @@
 import { getSupabase } from "@/lib/supabase-server";
 import { NextResponse } from "next/server";
+import { captureApiError } from "@/lib/sentry";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const riderId = searchParams.get("id");
   const riderPhone = searchParams.get("phone");
-  if (!riderId && !riderPhone) return NextResponse.json({ error: "Missing id or phone" }, { status: 400 });
+  if (!riderId && !riderPhone) {
+    captureApiError("Missing id or phone", 400, { route: "/api/riders/stats" });
+    return NextResponse.json({ error: "Missing id or phone" }, { status: 400 });
+  }
 
   const supabase = getSupabase();
   const today = new Date();

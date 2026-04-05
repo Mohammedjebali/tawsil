@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase-server";
+import { captureApiError } from "@/lib/sentry";
 
 const TIERS: Record<number, { points: number; label_en: string }> = {
   100: { points: 100, label_en: "Sim recharge 5 DT" },
@@ -11,6 +12,7 @@ export async function POST(req: NextRequest) {
   const { customer_id, tier } = await req.json();
 
   if (!customer_id || !tier || !TIERS[tier]) {
+    captureApiError("Invalid request", 400, { route: "/api/customers/redeem", customer_id, tier });
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
@@ -24,10 +26,12 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (cErr || !customer) {
+    captureApiError("Customer not found", 404, { route: "/api/customers/redeem", customer_id });
     return NextResponse.json({ error: "Customer not found" }, { status: 404 });
   }
 
   if ((customer.points || 0) < required) {
+    captureApiError("Not enough points", 400, { route: "/api/customers/redeem", customer_id, tier, points: customer.points });
     return NextResponse.json({ error: "Not enough points" }, { status: 400 });
   }
 
@@ -39,6 +43,7 @@ export async function POST(req: NextRequest) {
     .eq("id", customer_id);
 
   if (updErr) {
+    captureApiError(updErr.message, 500, { route: "/api/customers/redeem", customer_id });
     return NextResponse.json({ error: updErr.message }, { status: 500 });
   }
 
@@ -56,6 +61,7 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (rErr) {
+    captureApiError(rErr.message, 500, { route: "/api/customers/redeem", customer_id, context: "redemption insert failed" });
     // Rollback points
     await supabase.from("customers").update({ points: customer.points }).eq("id", customer_id);
     return NextResponse.json({ error: rErr.message }, { status: 500 });

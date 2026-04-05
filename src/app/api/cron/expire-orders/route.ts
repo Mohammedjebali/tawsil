@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase-server";
+import { captureApiError } from "@/lib/sentry";
 
 export async function GET(req: Request) {
   // Vercel cron sends Authorization: Bearer CRON_SECRET
   const authHeader = req.headers.get("authorization");
   if (process.env.NODE_ENV === "production" && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    captureApiError("Unauthorized cron request", 401);
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -20,6 +22,7 @@ export async function GET(req: Request) {
     .select("id, order_number, customer_name, customer_phone");
 
   if (error) {
+    captureApiError(error.message, 500, { route: "/api/cron/expire-orders" });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
