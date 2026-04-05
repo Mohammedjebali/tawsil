@@ -182,8 +182,9 @@ function TrackContent() {
           <div className="card">
             <div className="space-y-0">
               {STEPS.map((s, i) => {
-                const isCompleted = i < currentStep;
-                const isCurrent = i === currentStep;
+                const isTerminal = ["delivered", "cancelled"].includes(order.status);
+                const isCompleted = i < currentStep || (isTerminal && i === currentStep);
+                const isCurrent = !isTerminal && i === currentStep;
                 return (
                   <div key={s} className="flex items-start gap-3">
                     <div className="flex flex-col items-center">
