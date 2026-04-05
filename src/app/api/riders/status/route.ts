@@ -1,4 +1,4 @@
-import { captureError } from "@/lib/sentry";
+import { captureError, captureApiError } from "@/lib/sentry";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase-server";
 
@@ -8,6 +8,7 @@ export async function GET(req: NextRequest) {
     const phone = new URL(req.url).searchParams.get("phone");
 
     if (!phone) {
+      captureApiError("Missing phone parameter", 400);
       return NextResponse.json({ error: "Missing phone parameter" }, { status: 400 });
     }
 
@@ -18,6 +19,7 @@ export async function GET(req: NextRequest) {
       .single();
 
     if (error || !data) {
+      captureApiError("Rider not found", 404);
       return NextResponse.json({ error: "Rider not found" }, { status: 404 });
     }
 

@@ -1,4 +1,4 @@
-import { captureError } from "@/lib/sentry";
+import { captureError, captureApiError } from "@/lib/sentry";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase-server";
 
@@ -30,6 +30,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         .eq("phone", body.rider_phone)
         .maybeSingle();
       if (riderData?.is_blocked) {
+        captureApiError("account_blocked", 403);
         return NextResponse.json(
           { error: "account_blocked", message: "Your account has been blocked. Contact support." },
           { status: 403 }
@@ -45,6 +46,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         .eq("rider_phone", body.rider_phone)
         .in("status", ["accepted", "picked_up"]);
       if (activeOrders && activeOrders.length > 0) {
+        captureApiError("rider_busy", 409);
         return NextResponse.json({ error: "rider_busy", message: "You already have an active order. Deliver it first before accepting a new one." }, { status: 409 });
       }
     }
@@ -58,10 +60,14 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const { data, error } = await query.select().single();
 
-    if (error) return NextResponse.json({ error: error.message, details: error.details, hint: error.hint }, { status: 500 });
+    if (error) {
+      captureApiError(error.message, 500);
+      return NextResponse.json({ error: error.message, details: error.details, hint: error.hint }, { status: 500 });
+    }
 
     // If accept but no data returned — someone else was faster
     if (!data && body.status === "accepted") {
+      captureApiError("order_taken", 409);
       return NextResponse.json({ error: "order_taken", message: "Too late — another rider accepted this order first" }, { status: 409 });
     }
 

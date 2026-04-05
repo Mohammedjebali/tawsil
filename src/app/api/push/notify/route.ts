@@ -1,4 +1,4 @@
-import { captureError } from "@/lib/sentry";
+import { captureError, captureApiError } from "@/lib/sentry";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase-server";
 import webpush from "web-push";
@@ -16,6 +16,7 @@ if (vapidPublicKey && vapidPrivateKey) {
 
 export async function POST(req: NextRequest) {
   if (!vapidPublicKey || !vapidPrivateKey) {
+    captureApiError("Push notifications not configured", 503);
     return NextResponse.json({ error: "Push notifications not configured" }, { status: 503 });
   }
   try {

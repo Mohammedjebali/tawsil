@@ -1,4 +1,4 @@
-import { captureError } from "@/lib/sentry";
+import { captureError, captureApiError } from "@/lib/sentry";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase-server";
 
@@ -15,6 +15,7 @@ export async function POST(req: NextRequest) {
     const { first_name, last_name, email, phone, user_id, referred_by } = await req.json();
 
     if (!first_name || !last_name || !email || !phone) {
+      captureApiError("Missing required fields", 400);
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -117,6 +118,7 @@ export async function PATCH(req: NextRequest) {
     const { email, first_name, last_name, points_delta, claim_referral_bonus } = body;
 
     if (!email) {
+      captureApiError("Email is required", 400);
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 

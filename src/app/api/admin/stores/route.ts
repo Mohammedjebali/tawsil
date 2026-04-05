@@ -1,4 +1,4 @@
-import { captureError } from "@/lib/sentry";
+import { captureError, captureApiError } from "@/lib/sentry";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase-server";
 
@@ -10,7 +10,10 @@ export async function GET() {
       .select("*")
       .order("name");
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      captureApiError(error.message, 500);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
     return NextResponse.json({ stores: data });
   } catch (err) {
     captureError(err);
@@ -30,11 +33,15 @@ export async function POST(req: NextRequest) {
         .from("stores")
         .update({ is_active: body.is_active })
         .eq("id", body.id);
-      if (toggleErr) return NextResponse.json({ error: toggleErr.message }, { status: 500 });
+      if (toggleErr) {
+        captureApiError(toggleErr.message, 500);
+        return NextResponse.json({ error: toggleErr.message }, { status: 500 });
+      }
       return NextResponse.json({ ok: true });
     }
 
     if (!name) {
+      captureApiError("Name is required", 400);
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
 
@@ -44,7 +51,10 @@ export async function POST(req: NextRequest) {
       .select()
       .single();
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      captureApiError(error.message, 500);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
     return NextResponse.json({ store: data });
   } catch (err) {
     captureError(err);
@@ -59,11 +69,15 @@ export async function DELETE(req: NextRequest) {
     const id = searchParams.get("id");
 
     if (!id) {
+      captureApiError("id is required", 400);
       return NextResponse.json({ error: "id is required" }, { status: 400 });
     }
 
     const { error } = await supabase.from("stores").delete().eq("id", id);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      captureApiError(error.message, 500);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
     return NextResponse.json({ ok: true });
   } catch (err) {
     captureError(err);

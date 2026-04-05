@@ -1,4 +1,4 @@
-import { captureError } from "@/lib/sentry";
+import { captureError, captureApiError } from "@/lib/sentry";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase-server";
 
@@ -8,6 +8,7 @@ export async function POST(req: NextRequest) {
     const { name, phone } = await req.json();
 
     if (!name || !phone) {
+      captureApiError("Missing name or phone", 400);
       return NextResponse.json({ error: "Missing name or phone" }, { status: 400 });
     }
 

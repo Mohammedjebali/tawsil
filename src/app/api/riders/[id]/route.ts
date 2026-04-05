@@ -1,4 +1,4 @@
-import { captureError } from "@/lib/sentry";
+import { captureError, captureApiError } from "@/lib/sentry";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase-server";
 
@@ -14,8 +14,10 @@ export async function PATCH(
       .from("riders")
       .update(body)
       .eq("id", id);
-    if (error)
+    if (error) {
+      captureApiError(error.message, 400);
       return NextResponse.json({ error: error.message }, { status: 400 });
+    }
     return NextResponse.json({ success: true });
   } catch (err) {
     captureError(err);

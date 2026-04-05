@@ -1,4 +1,4 @@
-import { captureError } from "@/lib/sentry";
+import { captureError, captureApiError } from "@/lib/sentry";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase-server";
 
@@ -9,6 +9,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { status } = await req.json();
 
     if (!status || !["active", "rejected"].includes(status)) {
+      captureApiError("Invalid status", 400);
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
 
