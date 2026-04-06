@@ -1,44 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Star, Trophy, Gift, ChevronDown, ChevronUp, Package, Users, Award, Clock } from "lucide-react";
+import { Star, Trophy, Gift, ChevronDown, ChevronUp, Package, Users, Award } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
-
-interface PointsEntry {
-  id: string;
-  delta: number;
-  reason: string;
-  reference_id: string | null;
-  created_at: string;
-}
-
-const TIERS = [
-  { min: 0, max: 99, key: "bronze", color: "bg-amber-100 text-amber-700 border-amber-300", icon: "🥉" },
-  { min: 100, max: 199, key: "silver", color: "bg-slate-100 text-slate-600 border-slate-300", icon: "🥈" },
-  { min: 200, max: Infinity, key: "gold", color: "bg-yellow-100 text-yellow-700 border-yellow-300", icon: "🟡" },
-];
 
 const REWARDS = [
   { tier: 100, icon: Star, labelKey: "simRecharge5" },
   { tier: 200, icon: Gift, labelKey: "giftCard10" },
 ];
 
-function reasonLabel(entry: PointsEntry, t: (k: string) => string): string {
-  const abs = Math.abs(entry.delta);
-  const pts = `${abs} ${t("pts")}`;
-  switch (entry.reason) {
-    case "order": return `${pts} ${t("ptsFromOrder")} ${entry.reference_id || ""}`;
-    case "referral": return `${pts} ${t("ptsFromReferral")}`;
-    case "referral_bonus": return `${pts} ${t("ptsFromReferralBonus")}`;
-    case "redemption": return `${pts} ${t("ptsFromRedemption")}`;
-    default: return `${pts} — ${entry.reason}`;
-  }
-}
-
 export default function RewardsPage() {
   const { t } = useLang();
   const [points, setPoints] = useState(0);
-  const [history, setHistory] = useState<PointsEntry[]>([]);
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
@@ -67,19 +40,9 @@ export default function RewardsPage() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    if (!customerId) return;
-    fetch(`/api/customers/points-history?customer_id=${customerId}`)
-      .then(r => r.json())
-      .then(data => { if (data.history) setHistory(data.history); })
-      .catch(() => {});
-  }, [customerId, points]);
-
   if (loading) {
     return <p className="text-slate-500 text-center py-12">{t("loading")}</p>;
   }
-
-  const currentTier = TIERS.find(tier => points >= tier.min && points <= tier.max) || TIERS[0];
 
   async function handleRedeem(tier: number) {
     if (!customerId) return;
@@ -121,17 +84,14 @@ export default function RewardsPage() {
         </div>
       </div>
 
-      {/* Points balance + tier badge */}
+      {/* Points balance */}
       <div className="card mb-4">
         <div className="text-center py-4">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Star className="w-8 h-8 text-yellow-500 fill-yellow-500" />
             <span className="text-4xl font-bold text-slate-900">{points}</span>
           </div>
-          <p className="text-sm text-slate-500 mb-3">{t("pointsBalance")}</p>
-          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${currentTier.color}`}>
-            {currentTier.icon} {t(`tier${currentTier.key.charAt(0).toUpperCase() + currentTier.key.slice(1)}` as "tierBronze" | "tierSilver" | "tierGold")}
-          </span>
+          <p className="text-sm text-slate-500">{t("pointsBalance")}</p>
         </div>
       </div>
 
@@ -175,7 +135,6 @@ export default function RewardsPage() {
         <div className="space-y-3">
           {REWARDS.map(({ tier, icon: Icon, labelKey }) => {
             const unlocked = points >= tier;
-            const alreadyRedeemed = history.some(h => h.reason === "redemption" && Math.abs(h.delta) === tier);
             return (
               <div key={tier} className={`flex items-center gap-3 p-3 rounded-xl border ${unlocked ? "bg-emerald-50 border-emerald-200" : "bg-slate-50 border-slate-200"}`}>
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${unlocked ? "bg-emerald-100" : "bg-slate-100"}`}>
@@ -185,7 +144,7 @@ export default function RewardsPage() {
                   <div className="text-sm font-semibold text-slate-900">{tier} pts</div>
                   <div className="text-xs text-slate-500">{t(labelKey as "simRecharge5" | "giftCard10")}</div>
                 </div>
-                {unlocked && !alreadyRedeemed && (
+                {unlocked && (
                   <button
                     onClick={() => {
                       if (confirm(t("redeemConfirmMsg").replace("{pts}", String(tier)).replace("{reward}", t(labelKey as "simRecharge5" | "giftCard10")))) {
@@ -198,39 +157,12 @@ export default function RewardsPage() {
                     {redeeming === tier ? "..." : t("redeem")}
                   </button>
                 )}
-                {unlocked && alreadyRedeemed && (
-                  <span className="text-xs font-semibold px-3 py-1 rounded-lg bg-emerald-100 text-emerald-700">✓</span>
-                )}
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Points history */}
-      <div className="card">
-        <h2 className="text-sm font-semibold text-slate-700 mb-3">{t("pointsHistory")}</h2>
-        {history.length === 0 ? (
-          <p className="text-sm text-slate-400 text-center py-4">{t("noPointsHistory")}</p>
-        ) : (
-          <div className="space-y-2">
-            {history.map(entry => (
-              <div key={entry.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-slate-50">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${entry.delta > 0 ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
-                  {entry.delta > 0 ? "+" : ""}{entry.delta}
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm text-slate-700">{reasonLabel(entry, t)}</div>
-                  <div className="text-xs text-slate-400">
-                    <Clock className="w-3 h-3 inline mr-1" />
-                    {new Date(entry.created_at).toLocaleDateString()}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   );
 }
