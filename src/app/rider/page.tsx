@@ -6,6 +6,15 @@ import { useLang } from "@/components/LangProvider";
 import dynamic from "next/dynamic";
 const RiderMapView = dynamic(() => import("@/components/RiderMapView"), { ssr: false });
 
+function urlBase64ToUint8Array(base64String: string): ArrayBuffer {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(base64);
+  const arr = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+  return arr.buffer as ArrayBuffer;
+}
+
 interface Order {
   id: string;
   order_number: string;
@@ -341,7 +350,7 @@ export default function RiderPage() {
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+        applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!),
       });
       await fetch("/api/push/subscribe", {
         method: "POST",

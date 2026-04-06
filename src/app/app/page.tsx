@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Package, ShoppingBag, Bike, ChevronRight, ChevronLeft, Globe, Store, Coffee, Pill, ShoppingCart, UtensilsCrossed, Search, MapPin, CheckCircle2, ArrowLeft, ArrowRight, X } from "lucide-react";
+import * as Sentry from "@sentry/nextjs";
+import { Package, ShoppingBag, Bike, ChevronRight, ChevronLeft, Globe, Store, Coffee, Pill, ShoppingCart, UtensilsCrossed, Search, MapPin, CheckCircle2, ArrowLeft, ArrowRight, X, Bell } from "lucide-react";
 import SplashScreen from "@/components/SplashScreen";
 import { formatFee, calculateDeliveryFee, getDistanceKm } from "@/lib/fees";
 import { useLang } from "@/components/LangProvider";
@@ -21,6 +22,21 @@ interface UserProfile {
   phone: string;
   role: string;
   user_id?: string;
+}
+
+/** Convert a base64url VAPID public key to a Uint8Array (required by pushManager.subscribe on many browsers) */
+function urlBase64ToUint8Array(base64String: string): ArrayBuffer {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(base64);
+  const arr = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+  return arr.buffer as ArrayBuffer;
+}
+
+/** Check if the browser supports push notifications (excludes iOS Safari) */
+function supportsPush(): boolean {
+  return "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
 }
 
 const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string; size?: number; style?: React.CSSProperties }>> = {
@@ -180,6 +196,7 @@ export default function OrderPage() {
   const [loading, setLoading] = useState(false);
   const [orderResult, setOrderResult] = useState<{ order_number: string; delivery_fee: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [notifStatus, setNotifStatus] = useState<"unsupported" | "prompt" | "granted" | "denied">("prompt");
 
   const BackArrow = isRtl ? ArrowRight : ArrowLeft;
 
@@ -228,19 +245,22 @@ export default function OrderPage() {
           setSplashDone(true);
         });
 
-      // Register service worker and subscribe customer for push notifications
-      if ("serviceWorker" in navigator && "PushManager" in window) {
+      // Register service worker and check push notification status
+      if (supportsPush()) {
         navigator.serviceWorker.register("/sw.js").then((reg) => {
           if (Notification.permission === "granted") {
             subscribeCustomerPush(reg, user.phone);
-          } else if (Notification.permission !== "denied") {
-            Notification.requestPermission().then((perm) => {
-              if (perm === "granted") {
-                subscribeCustomerPush(reg, user.phone);
-              }
-            });
+            setNotifStatus("granted");
+          } else if (Notification.permission === "denied") {
+            setNotifStatus("denied");
           }
-        }).catch(() => {});
+          // Otherwise leave as "prompt" — user will click the button
+        }).catch((err) => {
+          Sentry.captureException(err, { extra: { context: "sw_register_customer" } });
+          setNotifStatus("unsupported");
+        });
+      } else {
+        setNotifStatus("unsupported");
       }
     }
   }, [user]);
@@ -251,15 +271,39 @@ export default function OrderPage() {
       if (!vapidKey) return;
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: vapidKey,
+        applicationServerKey: urlBase64ToUint8Array(vapidKey),
       });
-      await fetch("/api/push/subscribe", {
+      const res = await fetch("/api/push/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subscription: sub.toJSON(), customer_phone: phone }),
       });
-    } catch {
-      // Push subscription failed — non-critical
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        Sentry.captureMessage("Customer push subscribe API failed", {
+          level: "warning",
+          extra: { status: res.status, body, phone },
+        });
+      }
+    } catch (err) {
+      Sentry.captureException(err, { extra: { context: "customer_push_subscribe", phone } });
+    }
+  }
+
+  async function enableNotifications() {
+    if (!user) return;
+    try {
+      const perm = await Notification.requestPermission();
+      if (perm !== "granted") {
+        setNotifStatus("denied");
+        return;
+      }
+      const reg = await navigator.serviceWorker.ready;
+      await subscribeCustomerPush(reg, user.phone);
+      setNotifStatus("granted");
+    } catch (err) {
+      Sentry.captureException(err, { extra: { context: "enable_notifications_customer" } });
+      setNotifStatus("denied");
     }
   }
 
@@ -372,6 +416,23 @@ export default function OrderPage() {
           >
             <X className="w-4 h-4" />
           </button>
+        </div>
+      )}
+
+      {/* Notification prompt — only visible when permission hasn't been granted yet */}
+      {notifStatus === "prompt" && (
+        <button
+          onClick={enableNotifications}
+          className="w-full mb-4 py-2.5 rounded-xl text-sm font-semibold border border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors flex items-center justify-center gap-2"
+        >
+          <Bell className="w-4 h-4" />
+          {t("notificationEnable")}
+        </button>
+      )}
+      {notifStatus === "granted" && (
+        <div className="flex items-center gap-2 text-emerald-700 text-xs mb-4 bg-emerald-50 border border-emerald-200 rounded-xl py-2.5 px-4 font-medium">
+          <Bell className="w-4 h-4" />
+          {t("notificationEnabled")}
         </div>
       )}
 
