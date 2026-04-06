@@ -1,10 +1,22 @@
 import { captureError, captureApiError } from "@/lib/sentry";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase-server";
+import webpush from "web-push";
+
+try {
+  if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+    webpush.setVapidDetails(
+      process.env.VAPID_EMAIL || "mailto:admin@tawsil.tn",
+      process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+      process.env.VAPID_PRIVATE_KEY
+    );
+  }
+} catch (_) {}
 
 const STATUS_TIMESTAMPS: Record<string, string> = {
   accepted: "accepted_at",
   picked_up: "picked_up_at",
+  waiting_customer: "waiting_customer_at",
   delivered: "delivered_at",
 };
 
@@ -44,7 +56,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         .from("orders")
         .select("id")
         .eq("rider_phone", body.rider_phone)
-        .in("status", ["accepted", "picked_up"]);
+        .in("status", ["accepted", "picked_up", "waiting_customer"]);
       if (activeOrders && activeOrders.length > 0) {
         captureApiError("rider_busy", 409);
         return NextResponse.json({ error: "rider_busy", message: "You already have an active order. Deliver it first before accepting a new one." }, { status: 409 });
@@ -69,6 +81,26 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (!data && body.status === "accepted") {
       captureApiError("order_taken", 409);
       return NextResponse.json({ error: "order_taken", message: "Too late — another rider accepted this order first" }, { status: 409 });
+    }
+
+    // Notify customer via push when rider is waiting
+    if (body.status === "waiting_customer" && data?.customer_phone) {
+      try {
+        const { data: subs } = await supabase
+          .from("push_subscriptions")
+          .select("subscription")
+          .eq("customer_phone", data.customer_phone);
+        if (subs && subs.length > 0 && process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) {
+          const payload = JSON.stringify({
+            title: "🛵 السائق في انتظارك!",
+            body: "Your rider is waiting for you!",
+            data: { order_number: data.order_number },
+          });
+          await Promise.allSettled(subs.map((s) => webpush.sendNotification(s.subscription, payload)));
+        }
+      } catch (_) {
+        captureError(_);
+      }
     }
 
     // Award 10 loyalty points on delivery + referrer rewards

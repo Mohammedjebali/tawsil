@@ -25,10 +25,11 @@ interface Order {
   created_at: string;
   accepted_at: string | null;
   picked_up_at: string | null;
+  waiting_customer_at: string | null;
   delivered_at: string | null;
 }
 
-const STEPS = ["pending", "accepted", "picked_up", "delivered"];
+const STEPS = ["pending", "accepted", "picked_up", "waiting_customer", "delivered"];
 
 function formatFee(m: number) { return `${(m/1000).toFixed(3)} DT`; }
 
@@ -44,6 +45,7 @@ function TrackContent() {
     pending: t("status_pending"),
     accepted: t("status_accepted"),
     picked_up: t("status_picked_up"),
+    waiting_customer: t("status_waiting_customer"),
     delivered: t("status_delivered"),
     cancelled: t("status_cancelled"),
   };
@@ -204,7 +206,7 @@ function TrackContent() {
                         isCompleted
                           ? "bg-emerald-50 border-emerald-400 text-emerald-600"
                           : isCurrent
-                          ? "bg-indigo-100 border-indigo-600 text-indigo-600 pulse-dot"
+                          ? (s === "waiting_customer" ? "bg-amber-100 border-amber-500 text-amber-600 pulse-dot" : "bg-indigo-100 border-indigo-600 text-indigo-600 pulse-dot")
                           : "bg-slate-100 border-slate-200 text-slate-400"
                       }`}>
                         {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
@@ -246,13 +248,15 @@ function TrackContent() {
       {order && order.status !== "delivered" && (
         <div className="space-y-4">
           {/* Status badge */}
-          <div className="card border-indigo-200 bg-indigo-50/50">
+          <div className={`card ${order.status === "waiting_customer" ? "border-amber-300 bg-amber-50/50" : "border-indigo-200 bg-indigo-50/50"}`}>
             <div className="flex items-center gap-3">
               <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                order.status === "cancelled" ? "bg-red-100" : "bg-indigo-100"
+                order.status === "cancelled" ? "bg-red-100" : order.status === "waiting_customer" ? "bg-amber-100" : "bg-indigo-100"
               }`}>
                 {order.status === "cancelled" ? (
                   <Package className="w-6 h-6 text-red-500" />
+                ) : order.status === "waiting_customer" ? (
+                  <MapPin className="w-6 h-6 text-amber-600" />
                 ) : (
                   <Package className="w-6 h-6 text-indigo-600" />
                 )}
@@ -298,7 +302,7 @@ function TrackContent() {
                         isCompleted
                           ? "bg-emerald-50 border-emerald-400 text-emerald-600"
                           : isCurrent
-                          ? "bg-indigo-100 border-indigo-600 text-indigo-600 pulse-dot"
+                          ? (s === "waiting_customer" ? "bg-amber-100 border-amber-500 text-amber-600 pulse-dot" : "bg-indigo-100 border-indigo-600 text-indigo-600 pulse-dot")
                           : "bg-slate-100 border-slate-200 text-slate-400"
                       }`}>
                         {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : i + 1}

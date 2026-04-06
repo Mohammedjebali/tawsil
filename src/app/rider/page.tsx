@@ -257,7 +257,7 @@ export default function RiderPage() {
       setOrders(newOrders);
       if (rider) {
         setMyOrders((allData.orders || []).filter((o: Order) =>
-          ["accepted","picked_up"].includes(o.status) &&
+          ["accepted","picked_up","waiting_customer"].includes(o.status) &&
           o.rider_phone === rider.phone
         ));
       }
@@ -588,6 +588,7 @@ export default function RiderPage() {
           {myOrders.map((order) => {
             const isAccepted = order.status === "accepted";
             const isPickedUp = order.status === "picked_up";
+            const isWaitingCustomer = order.status === "waiting_customer";
             return (
               <div key={order.id} className="mission-card" style={{ borderLeft: "3px solid #6366f1" }}>
                 <div className="flex justify-between items-start mb-3">
@@ -709,6 +710,16 @@ export default function RiderPage() {
                   </button>
                 )}
                 {isPickedUp && (
+                  <button
+                    onClick={() => updateStatus(order.id, "waiting_customer")}
+                    className="btn-primary mt-3"
+                    style={{ background: "#f59e0b" }}
+                  >
+                    <MapPin className="w-4 h-4" />
+                    {t("waitingForCustomer")}
+                  </button>
+                )}
+                {isWaitingCustomer && (
                   <button
                     onClick={() => updateStatus(order.id, "delivered")}
                     className="btn-primary mt-3"
