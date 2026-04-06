@@ -59,8 +59,8 @@ export default function OrdersPage() {
         userId = authUser?.id;
       }
       if (userId) {
-        fetchOrders(userId);
-        const interval = setInterval(() => fetchOrders(userId), 8000);
+        fetchOrders(userId, user.phone);
+        const interval = setInterval(() => fetchOrders(userId, user.phone), 8000);
         return () => clearInterval(interval);
       } else {
         // Fallback for legacy sessions without user_id
@@ -76,9 +76,11 @@ export default function OrdersPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function fetchOrders(userId: string) {
+  async function fetchOrders(userId: string, phone?: string) {
     try {
-      const res = await fetch(`/api/orders?user_id=${encodeURIComponent(userId)}`);
+      let url = `/api/orders?user_id=${encodeURIComponent(userId)}`;
+      if (phone) url += `&phone=${encodeURIComponent(phone)}`;
+      const res = await fetch(url);
       const data = await res.json();
       setOrders(data.orders || []);
     } finally {

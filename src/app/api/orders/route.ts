@@ -149,8 +149,13 @@ export async function GET(req: NextRequest) {
     if (order_number) {
       query = query.eq("order_number", order_number);
     } else if (user_id) {
-      // Secure lookup: filter by authenticated user_id (prevents data leaks)
-      query = query.eq("user_id", user_id).order("created_at", { ascending: false }).limit(50);
+      // Include orders by user_id OR matching phone (covers old orders with NULL user_id)
+      if (phone) {
+        query = query.or(`user_id.eq.${user_id},customer_phone.eq.${phone}`);
+      } else {
+        query = query.eq("user_id", user_id);
+      }
+      query = query.order("created_at", { ascending: false }).limit(50);
     } else if (phone) {
       query = query.eq("customer_phone", phone).order("created_at", { ascending: false }).limit(50);
     } else if (status === "pending") {
