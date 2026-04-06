@@ -227,8 +227,41 @@ export default function OrderPage() {
           setStoresLoading(false);
           setSplashDone(true);
         });
+
+      // Register service worker and subscribe customer for push notifications
+      if ("serviceWorker" in navigator && "PushManager" in window) {
+        navigator.serviceWorker.register("/sw.js").then((reg) => {
+          if (Notification.permission === "granted") {
+            subscribeCustomerPush(reg, user.phone);
+          } else if (Notification.permission !== "denied") {
+            Notification.requestPermission().then((perm) => {
+              if (perm === "granted") {
+                subscribeCustomerPush(reg, user.phone);
+              }
+            });
+          }
+        }).catch(() => {});
+      }
     }
   }, [user]);
+
+  async function subscribeCustomerPush(reg: ServiceWorkerRegistration, phone: string) {
+    try {
+      const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      if (!vapidKey) return;
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: vapidKey,
+      });
+      await fetch("/api/push/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subscription: sub.toJSON(), customer_phone: phone }),
+      });
+    } catch {
+      // Push subscription failed — non-critical
+    }
+  }
 
   // Fetch announcement + poll every 60s
   useEffect(() => {

@@ -36,5 +36,7 @@ self.addEventListener("push", function(event) {
 
 self.addEventListener("notificationclick", function(event) {
   event.notification.close();
-  event.waitUntil(clients.openWindow("/rider"));
+  var orderNumber = event.notification.data && event.notification.data.order_number;
+  var url = orderNumber ? "/track?order=" + orderNumber : "/rider";
+  event.waitUntil(clients.openWindow(url));
 });
