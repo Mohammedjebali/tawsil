@@ -14,6 +14,38 @@ export async function POST(req: NextRequest) {
     const supabase = getSupabase();
     const { first_name, last_name, email, phone, user_id, referred_by } = await req.json();
 
+    console.log("[POST /api/customers]", {
+      has_first_name: !!first_name,
+      has_email: !!email,
+      has_phone: !!phone,
+      phone_length: phone?.length,
+      has_user_id: !!user_id,
+    });
+
+    // Idempotent: if customer already exists by user_id or email, return them
+    if (user_id || email) {
+      let existing = null;
+      if (user_id) {
+        const { data } = await supabase
+          .from("customers")
+          .select()
+          .eq("user_id", user_id)
+          .maybeSingle();
+        existing = data;
+      }
+      if (!existing && email) {
+        const { data } = await supabase
+          .from("customers")
+          .select()
+          .eq("email", email)
+          .maybeSingle();
+        existing = data;
+      }
+      if (existing) {
+        return NextResponse.json({ customer: existing });
+      }
+    }
+
     if (!first_name || !email || !phone) {
       const missing = [
         !first_name && "first_name",

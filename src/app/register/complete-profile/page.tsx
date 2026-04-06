@@ -34,6 +34,30 @@ export default function CompleteProfilePage() {
         setLastName(meta.last_name || "");
       }
       if (meta.phone) setPhone(meta.phone);
+
+      // Guard: if customer already exists, skip straight to /app
+      if (user.email) {
+        try {
+          const res = await fetch(`/api/customers?email=${encodeURIComponent(user.email)}`);
+          const data = await res.json();
+          if (data.customer) {
+            localStorage.setItem("tawsil_user", JSON.stringify({
+              user_id: user.id,
+              name: `${data.customer.first_name} ${data.customer.last_name}`.trim(),
+              firstName: data.customer.first_name,
+              lastName: data.customer.last_name,
+              email: data.customer.email,
+              phone: data.customer.phone,
+              role: "customer",
+            }));
+            window.location.href = "/app";
+            return;
+          }
+        } catch (_) {
+          // Non-fatal: let user complete profile manually
+        }
+      }
+
       setPageLoading(false);
     }
     loadUser();
