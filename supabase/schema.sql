@@ -41,7 +41,7 @@ CREATE TABLE orders (
   delivery_fee INTEGER NOT NULL DEFAULT 2000, -- in millimes
   
   -- Status
-  status TEXT NOT NULL DEFAULT 'pending', -- pending, accepted, picked_up, delivered, cancelled
+  status TEXT NOT NULL DEFAULT 'pending', -- pending, accepted, picked_up, waiting_customer, delivered, cancelled
   
   -- Rider
   rider_id UUID REFERENCES auth.users(id),
@@ -52,6 +52,7 @@ CREATE TABLE orders (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   accepted_at TIMESTAMPTZ,
   picked_up_at TIMESTAMPTZ,
+  waiting_customer_at TIMESTAMPTZ,
   delivered_at TIMESTAMPTZ
 );
 
