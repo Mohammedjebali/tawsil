@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Star, Trophy, Gift, Copy, Share2, ChevronDown, ChevronUp, Package, Users, Award, Clock } from "lucide-react";
+import { Star, Trophy, Gift, ChevronDown, ChevronUp, Package, Users, Award, Clock } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
 
 interface PointsEntry {
@@ -38,12 +38,10 @@ function reasonLabel(entry: PointsEntry, t: (k: string) => string): string {
 export default function RewardsPage() {
   const { t } = useLang();
   const [points, setPoints] = useState(0);
-  const [referralCode, setReferralCode] = useState("");
   const [history, setHistory] = useState<PointsEntry[]>([]);
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [redeeming, setRedeeming] = useState<number | null>(null);
   const [redeemMsg, setRedeemMsg] = useState<string | null>(null);
 
@@ -59,7 +57,6 @@ export default function RewardsPage() {
         const data = await res.json();
         if (data.customer) {
           setPoints(data.customer.points || 0);
-          setReferralCode(data.customer.referral_code || "");
           setCustomerId(data.customer.id);
         }
       } catch (_) {}
@@ -83,10 +80,6 @@ export default function RewardsPage() {
   }
 
   const currentTier = TIERS.find(tier => points >= tier.min && points <= tier.max) || TIERS[0];
-  const nextTier = TIERS[TIERS.indexOf(currentTier) + 1];
-  const progressPercent = nextTier
-    ? ((points - currentTier.min) / (nextTier.min - currentTier.min)) * 100
-    : 100;
 
   async function handleRedeem(tier: number) {
     if (!customerId) return;
@@ -111,14 +104,6 @@ export default function RewardsPage() {
       setRedeeming(null);
       setTimeout(() => setRedeemMsg(null), 4000);
     }
-  }
-
-  function copyLink() {
-    const link = `${window.location.origin}/register?ref=${referralCode}`;
-    navigator.clipboard.writeText(link).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
   }
 
   return (
@@ -150,27 +135,6 @@ export default function RewardsPage() {
         </div>
       </div>
 
-      {/* Progress to next tier */}
-      {nextTier ? (
-        <div className="card mb-4">
-          <h2 className="text-sm font-semibold text-slate-700 mb-3">{t("progressToNext")}</h2>
-          <div className="flex justify-between text-xs text-slate-500 mb-1">
-            <span>{currentTier.icon} {points} pts</span>
-            <span>{nextTier.icon} {nextTier.min} pts</span>
-          </div>
-          <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
-            <div
-              className="bg-gradient-to-r from-indigo-500 to-indigo-600 h-3 rounded-full transition-all duration-500"
-              style={{ width: `${Math.min(progressPercent, 100)}%` }}
-            />
-          </div>
-        </div>
-      ) : (
-        <div className="card mb-4 text-center py-3">
-          <span className="text-sm font-semibold text-yellow-600">🏆 {t("maxTierReached")}</span>
-        </div>
-      )}
-
       {/* How it works */}
       <div className="card mb-4">
         <button
@@ -197,28 +161,6 @@ export default function RewardsPage() {
           </div>
         )}
       </div>
-
-      {/* Referral section */}
-      {referralCode && (
-        <div className="card mb-4">
-          <h2 className="text-sm font-semibold text-slate-700 mb-3">{t("referralSection")}</h2>
-          <div className="bg-slate-50 rounded-xl p-3 border border-slate-200">
-            <div className="text-xs text-slate-500 mb-1">{t("yourReferralLink")}</div>
-            <div className="flex items-center gap-2">
-              <code className="flex-1 text-sm font-mono text-slate-700 truncate">{window.location.origin}/register?ref={referralCode}</code>
-              <button onClick={copyLink} className="p-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 transition-colors">
-                <Copy className="w-4 h-4 text-indigo-600" />
-              </button>
-              {typeof navigator.share === "function" && (
-                <button onClick={() => navigator.share({ title: "Tawsil", url: `${window.location.origin}/register?ref=${referralCode}` })} className="p-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 transition-colors">
-                  <Share2 className="w-4 h-4 text-indigo-600" />
-                </button>
-              )}
-            </div>
-            {copied && <div className="text-xs text-emerald-600 mt-1">{t("linkCopied")}</div>}
-          </div>
-        </div>
-      )}
 
       {/* Redeem message */}
       {redeemMsg && (
