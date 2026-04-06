@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
-import { Search, Phone, MapPin, Package, CheckCircle2 } from "lucide-react";
+import { Search, Phone, MapPin, Package, CheckCircle2, ChevronRight } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
 import MapView from "./MapView";
 
@@ -30,6 +30,7 @@ interface Order {
 }
 
 const STEPS = ["pending", "accepted", "picked_up", "waiting_customer", "delivered"];
+const ACTIVE_STATUSES = ["pending", "accepted", "picked_up", "waiting_customer"];
 
 function formatFee(m: number) { return `${(m/1000).toFixed(3)} DT`; }
 
@@ -41,6 +42,12 @@ function TrackContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Auto-load state
+  const [activeOrders, setActiveOrders] = useState<Order[]>([]);
+  const [autoLoading, setAutoLoading] = useState(false);
+  const [autoLoaded, setAutoLoaded] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+
   const STATUS_LABELS: Record<string, string> = {
     pending: t("status_pending"),
     accepted: t("status_accepted"),
@@ -48,6 +55,15 @@ function TrackContent() {
     waiting_customer: t("status_waiting_customer"),
     delivered: t("status_delivered"),
     cancelled: t("status_cancelled"),
+  };
+
+  const STATUS_COLORS: Record<string, string> = {
+    pending: "bg-amber-100 text-amber-700",
+    accepted: "bg-blue-100 text-blue-700",
+    picked_up: "bg-indigo-100 text-indigo-700",
+    waiting_customer: "bg-orange-100 text-orange-700",
+    delivered: "bg-emerald-100 text-emerald-700",
+    cancelled: "bg-red-100 text-red-700",
   };
 
   async function fetchOrder(num?: string) {
@@ -69,11 +85,65 @@ function TrackContent() {
     }
   }
 
+  // Auto-load active orders for logged-in customers
   useEffect(() => {
-    if (searchParams.get("order")) fetchOrder(searchParams.get("order")!);
+    // If opened with ?order=, fetch that directly
+    if (searchParams.get("order")) {
+      fetchOrder(searchParams.get("order")!);
+      setAutoLoaded(true);
+      return;
+    }
+
+    // Check localStorage for logged-in customer
+    try {
+      const raw = localStorage.getItem("tawsil_user");
+      if (!raw) {
+        setAutoLoaded(true);
+        setShowSearch(true);
+        return;
+      }
+      const user = JSON.parse(raw);
+      if (user.role !== "customer" || !user.user_id) {
+        setAutoLoaded(true);
+        setShowSearch(true);
+        return;
+      }
+
+      setAutoLoading(true);
+      const params = new URLSearchParams({ user_id: user.user_id });
+      if (user.phone) params.set("phone", user.phone);
+
+      fetch(`/api/orders?${params}`)
+        .then((res) => res.json())
+        .then((data) => {
+          const orders: Order[] = data.orders || [];
+          const active = orders.filter((o) => ACTIVE_STATUSES.includes(o.status));
+          setActiveOrders(active);
+
+          // If exactly one active order, auto-select it
+          if (active.length === 1) {
+            setOrder(active[0]);
+          }
+          // If no active orders, show search
+          if (active.length === 0) {
+            setShowSearch(true);
+          }
+        })
+        .catch(() => {
+          setShowSearch(true);
+        })
+        .finally(() => {
+          setAutoLoading(false);
+          setAutoLoaded(true);
+        });
+    } catch {
+      setAutoLoaded(true);
+      setShowSearch(true);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Auto-refresh active order
   useEffect(() => {
     if (!order || ["delivered","cancelled"].includes(order.status)) return;
     const interval = (order.rider_lat || order.status === "accepted") ? 5000 : 15000;
@@ -82,6 +152,7 @@ function TrackContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [order?.status, order?.rider_lat]);
 
+  // Realtime subscription
   useEffect(() => {
     if (!order) return;
     const supabase = createClient(
@@ -105,36 +176,112 @@ function TrackContent() {
 
   const currentStep = order ? STEPS.indexOf(order.status) : -1;
 
-  return (
-    <div>
-      <div className="mb-5">
-        <h1 className="text-xl font-bold text-slate-900 mb-1">{t("trackTitle")}</h1>
-        <p className="text-slate-500 text-sm">{t("enterOrderNumber")}</p>
-      </div>
-
-      {/* Search */}
-      <div className="card mb-5">
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              value={orderNum}
-              onChange={(e) => setOrderNum(e.target.value.toUpperCase())}
-              placeholder="TW-XXXXXX-XXXX"
-              className="input !pl-10"
-              dir="ltr"
-            />
+  // Loading state while auto-fetching
+  if (!autoLoaded || autoLoading) {
+    return (
+      <div>
+        <div className="mb-5">
+          <h1 className="text-xl font-bold text-slate-900 mb-1">{t("trackTitle")}</h1>
+        </div>
+        <div className="card">
+          <div className="flex items-center justify-center gap-2 py-6 text-slate-500 text-sm">
+            <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+            {t("loadingYourOrders")}
           </div>
-          <button
-            onClick={() => fetchOrder()}
-            disabled={loading}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm disabled:opacity-50 transition-colors"
-          >
-            {loading ? "..." : t("search")}
-          </button>
         </div>
       </div>
+    );
+  }
+
+  // Multiple active orders — show picker
+  if (!order && activeOrders.length > 1) {
+    return (
+      <div>
+        <div className="mb-5">
+          <h1 className="text-xl font-bold text-slate-900 mb-1">{t("trackTitle")}</h1>
+          <p className="text-slate-500 text-sm">{t("yourActiveOrders")}</p>
+        </div>
+
+        <div className="space-y-3 mb-5">
+          {activeOrders.map((o) => (
+            <button
+              key={o.id}
+              onClick={() => setOrder(o)}
+              className="card w-full text-left hover:border-indigo-300 hover:shadow-md transition-all"
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  o.status === "waiting_customer" ? "bg-amber-100" : "bg-indigo-100"
+                }`}>
+                  {o.status === "waiting_customer"
+                    ? <MapPin className="w-5 h-5 text-amber-600" />
+                    : <Package className="w-5 h-5 text-indigo-600" />
+                  }
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-slate-900 text-sm">{o.store_name}</div>
+                  <div className="text-xs text-slate-500 truncate">{o.items_description}</div>
+                  <div className="text-xs text-slate-400 mt-0.5" dir="ltr">{o.order_number}</div>
+                </div>
+                <div className="flex flex-col items-end gap-1.5">
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_COLORS[o.status]}`}>
+                    {STATUS_LABELS[o.status]}
+                  </span>
+                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={() => { setActiveOrders([]); setShowSearch(true); }}
+          className="text-indigo-600 text-sm font-medium hover:underline w-full text-center"
+        >
+          {t("trackByOrderNumber")}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {/* Header — only show when no order is selected */}
+      {!order && (
+        <div className="mb-5">
+          <h1 className="text-xl font-bold text-slate-900 mb-1">{t("trackTitle")}</h1>
+          {showSearch && activeOrders.length === 0 && (
+            <p className="text-slate-500 text-sm">{t("noActiveOrders")}</p>
+          )}
+        </div>
+      )}
+
+      {/* Search — shown as fallback or when toggled */}
+      {!order && showSearch && (
+        <div className="card mb-5">
+          <p className="text-xs text-slate-500 mb-2">{t("enterOrderNumber")}</p>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                value={orderNum}
+                onChange={(e) => setOrderNum(e.target.value.toUpperCase())}
+                placeholder="TW-XXXXXX-XXXX"
+                className="input !pl-10"
+                dir="ltr"
+              />
+            </div>
+            <button
+              onClick={() => fetchOrder()}
+              disabled={loading}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm disabled:opacity-50 transition-colors"
+            >
+              {loading ? "..." : t("search")}
+            </button>
+          </div>
+        </div>
+      )}
 
       {error && <div className="card border-red-200 text-red-600 text-sm mb-4">{error}</div>}
 
@@ -369,6 +516,16 @@ function TrackContent() {
                 )}
               </div>
             </div>
+          )}
+
+          {/* Track by order number link at bottom */}
+          {!showSearch && (
+            <button
+              onClick={() => { setOrder(null); setActiveOrders([]); setShowSearch(true); }}
+              className="text-indigo-600 text-sm font-medium hover:underline w-full text-center"
+            >
+              {t("trackByOrderNumber")}
+            </button>
           )}
         </div>
       )}
