@@ -248,6 +248,12 @@ function LoginContent() {
               {t("noAccount")}{" "}
               <a href="/register/customer" style={{ color: "#6366f1", fontWeight: 600, textDecoration: "none" }}>{t("signUp")}</a>
             </p>
+
+            <div style={{ borderTop: "1px solid #E2E8F0", paddingTop: 16, textAlign: "center" }}>
+              <a href="/store-owner/register" style={{ color: "#6366f1", fontWeight: 600, textDecoration: "none", fontSize: "0.875rem" }}>
+                {t("registerAsStoreOwner")}
+              </a>
+            </div>
           </div>
         )}
 

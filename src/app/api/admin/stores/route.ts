@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
 
     const { data, error } = await supabase
       .from("stores")
-      .insert({ name, category: category || "other", address: address || null })
+      .insert({ name, category: category || "other", address: address || null, is_approved: true })
       .select()
       .single();
 

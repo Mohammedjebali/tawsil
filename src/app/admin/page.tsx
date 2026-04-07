@@ -112,6 +112,7 @@ export default function AdminPage() {
   const [newCategory, setNewCategory] = useState("restaurant");
   const [newAddress, setNewAddress] = useState("");
   const [storeLoading, setStoreLoading] = useState(false);
+  const [pendingStores, setPendingStores] = useState<{ id: string; name: string; category: string; address: string | null; phone: string | null; owner_id: string | null; created_at: string }[]>([]);
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
@@ -173,9 +174,14 @@ export default function AdminPage() {
   const fetchStores = useCallback(async () => {
     setStoreLoading(true);
     try {
-      const res = await fetch("/api/admin/stores");
+      const [res, pendingRes] = await Promise.all([
+        fetch("/api/admin/stores"),
+        fetch("/api/admin/pending-stores"),
+      ]);
       const data = await res.json();
       setStores(data.stores || []);
+      const pendingData = await pendingRes.json();
+      setPendingStores(pendingData.stores || []);
     } finally { setStoreLoading(false); }
   }, []);
 
@@ -658,6 +664,54 @@ export default function AdminPage() {
         {/* Stores Tab */}
         {tab === "stores" && (
           <div>
+            {/* Pending marketplace stores */}
+            {pendingStores.length > 0 && (
+              <div className="card mb-5 border-amber-200 bg-amber-50">
+                <h2 className="text-base font-semibold text-amber-800 mb-3 flex items-center gap-2">
+                  <Clock className="w-4 h-4" /> Pending Approval ({pendingStores.length})
+                </h2>
+                <div className="space-y-2">
+                  {pendingStores.map((ps) => {
+                    const IconComp = CATEGORY_ICONS[ps.category] || Package;
+                    return (
+                      <div key={ps.id} className="bg-white rounded-xl p-3 flex items-center gap-3 border border-amber-100">
+                        <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
+                          <IconComp className="w-5 h-5 text-amber-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-sm text-slate-900">{ps.name}</div>
+                          <div className="text-xs text-slate-500">{ps.category}{ps.address ? ` — ${ps.address}` : ""}</div>
+                          <div className="text-xs text-slate-400">{ps.phone || "No phone"} &middot; {formatDate(ps.created_at)}</div>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            await fetch(`/api/stores/${ps.id}`, {
+                              method: "PATCH",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ is_approved: true }),
+                            });
+                            fetchStores();
+                          }}
+                          className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={async () => {
+                            await fetch(`/api/stores/${ps.id}`, { method: "DELETE" });
+                            fetchStores();
+                          }}
+                          className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <form onSubmit={addStore} className="card mb-5">
               <h2 className="text-base font-semibold text-slate-900 mb-3 flex items-center gap-2">
                 <Plus className="w-4 h-4" /> Add Store

@@ -15,7 +15,7 @@ const LANGS: { code: Lang; label: string }[] = [
 ];
 
 // Pages that don't require auth
-const PUBLIC_PATHS = ["/login", "/register", "/forgot-password", "/reset-password", "/auth/callback", "/admin", "/rider"];
+const PUBLIC_PATHS = ["/login", "/register", "/forgot-password", "/reset-password", "/auth/callback", "/admin", "/rider", "/stores", "/store-owner"];
 
 const customerTabs = [
   { href: "/app", icon: ShoppingBag, labelKey: "orderTab" },

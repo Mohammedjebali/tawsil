@@ -449,6 +449,24 @@ export default function OrderPage() {
             </div>
           </div>
 
+          {/* Browse marketplace stores */}
+          <a
+            href="/stores"
+            className="card-hover flex items-center gap-4 no-underline mb-4"
+            style={{ background: "linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)", border: "1px solid #c7d2fe" }}
+          >
+            <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center flex-shrink-0">
+              <Store className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex-1">
+              <div className="text-sm font-bold text-indigo-900">{t("browseStores")}</div>
+              <div className="text-xs text-indigo-600">{t("browseStoresDesc")}</div>
+            </div>
+            {isRtl ? <ChevronLeft className="w-5 h-5 text-indigo-400" /> : <ChevronRight className="w-5 h-5 text-indigo-400" />}
+          </a>
+
+          <div className="text-center text-xs text-slate-400 mb-3">— {t("or")} — {t("manualOrderDesc")}</div>
+
           <StepProgress current={1} total={4} />
 
           {/* Search bar */}
