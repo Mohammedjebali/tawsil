@@ -11,7 +11,7 @@ export default function LoginPage() {
 
 function LoginContent() {
   const { t } = useLang();
-  const [tab, setTab] = useState<"customer" | "rider">("customer");
+  const [tab, setTab] = useState<"customer" | "rider" | "store_owner">("customer");
 
   // Customer fields
   const [email, setEmail] = useState("");
@@ -24,6 +24,13 @@ function LoginContent() {
   const [riderPhone, setRiderPhone] = useState("");
   const [riderError, setRiderError] = useState("");
   const [riderLoading, setRiderLoading] = useState(false);
+
+  // Store owner fields
+  const [soEmail, setSoEmail] = useState("");
+  const [soPassword, setSoPassword] = useState("");
+  const [showSoPw, setShowSoPw] = useState(false);
+  const [soError, setSoError] = useState("");
+  const [soLoading, setSoLoading] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("tawsil_user");
@@ -118,6 +125,22 @@ function LoginContent() {
     }
   }
 
+  async function submitStoreOwner() {
+    if (!soEmail.trim() || !soPassword.trim()) return;
+    setSoLoading(true);
+    setSoError("");
+
+    const { error: authError } = await supabaseClient.auth.signInWithPassword({ email: soEmail, password: soPassword });
+
+    if (authError) {
+      setSoLoading(false);
+      setSoError(t("wrongCredentials"));
+      return;
+    }
+
+    window.location.href = "/store-owner";
+  }
+
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "12px 16px", borderRadius: 10,
     border: "1px solid #E2E8F0", fontSize: "0.9rem", outline: "none",
@@ -157,6 +180,9 @@ function LoginContent() {
           </button>
           <button style={tabStyle(tab === "rider")} onClick={() => setTab("rider")}>
             {t("rider")}
+          </button>
+          <button style={tabStyle(tab === "store_owner")} onClick={() => setTab("store_owner")}>
+            {t("storeOwnerTab")}
           </button>
         </div>
 
@@ -249,11 +275,6 @@ function LoginContent() {
               <a href="/register/customer" style={{ color: "#6366f1", fontWeight: 600, textDecoration: "none" }}>{t("signUp")}</a>
             </p>
 
-            <div style={{ borderTop: "1px solid #E2E8F0", paddingTop: 16, textAlign: "center" }}>
-              <a href="/store-owner/register" style={{ color: "#6366f1", fontWeight: 600, textDecoration: "none", fontSize: "0.875rem" }}>
-                {t("registerAsStoreOwner")}
-              </a>
-            </div>
           </div>
         )}
 
@@ -285,6 +306,46 @@ function LoginContent() {
             <p style={{ textAlign: "center", fontSize: "0.875rem", color: "#64748b" }}>
               {t("areYouRider")}{" "}
               <a href="/register/rider" style={{ color: "#6366f1", fontWeight: 600, textDecoration: "none" }}>{t("registerAsRiderLink")}</a>
+            </p>
+          </div>
+        )}
+
+        {/* Store owner login */}
+        {tab === "store_owner" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div>
+              <label className="label">{t("email")}</label>
+              <input type="email" value={soEmail} onChange={(e) => setSoEmail(e.target.value)} dir="ltr" style={inputStyle} />
+            </div>
+
+            <div>
+              <label className="label">{t("password")}</label>
+              <div style={{ position: "relative" }}>
+                <input
+                  type={showSoPw ? "text" : "password"} value={soPassword}
+                  onChange={(e) => setSoPassword(e.target.value)} dir="ltr"
+                  style={{ ...inputStyle, paddingRight: 44 }}
+                />
+                <button type="button" onClick={() => setShowSoPw(!showSoPw)}
+                  style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#94a3b8" }}>
+                  {showSoPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            {soError && <p style={{ color: "#ef4444", fontSize: "0.875rem", textAlign: "center" }}>{soError}</p>}
+
+            <button
+              onClick={submitStoreOwner} disabled={soLoading}
+              className="btn-primary"
+              style={{ opacity: soLoading ? 0.6 : 1, border: "none", cursor: "pointer" }}
+            >
+              {soLoading ? t("signingIn") : t("login")}
+            </button>
+
+            <p style={{ textAlign: "center", fontSize: "0.875rem", color: "#64748b" }}>
+              {t("registerYourStore")}{" "}
+              <a href="/store-owner/register" style={{ color: "#6366f1", fontWeight: 600, textDecoration: "none" }}>{t("registerAsStoreOwner")}</a>
             </p>
           </div>
         )}

@@ -362,6 +362,8 @@ const translations: Record<string, Record<Lang, string>> = {
   registerStore: { ar: "سجّل محلك", fr: "Enregistrer votre magasin", en: "Register your store" },
   registerStoreDesc: { ar: "أضف محلك إلى منصة Tawsil", fr: "Ajoutez votre magasin sur Tawsil", en: "Add your store to Tawsil" },
   registerAsStoreOwner: { ar: "سجّل كصاحب محل", fr: "S'inscrire comme propriétaire", en: "Register as store owner" },
+  storeOwnerTab: { ar: "صاحب متجر", fr: "Propriétaire", en: "Store Owner" },
+  registerYourStore: { ar: "سجّل محلك", fr: "Enregistrer votre magasin", en: "Register your store" },
   storeDescription: { ar: "وصف المحل", fr: "Description du magasin", en: "Store description" },
   storePhone: { ar: "هاتف المحل", fr: "Téléphone du magasin", en: "Store phone" },
   storeOpeningTime: { ar: "وقت الفتح", fr: "Heure d'ouverture", en: "Opening time" },
