@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Store, ClipboardList, Settings, Plus, Trash2, Edit3, Check, Clock, ChefHat, Package, ArrowLeft, ArrowRight, AlertCircle } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
 import Link from "next/link";
+import { supabaseClient } from "@/lib/supabase-client";
 
 interface StoreData {
   id: string;
@@ -65,6 +66,7 @@ export default function StoreOwnerDashboard() {
 
   const [store, setStore] = useState<StoreData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [unauthenticated, setUnauthenticated] = useState(false);
   const [tab, setTab] = useState<Tab>("orders");
 
   // Orders
@@ -89,12 +91,11 @@ export default function StoreOwnerDashboard() {
   }, []);
 
   async function loadStore() {
-    const saved = localStorage.getItem("tawsil_user");
-    if (!saved) { window.location.href = "/login"; return; }
+    const { data: authData } = await supabaseClient.auth.getUser();
+    if (!authData.user) { setUnauthenticated(true); setLoading(false); return; }
 
     try {
-      const user = JSON.parse(saved);
-      const res = await fetch(`/api/stores?owner_id=${user.user_id}`);
+      const res = await fetch(`/api/stores?owner_id=${authData.user.id}`);
       const data = await res.json();
 
       if (data.stores?.length > 0) {
@@ -226,6 +227,18 @@ export default function StoreOwnerDashboard() {
           <div className="h-8 bg-slate-100 rounded w-1/2" />
           <div className="h-48 bg-slate-100 rounded-xl" />
         </div>
+      </div>
+    );
+  }
+
+  if (unauthenticated) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-16 text-center" dir={isRtl ? "rtl" : "ltr"}>
+        <Store className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+        <p className="text-slate-500 mb-6">Please log in first to access your store dashboard.</p>
+        <Link href="/login" className="btn-primary inline-block no-underline">
+          {t("login")}
+        </Link>
       </div>
     );
   }

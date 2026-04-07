@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Store, ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
 import Link from "next/link";
+import { supabaseClient } from "@/lib/supabase-client";
 
 const CATEGORIES = ["restaurant", "grocery", "pharmacy", "bakery", "cafe", "supermarket"];
 
@@ -12,6 +13,7 @@ export default function StoreOwnerRegisterPage() {
   const BackArrow = isRtl ? ArrowRight : ArrowLeft;
 
   const [userId, setUserId] = useState<string | null>(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("restaurant");
@@ -25,16 +27,12 @@ export default function StoreOwnerRegisterPage() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem("tawsil_user");
-    if (saved) {
-      try {
-        const user = JSON.parse(saved);
-        setUserId(user.user_id || null);
-      } catch {}
-    }
-    if (!saved) {
-      window.location.href = "/login";
-    }
+    supabaseClient.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        setUserId(data.user.id);
+      }
+      setCheckingAuth(false);
+    });
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -70,6 +68,26 @@ export default function StoreOwnerRegisterPage() {
       setError(String(err));
     }
     setLoading(false);
+  }
+
+  if (checkingAuth) {
+    return (
+      <div className="max-w-lg mx-auto px-4 py-16 text-center">
+        <div className="animate-pulse h-8 bg-slate-100 rounded w-1/2 mx-auto" />
+      </div>
+    );
+  }
+
+  if (!userId) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-16 text-center" dir={isRtl ? "rtl" : "ltr"}>
+        <Store className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+        <p className="text-slate-500 mb-6">Please log in first to register your store.</p>
+        <Link href="/login" className="btn-primary inline-block no-underline">
+          {t("login")}
+        </Link>
+      </div>
+    );
   }
 
   if (success) {
