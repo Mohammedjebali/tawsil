@@ -122,7 +122,7 @@ export default function StoresPage() {
       ) : filtered.length === 0 ? (
         <div className="text-center py-16 text-slate-400">
           <Store className="w-12 h-12 mx-auto mb-3 opacity-50" />
-          <p className="text-lg">{t("noStoresFound")}</p>
+          <p className="text-lg">{stores.length === 0 && !search ? t("noStoresYet") : t("noStoresFound")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

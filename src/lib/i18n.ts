@@ -341,6 +341,7 @@ const translations: Record<string, Record<Lang, string>> = {
   cafe: { ar: "مقهى", fr: "Café", en: "Cafe" },
   supermarket: { ar: "سوبرماركت", fr: "Supermarché", en: "Supermarket" },
   noStoresFound: { ar: "لا توجد محلات", fr: "Aucun magasin trouvé", en: "No stores found" },
+  noStoresYet: { ar: "لا توجد محلات بعد. تحقق مرة أخرى قريبًا!", fr: "Pas encore de magasins. Revenez bientôt !", en: "No stores available yet. Check back soon!" },
   storeMenu: { ar: "القائمة", fr: "Menu", en: "Menu" },
   addToCart: { ar: "أضف", fr: "Ajouter", en: "Add" },
   cart: { ar: "السلة", fr: "Panier", en: "Cart" },
