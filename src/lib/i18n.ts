@@ -406,6 +406,18 @@ const translations: Record<string, Record<Lang, string>> = {
   approveStore: { ar: "قبول المحل", fr: "Approuver le magasin", en: "Approve store" },
   rejectStore: { ar: "رفض المحل", fr: "Rejeter le magasin", en: "Reject store" },
   pendingStores: { ar: "محلات بانتظار الموافقة", fr: "Magasins en attente", en: "Pending stores" },
+
+  // Store owner registration flow
+  createYourAccount: { ar: "أنشئ حسابك", fr: "Créez votre compte", en: "Create your account" },
+  createAccountDesc: { ar: "سجّل حسابك ثم أضف محلك", fr: "Créez votre compte puis ajoutez votre magasin", en: "Sign up then add your store" },
+  storeDetails: { ar: "معلومات المحل", fr: "Détails du magasin", en: "Store details" },
+  storeDetailsDesc: { ar: "أدخل معلومات محلك", fr: "Entrez les informations de votre magasin", en: "Enter your store information" },
+  step1of2: { ar: "الخطوة 1 من 2", fr: "Étape 1 sur 2", en: "Step 1 of 2" },
+  step2of2: { ar: "الخطوة 2 من 2", fr: "Étape 2 sur 2", en: "Step 2 of 2" },
+  createAccount: { ar: "إنشاء حساب", fr: "Créer un compte", en: "Create account" },
+  creatingAccount: { ar: "جاري إنشاء الحساب...", fr: "Création du compte...", en: "Creating account..." },
+  alreadyHaveAccount: { ar: "عندك حساب؟", fr: "Vous avez déjà un compte?", en: "Already have an account?" },
+  signUpWithGoogle: { ar: "التسجيل بحساب Google", fr: "S'inscrire avec Google", en: "Sign up with Google" },
 };
 
 export function t(lang: Lang, key: string): string {
