@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
       store_id, store_name, store_address,
       store_lat, store_lng,
       items_description, estimated_amount,
+      cart_items,
       user_id,
     } = body;
 
@@ -93,11 +94,17 @@ export async function POST(req: NextRequest) {
     if (store_id) {
       try {
         // Create store_order — must check .error since supabase-js does not throw on query failures
+        const orderItems = Array.isArray(cart_items) ? cart_items.map((ci: { item_id?: string; name?: string; price?: number; quantity?: number }) => ({
+          item_id: ci.item_id || "",
+          name: ci.name || "",
+          price: ci.price || 0,
+          quantity: ci.quantity || 0,
+        })) : [];
         const { error: storeOrderError } = await supabase.from("store_orders").insert({
           order_id: data.id,
           store_id,
-          items: [],
-          subtotal: Math.round(estimated_amount) || 0,
+          items: orderItems,
+          subtotal: estimated_amount || 0,
           status: "pending",
         });
 

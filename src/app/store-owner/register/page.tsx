@@ -716,7 +716,7 @@ export default function StoreOwnerRegisterPage() {
                             updateMenuItem(index, "price", e.target.value)
                           }
                           className="input"
-                          placeholder={t("priceMillimes")}
+                          placeholder={t("priceTND")}
                           style={{ flex: 1 }}
                         />
                       </div>

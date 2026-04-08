@@ -563,7 +563,7 @@ export default function StoreOwnerDashboard() {
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm text-slate-900 truncate">{item.name}</p>
                       <p className="text-xs text-slate-500">
-                        {(item.price / 1000).toFixed(3)} {t("dt")}
+                        {item.price.toFixed(2)} {t("dt")}
                         {item.category_id && categories.find((c) => c.id === item.category_id) && (
                           <> &middot; {categories.find((c) => c.id === item.category_id)!.name}</>
                         )}
@@ -695,12 +695,12 @@ function OrderCard({
         {order.items.map((item, i) => (
           <div key={i} className="flex justify-between text-xs text-slate-600">
             <span>{item.quantity}x {item.name}</span>
-            <span>{((item.price * item.quantity) / 1000).toFixed(3)} {t("dt")}</span>
+            <span>{(item.price * item.quantity).toFixed(2)} {t("dt")}</span>
           </div>
         ))}
         <div className="flex justify-between text-sm font-bold text-slate-900 border-t border-slate-100 pt-1 mt-1">
           <span>{t("subtotal")}</span>
-          <span>{(order.subtotal / 1000).toFixed(3)} {t("dt")}</span>
+          <span>{order.subtotal.toFixed(2)} {t("dt")}</span>
         </div>
       </div>
 

@@ -192,7 +192,13 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
             store_lat: store.lat || null,
             store_lng: store.lng || null,
             items_description: itemsDesc,
-            estimated_amount: cartTotal / 1000,
+            estimated_amount: cartTotal,
+            cart_items: cart.map((c) => ({
+              item_id: c.item.id,
+              name: c.item.name,
+              price: c.item.price,
+              quantity: c.qty,
+            })),
             user_id: user.user_id || null,
           }),
         });
@@ -398,7 +404,7 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
                           )}
                           <div className="flex items-center justify-between mt-2">
                             <span className="font-bold text-indigo-600 text-sm">
-                              {(item.price / 1000).toFixed(3)} {t("dt")}
+                              {item.price.toFixed(2)} {t("dt")}
                             </span>
                             {inCart ? (
                               <div className="flex items-center gap-2">
@@ -447,7 +453,7 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
               <ShoppingCart className="w-5 h-5" />
               <span className="font-bold">{t("cart")} ({cartCount})</span>
             </span>
-            <span className="font-bold">{(cartTotal / 1000).toFixed(3)} {t("dt")}</span>
+            <span className="font-bold">{cartTotal.toFixed(2)} {t("dt")}</span>
           </button>
         </div>
       )}
@@ -467,7 +473,7 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
                 <div key={c.item.id} className="flex items-center gap-3 py-2 border-b border-slate-100">
                   <div className="flex-1">
                     <p className="font-semibold text-sm text-slate-900">{c.item.name}</p>
-                    <p className="text-xs text-slate-500">{(c.item.price / 1000).toFixed(3)} {t("dt")}</p>
+                    <p className="text-xs text-slate-500">{c.item.price.toFixed(2)} {t("dt")}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -485,7 +491,7 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
                     </button>
                   </div>
                   <span className="text-sm font-bold w-20 text-end">
-                    {((c.item.price * c.qty) / 1000).toFixed(3)} {t("dt")}
+                    {(c.item.price * c.qty).toFixed(2)} {t("dt")}
                   </span>
                 </div>
               ))}
@@ -493,7 +499,7 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
             <div className="px-5 py-4 border-t space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600">{t("subtotal")}</span>
-                <span className="font-bold">{(cartTotal / 1000).toFixed(3)} {t("dt")}</span>
+                <span className="font-bold">{cartTotal.toFixed(2)} {t("dt")}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600">{t("deliveryFee")}</span>
@@ -502,7 +508,7 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
               <div className="flex justify-between text-base font-bold">
                 <span>{t("total")}</span>
                 <span className="text-indigo-600">
-                  {store ? ((cartTotal + store.delivery_fee) / 1000).toFixed(3) : "-"} {t("dt")}
+                  {store ? (cartTotal + store.delivery_fee / 1000).toFixed(2) : "-"} {t("dt")}
                 </span>
               </div>
               {/* GPS button */}

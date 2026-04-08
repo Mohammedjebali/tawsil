@@ -444,6 +444,7 @@ const translations: Record<string, Record<Lang, string>> = {
   menuItems: { ar: "المنتجات والقائمة", fr: "Produits et menu", en: "Menu items" },
   itemNamePlaceholder: { ar: "مثال: كتكات كبيرة", fr: "Ex: Grand croissant", en: "E.g.: Large croissant" },
   priceMillimes: { ar: "السعر (مليم)", fr: "Prix (millimes)", en: "Price (millimes)" },
+  priceTND: { ar: "السعر (دينار)", fr: "Prix (TND)", en: "Price (TND)" },
   itemDescPlaceholder: { ar: "وصف اختياري", fr: "Description optionnelle", en: "Optional description" },
   submitStore: { ar: "إرسال الطلب", fr: "Soumettre la demande", en: "Submit application" },
   openingTime: { ar: "وقت الافتتاح", fr: "Heure d'ouverture", en: "Opening time" },
