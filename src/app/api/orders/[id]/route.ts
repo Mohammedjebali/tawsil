@@ -109,7 +109,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           await Promise.allSettled(subs.map((s) => {
             const sub = typeof s.subscription === "string" ? JSON.parse(s.subscription) : s.subscription;
             if (!sub.endpoint) return Promise.resolve();
-            return webpush.sendNotification(sub, payload);
+            return webpush.sendNotification(sub, payload, { TTL: 300, urgency: 'high' });
           }));
         }
       } catch (_) {

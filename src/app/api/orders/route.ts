@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
             await Promise.allSettled(subs.map((s) => {
               const sub = typeof s.subscription === "string" ? JSON.parse(s.subscription) : s.subscription;
               if (!sub.endpoint) return Promise.resolve();
-              return webpush.sendNotification(sub, payload);
+              return webpush.sendNotification(sub, payload, { TTL: 300, urgency: 'high' });
             }));
           }
         }
@@ -144,7 +144,7 @@ export async function POST(req: NextRequest) {
           await Promise.allSettled(subs.map((s) => {
             const sub = typeof s.subscription === "string" ? JSON.parse(s.subscription) : s.subscription;
             if (!sub.endpoint) return Promise.resolve();
-            return webpush.sendNotification(sub, payload);
+            return webpush.sendNotification(sub, payload, { TTL: 300, urgency: 'high' });
           }));
         }
       } catch (_) {

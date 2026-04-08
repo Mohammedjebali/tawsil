@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
           });
           await Promise.allSettled(
             subs.map((s: { subscription: string }) =>
-              webpush.sendNotification(JSON.parse(s.subscription), payload).catch(() => {})
+              webpush.sendNotification(JSON.parse(s.subscription), payload, { TTL: 300, urgency: 'high' }).catch(() => {})
             )
           );
         }
@@ -170,7 +170,7 @@ export async function PATCH(req: NextRequest) {
           });
           await Promise.allSettled(
             subs.map((s: { subscription: string }) =>
-              webpush.sendNotification(JSON.parse(s.subscription), payload).catch(() => {})
+              webpush.sendNotification(JSON.parse(s.subscription), payload, { TTL: 300, urgency: 'high' }).catch(() => {})
             )
           );
         }
@@ -202,7 +202,7 @@ export async function PATCH(req: NextRequest) {
           });
           await Promise.allSettled(
             subs.map((s: { subscription: string }) =>
-              webpush.sendNotification(typeof s.subscription === "string" ? JSON.parse(s.subscription) : s.subscription, payload).catch(() => {})
+              webpush.sendNotification(typeof s.subscription === "string" ? JSON.parse(s.subscription) : s.subscription, payload, { TTL: 300, urgency: 'high' }).catch(() => {})
             )
           );
         }

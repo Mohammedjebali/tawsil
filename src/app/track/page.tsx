@@ -182,7 +182,7 @@ function TrackContent() {
   // Auto-refresh active order
   useEffect(() => {
     if (!order || ["delivered","cancelled"].includes(order.status)) return;
-    const interval = (order.rider_lat || order.status === "accepted") ? 5000 : 15000;
+    const interval = 3000;
     const timer = setInterval(() => fetchOrder(order.order_number), interval);
     return () => clearInterval(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
