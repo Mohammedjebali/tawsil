@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
-import { User, Bell, BellOff, Package, MapPin, Phone, Navigation, CheckCircle2, Wallet } from "lucide-react";
+import { User, Bell, BellOff, Package, MapPin, Phone, Navigation, CheckCircle2, Wallet, XCircle } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
 import { useRealtimeSubscription } from "@/lib/useRealtimeSubscription";
 import { useRealtimeContext } from "@/components/RealtimeProvider";
@@ -160,6 +160,8 @@ export default function RiderPage() {
   const [toggling, setToggling] = useState(false);
   const [riderPos, setRiderPos] = useState<{lat: number; lng: number} | null>(null);
   const [deliveryCount, setDeliveryCount] = useState(0);
+  const [cancellingOrder, setCancellingOrder] = useState<string | null>(null);
+  const [confirmCancelOrder, setConfirmCancelOrder] = useState<string | null>(null);
   const watchIds = useRef<Record<string, number>>({});
   const prevOrderCount = useRef(0);
   const posWatchId = useRef<number | null>(null);
@@ -414,6 +416,21 @@ export default function RiderPage() {
       body: JSON.stringify({ status: nextStatus }),
     });
     fetchOrders();
+  }
+
+  async function cancelMyOrder(orderId: string) {
+    setCancellingOrder(orderId);
+    try {
+      await fetch(`/api/orders/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "cancelled", cancelled_by: "rider" }),
+      });
+      fetchOrders();
+    } finally {
+      setCancellingOrder(null);
+      setConfirmCancelOrder(null);
+    }
   }
 
   if (!ready || !rider) return (
@@ -676,6 +693,36 @@ export default function RiderPage() {
                   </a>
                   <span className="text-sm font-medium text-slate-700">{order.customer_name}</span>
                 </div>
+
+                {/* Cancel button — only for accepted orders (before pickup) */}
+                {isAccepted && (
+                  confirmCancelOrder === order.id ? (
+                    <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-xl">
+                      <p className="text-xs text-slate-600 mb-2">{t("cancelConfirm")}</p>
+                      <div className="flex gap-2">
+                        <button onClick={() => setConfirmCancelOrder(null)} className="flex-1 text-xs font-semibold py-2 rounded-lg bg-slate-100 text-slate-600">
+                          {t("back")}
+                        </button>
+                        <button
+                          onClick={() => cancelMyOrder(order.id)}
+                          disabled={cancellingOrder === order.id}
+                          className="flex-1 text-xs font-semibold py-2 rounded-lg bg-red-600 text-white flex items-center justify-center gap-1"
+                        >
+                          <XCircle className="w-3.5 h-3.5" />
+                          {t("cancelOrder")}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmCancelOrder(order.id)}
+                      className="mb-3 w-full text-xs font-semibold py-2 rounded-lg border border-red-200 bg-red-50 text-red-600 flex items-center justify-center gap-1"
+                    >
+                      <XCircle className="w-3.5 h-3.5" />
+                      {t("cancelOrder")}
+                    </button>
+                  )
+                )}
 
                 {/* Price adjustment */}
                 <div className="bg-white border border-slate-200 rounded-xl p-3 mb-3">

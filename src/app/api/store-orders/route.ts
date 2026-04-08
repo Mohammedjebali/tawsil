@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase-server";
 import { captureError } from "@/lib/sentry";
+import { isValidStoreTransition } from "@/lib/order-state";
 import webpush from "web-push";
 
 try {
@@ -121,19 +122,38 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "id and status are required" }, { status: 400 });
     }
 
-    const validStatuses = ["confirmed", "preparing", "ready", "picked_up"];
-    if (!validStatuses.includes(status)) {
-      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    // Fetch current store order to validate transition
+    const { data: current, error: fetchErr } = await supabase
+      .from("store_orders")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (fetchErr || !current) {
+      return NextResponse.json({ error: "Store order not found" }, { status: 404 });
+    }
+
+    if (!isValidStoreTransition(current.status, status)) {
+      return NextResponse.json(
+        { error: "invalid_transition", message: `Cannot transition from '${current.status}' to '${status}'` },
+        { status: 400 }
+      );
     }
 
     const updates: Record<string, unknown> = { status };
     if (status === "confirmed") updates.store_confirmed_at = new Date().toISOString();
     if (status === "ready") updates.store_ready_at = new Date().toISOString();
+    if (status === "cancelled") {
+      if (body.cancelled_by) updates.cancelled_by = body.cancelled_by;
+      if (body.cancel_reason) updates.cancel_reason = body.cancel_reason;
+    }
 
+    // Atomic conditional update
     const { error: updateError } = await supabase
       .from("store_orders")
       .update(updates)
-      .eq("id", id);
+      .eq("id", id)
+      .eq("status", current.status);
 
     if (updateError) throw updateError;
 
@@ -205,6 +225,43 @@ export async function PATCH(req: NextRequest) {
               webpush.sendNotification(typeof s.subscription === "string" ? JSON.parse(s.subscription) : s.subscription, payload, { TTL: 300, urgency: 'high' }).catch(() => {})
             )
           );
+        }
+      } catch (_) {
+        captureError(_);
+      }
+    }
+
+    // When store owner cancels, also cancel the main order and notify customer
+    if (status === "cancelled" && data?.order_id) {
+      try {
+        await supabase
+          .from("orders")
+          .update({
+            status: "cancelled",
+            cancelled_by: body.cancelled_by || "store_owner",
+            cancel_reason: body.cancel_reason || null,
+          })
+          .eq("id", data.order_id)
+          .in("status", ["store_pending", "pending"]);
+
+        // Notify customer
+        if (data?.orders?.customer_phone && process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) {
+          const payload = JSON.stringify({
+            title: "❌ تم إلغاء الطلب",
+            body: `Order ${data.orders.order_number} has been cancelled by the store`,
+            data: { order_number: data.orders.order_number },
+          });
+          const { data: subs } = await supabase
+            .from("push_subscriptions")
+            .select("subscription")
+            .eq("customer_phone", data.orders.customer_phone);
+          if (subs?.length) {
+            await Promise.allSettled(
+              subs.map((s: { subscription: string }) =>
+                webpush.sendNotification(typeof s.subscription === "string" ? JSON.parse(s.subscription) : s.subscription, payload, { TTL: 300, urgency: 'high' }).catch(() => {})
+              )
+            );
+          }
         }
       } catch (_) {
         captureError(_);

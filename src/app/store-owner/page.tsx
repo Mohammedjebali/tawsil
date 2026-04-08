@@ -201,12 +201,12 @@ export default function StoreOwnerDashboard() {
     } catch (e) { captureError(e); }
   }
 
-  async function updateOrderStatus(orderId: string, status: string) {
+  async function updateOrderStatus(orderId: string, status: string, extra?: Record<string, unknown>) {
     try {
       await fetch("/api/store-orders", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: orderId, status }),
+        body: JSON.stringify({ id: orderId, status, ...extra }),
       });
       if (store) loadOrders(store.id);
     } catch (e) { captureError(e); }
@@ -658,14 +658,16 @@ function OrderCard({
 }: {
   order: StoreOrder;
   t: (key: string) => string;
-  onAction: (id: string, status: string) => void;
+  onAction: (id: string, status: string, extra?: Record<string, unknown>) => void;
 }) {
+  const [confirmCancel, setConfirmCancel] = useState(false);
   const statusColors: Record<string, string> = {
     pending: "bg-amber-50 text-amber-700",
     confirmed: "bg-blue-50 text-blue-700",
     preparing: "bg-purple-50 text-purple-700",
     ready: "bg-green-50 text-green-700",
     picked_up: "bg-slate-100 text-slate-600",
+    cancelled: "bg-red-50 text-red-600",
   };
 
   const statusLabels: Record<string, string> = {
@@ -725,6 +727,33 @@ function OrderCard({
           </a>
         )}
       </div>
+
+      {/* Cancel button for pending/confirmed orders */}
+      {["pending", "confirmed"].includes(order.status) && (
+        confirmCancel ? (
+          <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-xl">
+            <p className="text-xs text-slate-600 mb-2">{t("cancelConfirm")}</p>
+            <div className="flex gap-2">
+              <button onClick={() => setConfirmCancel(false)} className="flex-1 text-xs font-semibold py-2 rounded-lg bg-slate-100 text-slate-600">
+                {t("back")}
+              </button>
+              <button
+                onClick={() => { onAction(order.id, "cancelled", { cancelled_by: "store_owner" }); setConfirmCancel(false); }}
+                className="flex-1 text-xs font-semibold py-2 rounded-lg bg-red-600 text-white"
+              >
+                {t("cancelOrder")}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setConfirmCancel(true)}
+            className="mt-2 w-full text-xs font-semibold py-2 rounded-lg border border-red-200 bg-red-50 text-red-600"
+          >
+            {t("cancelOrder")}
+          </button>
+        )
+      )}
     </div>
   );
 }

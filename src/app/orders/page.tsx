@@ -127,7 +127,7 @@ export default function OrdersPage() {
       await fetch(`/api/orders/${orderId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "cancelled" }),
+        body: JSON.stringify({ status: "cancelled", cancelled_by: "customer" }),
       });
       setOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, status: "cancelled" } : o));
     } finally {
@@ -179,7 +179,7 @@ export default function OrdersPage() {
 
         <div className="space-y-3">
           {orders.map((order) => {
-            const canCancel = order.status === "pending";
+            const canCancel = order.status === "pending" || order.status === "store_pending";
             return (
               <Link key={order.id} href={`/track?order=${order.order_number}`} className="card block cursor-pointer hover:shadow-sm transition-shadow">
                 {/* Header */}

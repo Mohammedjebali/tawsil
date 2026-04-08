@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Search, Phone, MapPin, Package, CheckCircle2, ChevronRight } from "lucide-react";
+import { Search, Phone, MapPin, Package, CheckCircle2, ChevronRight, XCircle, Loader2 } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
 import { useRealtimeSubscription } from "@/lib/useRealtimeSubscription";
 import { useRealtimeContext } from "@/components/RealtimeProvider";
@@ -51,6 +51,8 @@ function TrackContent() {
   const [autoLoaded, setAutoLoaded] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [storeOrderStatus, setStoreOrderStatus] = useState<string | null>(null);
+  const [cancellingTrack, setCancellingTrack] = useState(false);
+  const [confirmCancelTrack, setConfirmCancelTrack] = useState(false);
 
   const STATUS_LABELS: Record<string, string> = {
     pending: t("status_pending"),
@@ -570,6 +572,54 @@ function TrackContent() {
                   </a>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Cancel button — only for pending or store_pending */}
+          {order && ["pending", "store_pending"].includes(order.status) && (
+            <div className="card border-red-200">
+              {confirmCancelTrack ? (
+                <div>
+                  <p className="text-sm text-slate-700 mb-3">{t("cancelConfirm")}</p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setConfirmCancelTrack(false)}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-slate-100 text-slate-600"
+                    >
+                      {t("back")}
+                    </button>
+                    <button
+                      onClick={async () => {
+                        setCancellingTrack(true);
+                        try {
+                          await fetch(`/api/orders/${order.id}`, {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ status: "cancelled", cancelled_by: "customer" }),
+                          });
+                          setOrder({ ...order, status: "cancelled" });
+                        } finally {
+                          setCancellingTrack(false);
+                          setConfirmCancelTrack(false);
+                        }
+                      }}
+                      disabled={cancellingTrack}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-red-600 text-white flex items-center justify-center gap-1.5"
+                    >
+                      {cancellingTrack ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+                      {t("cancelOrder")}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmCancelTrack(true)}
+                  className="w-full py-2.5 rounded-xl text-sm font-semibold text-red-600 bg-red-50 border border-red-200 flex items-center justify-center gap-1.5"
+                >
+                  <XCircle className="w-4 h-4" />
+                  {t("cancelOrder")}
+                </button>
+              )}
             </div>
           )}
 

@@ -325,12 +325,17 @@ export default function AdminPage() {
     fetchStores();
   }
 
+  const [adminCancelReason, setAdminCancelReason] = useState<Record<string, string>>({});
+  const [adminCancelConfirm, setAdminCancelConfirm] = useState<string | null>(null);
+
   async function cancelOrder(id: string) {
     await fetch(`/api/orders/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "cancelled" }),
+      body: JSON.stringify({ status: "cancelled", cancelled_by: "admin", cancel_reason: adminCancelReason[id] || "" }),
     });
+    setAdminCancelConfirm(null);
+    setAdminCancelReason((prev) => ({ ...prev, [id]: "" }));
     fetchOrders();
   }
 
@@ -843,13 +848,37 @@ export default function AdminPage() {
                   <span className="text-sm font-mono text-slate-500" dir="ltr">{order.customer_phone}</span>
                   <span className="text-sm font-semibold text-indigo-600">{formatFee(order.delivery_fee)}</span>
                   <span className="text-xs text-slate-400">{formatTime(order.created_at)}</span>
-                  {(order.status === "pending" || order.status === "accepted") && (
-                    <button
-                      onClick={() => cancelOrder(order.id)}
-                      className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
-                    >
-                      Cancel
-                    </button>
+                  {!["delivered", "cancelled"].includes(order.status) && (
+                    adminCancelConfirm === order.id ? (
+                      <div className="flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="text"
+                          placeholder="Reason (optional)"
+                          value={adminCancelReason[order.id] || ""}
+                          onChange={(e) => setAdminCancelReason((prev) => ({ ...prev, [order.id]: e.target.value }))}
+                          className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 w-36"
+                        />
+                        <button
+                          onClick={() => setAdminCancelConfirm(null)}
+                          className="text-xs font-semibold px-2 py-1.5 rounded-lg bg-slate-100 text-slate-600"
+                        >
+                          Back
+                        </button>
+                        <button
+                          onClick={() => cancelOrder(order.id)}
+                          className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+                        >
+                          Confirm Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setAdminCancelConfirm(order.id)}
+                        className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    )
                   )}
                 </div>
               ))}

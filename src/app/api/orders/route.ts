@@ -164,32 +164,79 @@ export async function GET(req: NextRequest) {
     const supabase = getSupabase();
     const { searchParams } = new URL(req.url);
 
-    // Auto-expire pending orders older than 30 minutes (runs on every orders fetch)
-    // Skip orders that have an active store_order being processed
-    const expiryCutoff = new Date(Date.now() - 30 * 60 * 1000).toISOString();
-    const { data: expiredOrders } = await supabase
+    // Auto-expire orders based on granular timeouts (runs on every orders fetch)
+    const now = Date.now();
+    const overallCutoff = new Date(now - 30 * 60 * 1000).toISOString();     // 30 min overall
+    const storePendingCutoff = new Date(now - 15 * 60 * 1000).toISOString(); // 15 min for store to confirm
+    const riderPendingCutoff = new Date(now - 20 * 60 * 1000).toISOString(); // 20 min for rider to accept
+
+    // 1. Expire store_pending orders where store hasn't confirmed within 15 minutes
+    //    Only if the store_order is still "pending" (not yet confirmed)
+    const { data: storePendingOrders } = await supabase
       .from("orders")
       .select("id")
-      .in("status", ["pending", "store_pending"])
-      .lt("created_at", expiryCutoff);
+      .eq("status", "store_pending")
+      .lt("created_at", storePendingCutoff);
 
-    if (expiredOrders && expiredOrders.length > 0) {
-      const expiredIds = expiredOrders.map((o: { id: string }) => o.id);
-
-      // Find orders with active store_orders (being processed by store owner)
+    if (storePendingOrders && storePendingOrders.length > 0) {
+      const spIds = storePendingOrders.map((o: { id: string }) => o.id);
+      // Only expire if the store_order is still pending (not confirmed/preparing)
       const { data: activeStoreOrders } = await supabase
         .from("store_orders")
         .select("order_id")
-        .in("order_id", expiredIds)
-        .in("status", ["pending", "confirmed", "preparing"]);
+        .in("order_id", spIds)
+        .in("status", ["confirmed", "preparing", "ready"]);
+      const activeIds = new Set((activeStoreOrders || []).map((so: { order_id: string }) => so.order_id));
+      const storeExpireIds = spIds.filter((id: string) => !activeIds.has(id));
+      if (storeExpireIds.length > 0) {
+        await supabase
+          .from("orders")
+          .update({ status: "cancelled", cancelled_by: "system", cancel_reason: "Store did not confirm within 15 minutes" })
+          .in("id", storeExpireIds);
+        await supabase
+          .from("store_orders")
+          .update({ status: "cancelled", cancelled_by: "system", cancel_reason: "Timed out" })
+          .in("order_id", storeExpireIds)
+          .eq("status", "pending");
+      }
+    }
 
+    // 2. Expire pending orders (waiting for rider) older than 20 minutes
+    const { data: riderPendingOrders } = await supabase
+      .from("orders")
+      .select("id")
+      .eq("status", "pending")
+      .lt("created_at", riderPendingCutoff);
+
+    if (riderPendingOrders && riderPendingOrders.length > 0) {
+      const rpIds = riderPendingOrders.map((o: { id: string }) => o.id);
+      await supabase
+        .from("orders")
+        .update({ status: "cancelled", cancelled_by: "system", cancel_reason: "No rider accepted within 20 minutes" })
+        .in("id", rpIds);
+    }
+
+    // 3. Overall 30 min expiry for any remaining pending/store_pending orders
+    const { data: overallExpired } = await supabase
+      .from("orders")
+      .select("id")
+      .in("status", ["pending", "store_pending"])
+      .lt("created_at", overallCutoff);
+
+    if (overallExpired && overallExpired.length > 0) {
+      const oeIds = overallExpired.map((o: { id: string }) => o.id);
+      // Check for actively processing store orders
+      const { data: activeStoreOrders } = await supabase
+        .from("store_orders")
+        .select("order_id")
+        .in("order_id", oeIds)
+        .in("status", ["confirmed", "preparing"]);
       const activeOrderIds = new Set((activeStoreOrders || []).map((so: { order_id: string }) => so.order_id));
-      const idsToCancel = expiredIds.filter((id: string) => !activeOrderIds.has(id));
-
+      const idsToCancel = oeIds.filter((id: string) => !activeOrderIds.has(id));
       if (idsToCancel.length > 0) {
         await supabase
           .from("orders")
-          .update({ status: "cancelled" })
+          .update({ status: "cancelled", cancelled_by: "system", cancel_reason: "Order expired after 30 minutes" })
           .in("id", idsToCancel);
       }
     }
