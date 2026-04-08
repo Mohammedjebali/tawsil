@@ -198,7 +198,7 @@ export default function StoreOwnerDashboard() {
       const catsData = await catsRes.json();
       const itemsData = await itemsRes.json();
       setCategories(catsData.categories || []);
-      setMenuItems(itemsData.items || []);
+      setMenuItems((itemsData.items || []).filter((i: { is_available?: boolean }) => i.is_available !== false));
     } catch (e) { captureError(e); }
   }
 
@@ -523,16 +523,22 @@ export default function StoreOwnerDashboard() {
                   value={newItem.price}
                   onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
                 />
-                <select
-                  className="input w-full"
-                  value={newItem.category_id}
-                  onChange={(e) => setNewItem({ ...newItem, category_id: e.target.value })}
-                >
-                  <option value="">{t("uncategorized")}</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </select>
+              <input
+                className="input w-full"
+                placeholder={t("category") + " (" + t("leaveEmptyForUncategorized") + ")"}
+                value={newItem.category_id && categories.find(c => c.id === newItem.category_id)?.name || ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const match = categories.find(c => c.name.toLowerCase() === val.toLowerCase());
+                  setNewItem({ ...newItem, category_id: match?.id || "" });
+                }}
+                list="category-list"
+              />
+              <datalist id="category-list">
+                {categories.map((c) => (
+                  <option key={c.id} value={c.name} />
+                ))}
+              </datalist>
               </div>
               <button
                 onClick={addMenuItem}
