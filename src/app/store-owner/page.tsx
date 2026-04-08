@@ -147,15 +147,22 @@ export default function StoreOwnerDashboard() {
     setLoading(false);
   }
 
-  async function loadOrders(storeId: string) {
-    setOrdersLoading(true);
+  async function loadOrders(storeId: string, silent = false) {
+    if (!silent) setOrdersLoading(true);
     try {
       const res = await fetch(`/api/store-orders?store_id=${storeId}`);
       const data = await res.json();
       setOrders(data.store_orders || []);
     } catch (e) { captureError(e); }
-    setOrdersLoading(false);
+    if (!silent) setOrdersLoading(false);
   }
+
+  // Poll orders every 5s so store owner sees new orders immediately
+  useEffect(() => {
+    if (!store) return;
+    const interval = setInterval(() => loadOrders(store.id, true), 5000);
+    return () => clearInterval(interval);
+  }, [store?.id]);
 
   async function loadMenu(storeId: string) {
     try {

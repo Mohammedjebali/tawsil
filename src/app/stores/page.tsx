@@ -40,6 +40,8 @@ export default function StoresPage() {
 
   useEffect(() => {
     fetchStores();
+    const interval = setInterval(fetchStores, 30000);
+    return () => clearInterval(interval);
   }, [category]);
 
   async function fetchStores() {

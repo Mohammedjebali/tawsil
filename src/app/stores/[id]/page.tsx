@@ -74,20 +74,24 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
     if (savedLng) setCustomerLng(parseFloat(savedLng));
   }, []);
 
+  async function fetchStore(silent = false) {
+    try {
+      const res = await fetch(`/api/stores/${id}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setStore(data.store);
+      setCategories(data.categories || []);
+      setItems(data.items || []);
+    } catch {
+      if (!silent) setError("Failed to load store");
+    }
+    if (!silent) setLoading(false);
+  }
+
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch(`/api/stores/${id}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        setStore(data.store);
-        setCategories(data.categories || []);
-        setItems(data.items || []);
-      } catch {
-        setError("Failed to load store");
-      }
-      setLoading(false);
-    })();
+    fetchStore();
+    const interval = setInterval(() => fetchStore(true), 30000);
+    return () => clearInterval(interval);
   }, [id]);
 
   function addToCart(item: MenuItem) {

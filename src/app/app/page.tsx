@@ -230,6 +230,13 @@ export default function OrderPage() {
     setReady(true);
   }, []);
 
+  function fetchStores() {
+    fetch("/api/stores")
+      .then((r) => r.json())
+      .then((d) => setStores(d.stores || []))
+      .catch(() => {});
+  }
+
   useEffect(() => {
     if (user) {
       // Prefetch stores while splash shows
@@ -245,6 +252,9 @@ export default function OrderPage() {
           setStoresLoading(false);
           setSplashDone(true);
         });
+
+      // Poll stores every 30s
+      const storesInterval = setInterval(fetchStores, 30000);
 
       // Register service worker and check push notification status
       if (supportsPush()) {
@@ -263,6 +273,8 @@ export default function OrderPage() {
       } else {
         setNotifStatus("unsupported");
       }
+
+      return () => clearInterval(storesInterval);
     }
   }, [user]);
 
