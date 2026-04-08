@@ -147,12 +147,34 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
 
     // Auto-expire pending orders older than 30 minutes (runs on every orders fetch)
+    // Skip orders that have an active store_order being processed
     const expiryCutoff = new Date(Date.now() - 30 * 60 * 1000).toISOString();
-    await supabase
+    const { data: expiredOrders } = await supabase
       .from("orders")
-      .update({ status: "cancelled" })
+      .select("id")
       .in("status", ["pending", "store_pending"])
       .lt("created_at", expiryCutoff);
+
+    if (expiredOrders && expiredOrders.length > 0) {
+      const expiredIds = expiredOrders.map((o: { id: string }) => o.id);
+
+      // Find orders with active store_orders (being processed by store owner)
+      const { data: activeStoreOrders } = await supabase
+        .from("store_orders")
+        .select("order_id")
+        .in("order_id", expiredIds)
+        .in("status", ["pending", "confirmed", "preparing"]);
+
+      const activeOrderIds = new Set((activeStoreOrders || []).map((so: { order_id: string }) => so.order_id));
+      const idsToCancel = expiredIds.filter((id: string) => !activeOrderIds.has(id));
+
+      if (idsToCancel.length > 0) {
+        await supabase
+          .from("orders")
+          .update({ status: "cancelled" })
+          .in("id", idsToCancel);
+      }
+    }
     const order_number = searchParams.get("order_number");
     const status = searchParams.get("status");
     const phone = searchParams.get("phone");

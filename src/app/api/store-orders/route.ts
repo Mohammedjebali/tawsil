@@ -180,9 +180,14 @@ export async function PATCH(req: NextRequest) {
     // When store marks order READY → notify riders
     if (status === "ready") {
       try {
-        // Also update the main order status to "pending" so riders see it
+        // Re-activate the main order to "pending" so riders see it
+        // This also handles orders that were cancelled by auto-expire
         if (data?.order_id) {
-          await supabase.from("orders").update({ status: "pending" }).eq("id", data.order_id);
+          await supabase
+            .from("orders")
+            .update({ status: "pending" })
+            .eq("id", data.order_id)
+            .in("status", ["store_pending", "cancelled"]);
         }
 
         // Notify all riders
