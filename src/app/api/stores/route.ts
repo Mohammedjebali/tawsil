@@ -13,6 +13,9 @@ export async function GET(req: NextRequest) {
     let query = supabase.from("stores").select("*");
 
     if (owner_id) {
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(owner_id)) {
+        return NextResponse.json({ stores: [] });
+      }
       query = query.eq("owner_id", owner_id);
     } else {
       // Public listing: only approved + active
@@ -30,22 +33,26 @@ export async function GET(req: NextRequest) {
     const { data, error } = await query;
     if (error) throw error;
 
-    // Add has_items flag for each store
+    // Add has_items flag for each store (non-critical — degrade gracefully)
     if (data && data.length > 0) {
-      const storeIds = data.map((s: { id: string }) => s.id);
-      const { data: itemCounts } = await supabase
-        .from("store_items")
-        .select("store_id")
-        .in("store_id", storeIds)
-        .eq("is_available", true);
+      try {
+        const storeIds = data.map((s: { id: string }) => s.id);
+        const { data: itemCounts } = await supabase
+          .from("store_items")
+          .select("store_id")
+          .in("store_id", storeIds)
+          .eq("is_available", true);
 
-      const itemMap: Record<string, number> = {};
-      for (const ic of itemCounts || []) {
-        itemMap[ic.store_id] = (itemMap[ic.store_id] || 0) + 1;
-      }
+        const itemMap: Record<string, number> = {};
+        for (const ic of itemCounts || []) {
+          itemMap[ic.store_id] = (itemMap[ic.store_id] || 0) + 1;
+        }
 
-      for (const store of data) {
-        (store as Record<string, unknown>).has_items = (itemMap[store.id] || 0) > 0;
+        for (const store of data) {
+          (store as Record<string, unknown>).has_items = (itemMap[store.id] || 0) > 0;
+        }
+      } catch {
+        // store_items query failed — return stores without has_items
       }
     }
 

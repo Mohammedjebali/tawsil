@@ -117,6 +117,11 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
       const itemsDesc = cart.map((c) => `${c.qty}x ${c.item.name}`).join(", ");
       const customerName = user.name || user.firstName || user.email || "Customer";
       const customerPhone = user.phone || "";
+      if (!customerPhone) {
+        setError("Phone number is required. Please complete your profile.");
+        setOrdering(false);
+        return;
+      }
       const customerAddress = savedAddr || store.address || "Address not provided";
 
       // 1. Create order in main orders table

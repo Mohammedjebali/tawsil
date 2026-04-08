@@ -22,8 +22,7 @@ export async function GET(req: NextRequest) {
 
     let query = supabase
       .from("store_orders")
-      .select("*, orders(order_number, customer_name, customer_phone, customer_address, status, created_at)")
-      .order("store_confirmed_at", { ascending: false, nullsFirst: true });
+      .select("*");
 
     if (store_id) query = query.eq("store_id", store_id);
     if (status) query = query.eq("status", status);
@@ -31,6 +30,20 @@ export async function GET(req: NextRequest) {
 
     const { data, error } = await query;
     if (error) throw error;
+
+    // Manually join orders data (store_orders has no FK to orders)
+    if (data && data.length > 0) {
+      const orderIds = [...new Set(data.map((so: { order_id: string }) => so.order_id))];
+      const { data: ordersData } = await supabase
+        .from("orders")
+        .select("id, order_number, customer_name, customer_phone, customer_address, status, created_at")
+        .in("id", orderIds);
+
+      const orderMap = new Map((ordersData || []).map((o: { id: string }) => [o.id, o]));
+      for (const so of data) {
+        (so as Record<string, unknown>).orders = orderMap.get(so.order_id) || null;
+      }
+    }
 
     return NextResponse.json({ store_orders: data });
   } catch (err) {
@@ -117,14 +130,30 @@ export async function PATCH(req: NextRequest) {
     if (status === "confirmed") updates.store_confirmed_at = new Date().toISOString();
     if (status === "ready") updates.store_ready_at = new Date().toISOString();
 
-    const { data, error } = await supabase
+    const { error: updateError } = await supabase
       .from("store_orders")
       .update(updates)
+      .eq("id", id);
+
+    if (updateError) throw updateError;
+
+    const { data, error } = await supabase
+      .from("store_orders")
+      .select("*")
       .eq("id", id)
-      .select("*, orders(order_number, customer_name, customer_phone, user_id, store_name, delivery_fee, items_description)")
       .single();
 
     if (error) throw error;
+
+    // Manually join order data (store_orders has no FK to orders)
+    if (data?.order_id) {
+      const { data: orderData } = await supabase
+        .from("orders")
+        .select("id, order_number, customer_name, customer_phone, user_id, store_name, delivery_fee, items_description")
+        .eq("id", data.order_id)
+        .single();
+      (data as Record<string, unknown>).orders = orderData || null;
+    }
 
     // Notify customer when order is confirmed
     if (status === "confirmed" && data?.orders?.customer_phone) {

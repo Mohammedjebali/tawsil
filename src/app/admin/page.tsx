@@ -182,7 +182,7 @@ export default function AdminPage() {
       setStores(data.stores || []);
       const pendingData = await pendingRes.json();
       setPendingStores(pendingData.stores || []);
-    } finally { setStoreLoading(false); }
+    } catch {} finally { setStoreLoading(false); }
   }, []);
 
   const fetchOrders = useCallback(async () => {
@@ -191,7 +191,7 @@ export default function AdminPage() {
       const res = await fetch("/api/orders");
       const data = await res.json();
       setOrders(data.orders || []);
-    } finally { setOrdersLoading(false); }
+    } catch {} finally { setOrdersLoading(false); }
   }, []);
 
   const fetchRiders = useCallback(async () => {
@@ -200,7 +200,7 @@ export default function AdminPage() {
       const res = await fetch("/api/admin/riders");
       const data = await res.json();
       setRiders(data.riders || []);
-    } finally { setRidersLoading(false); }
+    } catch {} finally { setRidersLoading(false); }
   }, []);
 
   const fetchCustomers = useCallback(async () => {
@@ -209,7 +209,7 @@ export default function AdminPage() {
       const res = await fetch("/api/customers");
       const data = await res.json();
       setCustomers(data.customers || []);
-    } finally { setCustomersLoading(false); }
+    } catch {} finally { setCustomersLoading(false); }
   }, []);
 
   const fetchDashboard = useCallback(async () => {
@@ -219,7 +219,7 @@ export default function AdminPage() {
       const data = await res.json();
       setDash(data);
       setLastUpdated(new Date());
-    } finally { setDashLoading(false); }
+    } catch {} finally { setDashLoading(false); }
   }, []);
 
   const fetchCustomerStats = useCallback(async () => {
