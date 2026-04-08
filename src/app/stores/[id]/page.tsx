@@ -60,11 +60,25 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
   const [ordering, setOrdering] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [customerAddress, setCustomerAddress] = useState("");
+  const [customerLat, setCustomerLat] = useState<number | null>(null);
+  const [customerLng, setCustomerLng] = useState<number | null>(null);
+  const [gpsStatus, setGpsStatus] = useState<"idle" | "loading" | "granted" | "error">("idle");
+
+  useEffect(() => {
+    const savedAddr = localStorage.getItem("tawsil_saved_address");
+    const savedLat = localStorage.getItem("tawsil_lat");
+    const savedLng = localStorage.getItem("tawsil_lng");
+    if (savedAddr) setCustomerAddress(savedAddr);
+    if (savedLat) setCustomerLat(parseFloat(savedLat));
+    if (savedLng) setCustomerLng(parseFloat(savedLng));
+  }, []);
 
   useEffect(() => {
     (async () => {
       try {
         const res = await fetch(`/api/stores/${id}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         setStore(data.store);
         setCategories(data.categories || []);
@@ -105,14 +119,21 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
       return;
     }
 
+    if (!customerAddress.trim()) {
+      setError(t("addressRequired") || "Delivery address is required");
+      return;
+    }
+
     setOrdering(true);
     setError("");
 
     try {
       const user = JSON.parse(savedUser);
-      const savedAddr = localStorage.getItem("tawsil_saved_address") || "";
-      const savedLat = localStorage.getItem("tawsil_lat");
-      const savedLng = localStorage.getItem("tawsil_lng");
+
+      // Save address + GPS to localStorage
+      localStorage.setItem("tawsil_saved_address", customerAddress);
+      if (customerLat !== null) localStorage.setItem("tawsil_lat", String(customerLat));
+      if (customerLng !== null) localStorage.setItem("tawsil_lng", String(customerLng));
 
       const itemsDesc = cart.map((c) => `${c.qty}x ${c.item.name}`).join(", ");
       const customerName = user.name || user.firstName || user.email || "Customer";
@@ -122,28 +143,32 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
         setOrdering(false);
         return;
       }
-      const customerAddress = savedAddr || store.address || "Address not provided";
 
       // 1. Create order in main orders table
-      const orderRes = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customer_name: customerName,
-          customer_phone: customerPhone,
-          customer_address: customerAddress,
-          customer_lat: savedLat ? parseFloat(savedLat) : null,
-          customer_lng: savedLng ? parseFloat(savedLng) : null,
-          store_id: store.id,
-          store_name: store.name,
-          store_address: store.address || "",
-          store_lat: store.lat || null,
-          store_lng: store.lng || null,
-          items_description: itemsDesc,
-          estimated_amount: cartTotal / 1000,
-          user_id: user.user_id || null,
-        }),
-      });
+      let orderRes: Response;
+      try {
+        orderRes = await fetch("/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            customer_name: customerName,
+            customer_phone: customerPhone,
+            customer_address: customerAddress,
+            customer_lat: customerLat,
+            customer_lng: customerLng,
+            store_id: store.id,
+            store_name: store.name,
+            store_address: store.address || "",
+            store_lat: store.lat || null,
+            store_lng: store.lng || null,
+            items_description: itemsDesc,
+            estimated_amount: cartTotal / 1000,
+            user_id: user.user_id || null,
+          }),
+        });
+      } catch {
+        throw new Error("Network error — check your connection and try again");
+      }
       const orderData = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderData.error || "Order failed");
 
@@ -450,12 +475,62 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
                   {store ? ((cartTotal + store.delivery_fee) / 1000).toFixed(3) : "-"} {t("dt")}
                 </span>
               </div>
+              {/* GPS button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setGpsStatus("loading");
+                  navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                      setCustomerLat(pos.coords.latitude);
+                      setCustomerLng(pos.coords.longitude);
+                      setGpsStatus("granted");
+                    },
+                    () => setGpsStatus("error"),
+                    { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }
+                  );
+                }}
+                disabled={gpsStatus === "loading"}
+                className={`w-full py-3 rounded-xl text-sm font-semibold border-2 transition-all flex items-center justify-center gap-2 ${
+                  gpsStatus === "granted"
+                    ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+                    : "border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
+                }`}
+              >
+                <MapPin className="w-4 h-4" />
+                {gpsStatus === "loading"
+                  ? t("locating")
+                  : gpsStatus === "granted"
+                  ? t("locationGranted")
+                  : t("useMyLocation")}
+              </button>
+              {gpsStatus === "error" && (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                  <p className="text-amber-700 text-xs font-medium">{t("locationError")}</p>
+                  <p className="text-amber-600 text-xs mt-1">{t("locationErrorFallback")}</p>
+                </div>
+              )}
+
+              {/* Delivery address */}
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-1 block">
+                  {t("address")} <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={customerAddress}
+                  onChange={(e) => setCustomerAddress(e.target.value)}
+                  placeholder={t("addressPlaceholder")}
+                  rows={2}
+                  className="input resize-none"
+                />
+              </div>
+
               {error && <p className="text-sm text-red-500">{error}</p>}
               <button
                 onClick={placeOrder}
-                disabled={ordering}
+                disabled={ordering || !customerAddress.trim()}
                 className="btn-primary w-full"
-                style={{ opacity: ordering ? 0.6 : 1 }}
+                style={{ opacity: ordering || !customerAddress.trim() ? 0.6 : 1 }}
               >
                 {ordering ? t("submitting") : t("placeOrder")}
               </button>
