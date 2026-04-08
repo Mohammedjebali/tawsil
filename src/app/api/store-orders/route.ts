@@ -27,6 +27,7 @@ export async function GET(req: NextRequest) {
 
     if (store_id) query = query.eq("store_id", store_id);
     if (status) query = query.eq("status", status);
+    query = query.limit(100);
 
     const { data, error } = await query;
     if (error) throw error;
@@ -34,7 +35,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ store_orders: data });
   } catch (err) {
     captureError(err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -74,7 +75,7 @@ export async function POST(req: NextRequest) {
         const { data: subs } = await supabase
           .from("push_subscriptions")
           .select("subscription")
-          .eq("customer_phone", storeData.owner_id);
+          .eq("store_owner_id", storeData.owner_id);
 
         if (subs?.length) {
           const payload = JSON.stringify({
@@ -93,7 +94,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ store_order: data }, { status: 201 });
   } catch (err) {
     captureError(err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -179,6 +180,6 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ store_order: data });
   } catch (err) {
     captureError(err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

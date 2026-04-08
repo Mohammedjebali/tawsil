@@ -142,28 +142,6 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
       const orderData = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderData.error || "Order failed");
 
-      // 2. Create store_order linking to the order
-      const storeOrderRes = await fetch("/api/store-orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          order_id: orderData.order.id,
-          store_id: store.id,
-          items: cart.map((c) => ({
-            item_id: c.item.id,
-            name: c.item.name,
-            price: c.item.price,
-            quantity: c.qty,
-          })),
-          subtotal: cartTotal,
-        }),
-      });
-
-      if (!storeOrderRes.ok) {
-        const soData = await storeOrderRes.json();
-        throw new Error(soData.error || "Store order failed");
-      }
-
       setOrderSuccess(orderData.order.order_number);
       setCart([]);
       setShowCart(false);

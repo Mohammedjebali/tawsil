@@ -21,7 +21,7 @@ export async function GET(
     return NextResponse.json({ categories: data });
   } catch (err) {
     captureError(err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -54,6 +54,6 @@ export async function POST(
     return NextResponse.json({ category: data }, { status: 201 });
   } catch (err) {
     captureError(err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

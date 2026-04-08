@@ -137,7 +137,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ order: data });
   } catch (err) {
     captureError(err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -151,12 +151,15 @@ export async function GET(req: NextRequest) {
     await supabase
       .from("orders")
       .update({ status: "cancelled" })
-      .eq("status", "pending")
+      .in("status", ["pending", "store_pending"])
       .lt("created_at", expiryCutoff);
     const order_number = searchParams.get("order_number");
     const status = searchParams.get("status");
     const phone = searchParams.get("phone");
-    const user_id = searchParams.get("user_id");
+    let user_id = searchParams.get("user_id");
+
+    // Validate user_id is a UUID to prevent injection via .or()
+    if (user_id && !/^[0-9a-f-]{36}$/i.test(user_id)) user_id = "";
 
     const rider_id = searchParams.get("rider_id");
     const rider_phone = searchParams.get("rider_phone");
@@ -209,6 +212,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ orders: data });
   } catch (err) {
     captureError(err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

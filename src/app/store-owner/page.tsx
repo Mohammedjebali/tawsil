@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Store, ClipboardList, Settings, Plus, Trash2, Edit3, Check, Clock, ChefHat, Package, ArrowLeft, ArrowRight, AlertCircle } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
+import { captureError } from "@/lib/sentry";
 import Link from "next/link";
 
 
@@ -85,7 +86,7 @@ export default function StoreOwnerDashboard() {
   const [addingItem, setAddingItem] = useState(false);
 
   // Settings
-  const [settings, setSettings] = useState({ name: "", description: "", category: "", phone: "", address: "", opening_time: "", closing_time: "", delivery_fee: "" });
+  const [settings, setSettings] = useState({ name: "", description: "", category: "", phone: "", address: "", opening_time: "", closing_time: "" });
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState("");
 
@@ -98,7 +99,7 @@ export default function StoreOwnerDashboard() {
     const saved = localStorage.getItem("tawsil_store_owner");
     if (!saved) return;
     let owner: { id: string } | null = null;
-    try { owner = JSON.parse(saved); } catch { return; }
+    try { owner = JSON.parse(saved); } catch (e) { captureError(e); return; }
     if (!owner?.id) return;
 
     try {
@@ -113,7 +114,7 @@ export default function StoreOwnerDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subscription: sub.toJSON(), store_owner_id: owner.id }),
       });
-    } catch {}
+    } catch (e) { captureError(e); }
   }
 
   async function loadStore() {
@@ -121,7 +122,7 @@ export default function StoreOwnerDashboard() {
     if (!saved) { setUnauthenticated(true); setLoading(false); return; }
 
     let owner: { id: string } | null = null;
-    try { owner = JSON.parse(saved); } catch { setUnauthenticated(true); setLoading(false); return; }
+    try { owner = JSON.parse(saved); } catch (e) { captureError(e); setUnauthenticated(true); setLoading(false); return; }
 
     try {
       const res = await fetch(`/api/stores?owner_id=${owner!.id}`);
@@ -138,12 +139,11 @@ export default function StoreOwnerDashboard() {
           address: s.address || "",
           opening_time: s.opening_time || "",
           closing_time: s.closing_time || "",
-          delivery_fee: String(s.delivery_fee || 1500),
         });
         loadOrders(s.id);
         loadMenu(s.id);
       }
-    } catch {}
+    } catch (e) { captureError(e); }
     setLoading(false);
   }
 
@@ -153,7 +153,7 @@ export default function StoreOwnerDashboard() {
       const res = await fetch(`/api/store-orders?store_id=${storeId}`);
       const data = await res.json();
       setOrders(data.store_orders || []);
-    } catch {}
+    } catch (e) { captureError(e); }
     setOrdersLoading(false);
   }
 
@@ -167,7 +167,7 @@ export default function StoreOwnerDashboard() {
       const itemsData = await itemsRes.json();
       setCategories(catsData.categories || []);
       setMenuItems(itemsData.items || []);
-    } catch {}
+    } catch (e) { captureError(e); }
   }
 
   async function updateOrderStatus(orderId: string, status: string) {
@@ -178,7 +178,7 @@ export default function StoreOwnerDashboard() {
         body: JSON.stringify({ id: orderId, status }),
       });
       if (store) loadOrders(store.id);
-    } catch {}
+    } catch (e) { captureError(e); }
   }
 
   async function addCategory() {
@@ -192,7 +192,7 @@ export default function StoreOwnerDashboard() {
       });
       setNewCatName("");
       loadMenu(store.id);
-    } catch {}
+    } catch (e) { captureError(e); }
     setAddingCat(false);
   }
 
@@ -212,7 +212,7 @@ export default function StoreOwnerDashboard() {
       });
       setNewItem({ name: "", description: "", price: "", category_id: "" });
       loadMenu(store.id);
-    } catch {}
+    } catch (e) { captureError(e); }
     setAddingItem(false);
   }
 
@@ -221,7 +221,7 @@ export default function StoreOwnerDashboard() {
     try {
       await fetch(`/api/stores/${store.id}/items/${itemId}`, { method: "DELETE" });
       loadMenu(store.id);
-    } catch {}
+    } catch (e) { captureError(e); }
   }
 
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -244,7 +244,7 @@ export default function StoreOwnerDashboard() {
         });
         loadStore();
       }
-    } catch {}
+    } catch (e) { captureError(e); }
     setUploadingLogo(false);
   }
 
@@ -265,7 +265,7 @@ export default function StoreOwnerDashboard() {
         });
         loadMenu(store.id);
       }
-    } catch {}
+    } catch (e) { captureError(e); }
   }
 
   async function saveSettings() {
@@ -284,12 +284,11 @@ export default function StoreOwnerDashboard() {
           address: settings.address || null,
           opening_time: settings.opening_time || null,
           closing_time: settings.closing_time || null,
-          delivery_fee: 1500,
         }),
       });
       setSettingsMsg(t("profileSaved"));
       loadStore();
-    } catch {}
+    } catch (e) { captureError(e); }
     setSavingSettings(false);
   }
 

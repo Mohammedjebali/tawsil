@@ -14,14 +14,15 @@ export async function GET(
       .from("store_items")
       .select("*")
       .eq("store_id", id)
-      .order("sort_order");
+      .order("sort_order")
+      .limit(200);
 
     if (error) throw error;
 
     return NextResponse.json({ items: data });
   } catch (err) {
     captureError(err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -58,6 +59,6 @@ export async function POST(
     return NextResponse.json({ item: data }, { status: 201 });
   } catch (err) {
     captureError(err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

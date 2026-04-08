@@ -15,6 +15,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (typeof first_name === "string" && first_name.length > 50) {
+      return NextResponse.json({ error: "First name too long" }, { status: 400 });
+    }
+    if (typeof last_name === "string" && last_name.length > 50) {
+      return NextResponse.json({ error: "Last name too long" }, { status: 400 });
+    }
+    if (phone.length > 20) {
+      return NextResponse.json({ error: "Phone number too long" }, { status: 400 });
+    }
+    if (password.length > 128) {
+      return NextResponse.json({ error: "Password too long" }, { status: 400 });
+    }
+
     const supabase = getSupabase();
 
     if (action === "register") {
@@ -90,6 +103,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (err) {
     captureError(err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

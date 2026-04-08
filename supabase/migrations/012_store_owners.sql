@@ -29,4 +29,4 @@ ALTER TABLE store_owners ENABLE ROW LEVEL SECURITY;
 
 -- Service role can do everything
 CREATE POLICY "Service role full access" ON store_owners
-  FOR ALL USING (true) WITH CHECK (true);
+  FOR ALL USING (auth.role() = 'service_role') WITH CHECK (auth.role() = 'service_role');

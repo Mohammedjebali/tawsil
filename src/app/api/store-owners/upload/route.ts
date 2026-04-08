@@ -32,6 +32,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file" }, { status: 400 });
     }
 
+    if (storeId && !/^[0-9a-f-]{36}$/i.test(storeId)) {
+      return NextResponse.json({ error: "Invalid store ID" }, { status: 400 });
+    }
+    if (!file.type.startsWith("image/")) {
+      return NextResponse.json({ error: "Only image files are allowed" }, { status: 400 });
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      return NextResponse.json({ error: "File too large (max 5MB)" }, { status: 400 });
+    }
+
     const ext = file.name.split(".").pop() || "jpg";
     const key = `${storeId}/${Date.now()}-${itemName.replace(/\s+/g, "-")}.${ext}`;
 
@@ -53,6 +63,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ url: publicUrl });
   } catch (err) {
     captureError(err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

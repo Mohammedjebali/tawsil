@@ -20,7 +20,10 @@ export async function GET(req: NextRequest) {
     }
 
     if (category) query = query.eq("category", category);
-    if (search) query = query.ilike("name", `%${search}%`);
+    if (search) {
+      const safe = search.replace(/[%_.]/g, "\\$&");
+      query = query.ilike("name", `%${safe}%`);
+    }
 
     query = query.order("created_at", { ascending: false });
 
@@ -49,7 +52,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ stores: data });
   } catch (err) {
     captureError(err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -90,6 +93,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ store: data }, { status: 201 });
   } catch (err) {
     captureError(err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
