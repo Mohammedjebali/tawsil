@@ -92,14 +92,24 @@ export async function POST(req: NextRequest) {
     // If this is a marketplace store order, create store_order and notify store owner
     if (store_id) {
       try {
-        // Create store_order
-        await supabase.from("store_orders").insert({
+        // Create store_order — must check .error since supabase-js does not throw on query failures
+        const { error: storeOrderError } = await supabase.from("store_orders").insert({
           order_id: data.id,
           store_id,
           items: [],
           subtotal: estimated_amount || 0,
           status: "pending",
         });
+
+        if (storeOrderError) {
+          console.error("[store_order] Insert failed:", {
+            order_id: data.id,
+            store_id,
+            error: storeOrderError.message,
+            code: storeOrderError.code,
+          });
+          captureError(new Error(`store_order insert failed for order ${data.id}: ${storeOrderError.message} (code: ${storeOrderError.code})`));
+        }
 
         // Notify store owner via push
         const { data: storeData } = await supabase.from("stores").select("owner_id").eq("id", store_id).single();
