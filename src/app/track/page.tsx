@@ -13,6 +13,7 @@ interface Order {
   order_number: string;
   status: string;
   store_name: string;
+  store_id: string | null;
   items_description: string;
   delivery_fee: number;
   distance_km: number;
@@ -30,6 +31,7 @@ interface Order {
 }
 
 const STEPS = ["store_pending", "pending", "accepted", "picked_up", "waiting_customer", "delivered"];
+const STORE_STEPS = ["pending", "confirmed", "preparing", "ready", "accepted", "picked_up", "waiting_customer", "delivered"];
 const ACTIVE_STATUSES = ["store_pending", "pending", "accepted", "picked_up", "waiting_customer"];
 
 function formatFee(m: number) { return `${(m/1000).toFixed(3)} DT`; }
@@ -47,6 +49,7 @@ function TrackContent() {
   const [autoLoading, setAutoLoading] = useState(false);
   const [autoLoaded, setAutoLoaded] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [storeOrderStatus, setStoreOrderStatus] = useState<string | null>(null);
 
   const STATUS_LABELS: Record<string, string> = {
     pending: t("status_pending"),
@@ -56,6 +59,13 @@ function TrackContent() {
     waiting_customer: t("status_waiting_customer"),
     delivered: t("status_delivered"),
     cancelled: t("status_cancelled"),
+  };
+
+  const STORE_ORDER_LABELS: Record<string, string> = {
+    pending: t("status_order_received"),
+    confirmed: t("status_confirmed"),
+    preparing: t("status_preparing"),
+    ready: t("status_waiting_rider"),
   };
 
   const STATUS_COLORS: Record<string, string> = {
@@ -145,6 +155,30 @@ function TrackContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Fetch store_order status for marketplace orders
+  useEffect(() => {
+    if (!order || !order.store_id || order.status !== "store_pending") {
+      setStoreOrderStatus(null);
+      return;
+    }
+    let cancelled = false;
+    async function fetchStoreOrderStatus() {
+      try {
+        const res = await fetch(`/api/store-orders?store_id=${order!.store_id}`);
+        const data = await res.json();
+        const storeOrder = (data.store_orders || []).find(
+          (so: { order_id: string }) => so.order_id === order!.id
+        );
+        if (!cancelled && storeOrder) {
+          setStoreOrderStatus(storeOrder.status);
+        }
+      } catch {}
+    }
+    fetchStoreOrderStatus();
+    const timer = setInterval(fetchStoreOrderStatus, 10000);
+    return () => { cancelled = true; clearInterval(timer); };
+  }, [order?.id, order?.store_id, order?.status]);
+
   // Auto-refresh active order
   useEffect(() => {
     if (!order || ["delivered","cancelled"].includes(order.status)) return;
@@ -176,7 +210,14 @@ function TrackContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [order?.id]);
 
-  const currentStep = order ? STEPS.indexOf(order.status) : -1;
+  // For store orders in store_pending, use the store_order status for display
+  const isStoreOrder = order?.store_id && order?.status === "store_pending" && storeOrderStatus;
+  const displaySteps = isStoreOrder ? STORE_STEPS : STEPS;
+  const displayStatus = isStoreOrder ? storeOrderStatus : order?.status || "";
+  const displayLabel = isStoreOrder
+    ? (STORE_ORDER_LABELS[storeOrderStatus] || STATUS_LABELS[storeOrderStatus] || storeOrderStatus)
+    : STATUS_LABELS[order?.status || ""];
+  const currentStep = order ? displaySteps.indexOf(displayStatus) : -1;
 
   // Loading state while auto-fetching
   if (!autoLoaded || autoLoading) {
@@ -411,11 +452,11 @@ function TrackContent() {
                 )}
               </div>
               <div className="flex-1">
-                <div className="font-bold text-slate-900 text-lg">{STATUS_LABELS[order.status]}</div>
+                <div className="font-bold text-slate-900 text-lg">{displayLabel}</div>
                 <div className="text-xs text-slate-500" dir="ltr">{order.order_number}</div>
               </div>
               <span className={`badge badge-${order.status}`}>
-                {STATUS_LABELS[order.status]}
+                {displayLabel}
               </span>
             </div>
           </div>
@@ -440,10 +481,11 @@ function TrackContent() {
           {/* Vertical timeline */}
           <div className="card">
             <div className="space-y-0">
-              {STEPS.map((s, i) => {
+              {displaySteps.map((s, i) => {
                 const isTerminal = ["delivered", "cancelled"].includes(order.status);
                 const isCompleted = i < currentStep || (isTerminal && i === currentStep);
                 const isCurrent = !isTerminal && i === currentStep;
+                const stepLabel = (isStoreOrder && STORE_ORDER_LABELS[s]) ? STORE_ORDER_LABELS[s] : STATUS_LABELS[s] || s;
                 return (
                   <div key={s} className="flex items-start gap-3">
                     <div className="flex flex-col items-center">
@@ -456,7 +498,7 @@ function TrackContent() {
                       }`}>
                         {isCompleted ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
                       </div>
-                      {i < STEPS.length - 1 && (
+                      {i < displaySteps.length - 1 && (
                         <div className={`w-0.5 h-8 ${
                           isCompleted ? "bg-emerald-300" : "bg-slate-200"
                         }`} />
@@ -465,7 +507,7 @@ function TrackContent() {
                     <div className={`pt-1.5 text-sm font-medium ${
                       isCompleted ? "text-emerald-600" : isCurrent ? "text-slate-900" : "text-slate-400"
                     }`}>
-                      {STATUS_LABELS[s]}
+                      {stepLabel}
                     </div>
                   </div>
                 );
