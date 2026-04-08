@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
           order_id: data.id,
           store_id,
           items: [],
-          subtotal: estimated_amount || 0,
+          subtotal: Math.round(estimated_amount) || 0,
           status: "pending",
         });
 
