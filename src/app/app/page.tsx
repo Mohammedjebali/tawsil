@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { Package, ShoppingBag, Bike, ChevronRight, ChevronLeft, Globe, Store, Coffee, Pill, ShoppingCart, UtensilsCrossed, Search, MapPin, CheckCircle2, ArrowLeft, ArrowRight, X, Bell } from "lucide-react";
 import SplashScreen from "@/components/SplashScreen";
 import { formatFee, calculateDeliveryFee, getDistanceKm } from "@/lib/fees";
 import { useLang } from "@/components/LangProvider";
+import { useRealtimeSubscription } from "@/lib/useRealtimeSubscription";
+import { useRealtimeContext } from "@/components/RealtimeProvider";
 
 interface StoreItem {
   id: string;
@@ -253,9 +255,6 @@ export default function OrderPage() {
           setSplashDone(true);
         });
 
-      // Poll stores every 30s
-      const storesInterval = setInterval(fetchStores, 30000);
-
       // Register service worker and check push notification status
       if (supportsPush()) {
         navigator.serviceWorker.register("/sw.js").then((reg) => {
@@ -273,8 +272,6 @@ export default function OrderPage() {
       } else {
         setNotifStatus("unsupported");
       }
-
-      return () => clearInterval(storesInterval);
     }
   }, [user]);
 
@@ -320,7 +317,7 @@ export default function OrderPage() {
     }
   }
 
-  // Fetch announcement + poll every 60s
+  // Fetch announcement on mount
   useEffect(() => {
     if (!user) return;
     function fetchAnnouncement() {
@@ -339,9 +336,26 @@ export default function OrderPage() {
         .catch(() => {});
     }
     fetchAnnouncement();
-    const interval = setInterval(fetchAnnouncement, 60000);
-    return () => clearInterval(interval);
   }, [user]);
+
+  // Realtime: subscribe to stores for availability changes
+  const appSubs = useMemo(() => {
+    if (!user) return [];
+    return [
+      { table: "stores", event: "*" as const, callback: () => fetchStores() },
+    ];
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useRealtimeSubscription(appSubs, {
+    channelName: "app-stores",
+    enabled: !!user,
+  });
+
+  // Refresh on reconnect
+  const { lastReconnect } = useRealtimeContext();
+  useEffect(() => {
+    if (lastReconnect && user) fetchStores();
+  }, [lastReconnect]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function submitOrder(e?: React.MouseEvent) {
     e?.preventDefault();

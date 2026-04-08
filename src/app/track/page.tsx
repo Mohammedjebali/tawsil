@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { Search, Phone, MapPin, Package, CheckCircle2, ChevronRight } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
+import { useRealtimeSubscription } from "@/lib/useRealtimeSubscription";
+import { useRealtimeContext } from "@/components/RealtimeProvider";
 import MapView from "./MapView";
 
 interface Order {
@@ -155,13 +156,12 @@ function TrackContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Fetch store_order status for marketplace orders
+  // Fetch store_order status for marketplace orders (initial load)
   useEffect(() => {
     if (!order || !order.store_id || order.status !== "store_pending") {
       setStoreOrderStatus(null);
       return;
     }
-    let cancelled = false;
     async function fetchStoreOrderStatus() {
       try {
         const res = await fetch(`/api/store-orders?store_id=${order!.store_id}`);
@@ -169,46 +169,57 @@ function TrackContent() {
         const storeOrder = (data.store_orders || []).find(
           (so: { order_id: string }) => so.order_id === order!.id
         );
-        if (!cancelled && storeOrder) {
-          setStoreOrderStatus(storeOrder.status);
-        }
+        if (storeOrder) setStoreOrderStatus(storeOrder.status);
       } catch {}
     }
     fetchStoreOrderStatus();
-    const timer = setInterval(fetchStoreOrderStatus, 10000);
-    return () => { cancelled = true; clearInterval(timer); };
   }, [order?.id, order?.store_id, order?.status]);
 
-  // Auto-refresh active order
-  useEffect(() => {
-    if (!order || ["delivered","cancelled"].includes(order.status)) return;
-    const interval = 3000;
-    const timer = setInterval(() => fetchOrder(order.order_number), interval);
-    return () => clearInterval(timer);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [order?.status, order?.rider_lat]);
+  // Realtime: subscribe to order updates and store_order updates
+  const isActive = order && !["delivered", "cancelled"].includes(order.status);
 
-  // Realtime subscription
-  useEffect(() => {
-    if (!order) return;
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-    const channel = supabase
-      .channel("order-tracking")
-      .on("postgres_changes", {
-        event: "UPDATE",
-        schema: "public",
+  const trackSubs = useMemo(() => {
+    if (!order || !isActive) return [];
+    const subs = [
+      {
         table: "orders",
+        event: "UPDATE" as const,
         filter: `id=eq.${order.id}`,
-      }, (payload) => {
-        setOrder(prev => prev ? { ...prev, ...payload.new as Partial<Order> } : prev);
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [order?.id]);
+        callback: () => { fetchOrder(order.order_number); },
+      },
+    ];
+    // Also subscribe to store_orders for marketplace orders
+    if (order.store_id && order.status === "store_pending") {
+      subs.push({
+        table: "store_orders",
+        event: "UPDATE" as const,
+        filter: `order_id=eq.${order.id}`,
+        callback: () => {
+          fetch(`/api/store-orders?store_id=${order.store_id}`)
+            .then((r) => r.json())
+            .then((data) => {
+              const so = (data.store_orders || []).find(
+                (s: { order_id: string }) => s.order_id === order.id,
+              );
+              if (so) setStoreOrderStatus(so.status);
+            })
+            .catch(() => {});
+        },
+      });
+    }
+    return subs;
+  }, [order?.id, order?.status, order?.store_id, isActive]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useRealtimeSubscription(trackSubs, {
+    channelName: order ? `track-${order.id}` : undefined,
+    enabled: !!order && !!isActive,
+  });
+
+  // Refresh on reconnect
+  const { lastReconnect } = useRealtimeContext();
+  useEffect(() => {
+    if (lastReconnect && order) fetchOrder(order.order_number);
+  }, [lastReconnect]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // For store orders in store_pending, use the store_order status for display
   const isStoreOrder = order?.store_id && order?.status === "store_pending" && storeOrderStatus;

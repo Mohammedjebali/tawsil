@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Store, Package, Users, Plus, Trash2, RefreshCw, XCircle, CheckCircle2, ShoppingCart, Coffee, Pill, UtensilsCrossed, Bike, UserCheck, Search, Star, LayoutDashboard, TrendingUp, Clock, Download, Pencil, Megaphone, Wallet } from "lucide-react";
+import { useRealtimeSubscription } from "@/lib/useRealtimeSubscription";
+import { useRealtimeContext } from "@/components/RealtimeProvider";
 
 interface DashboardData {
   today: { total: number; delivered: number; cancelled: number; active: number; revenue: number; flagged: number; overallRevenue: number };
@@ -268,12 +270,26 @@ export default function AdminPage() {
     }
   }, [authed, fetchStores, fetchOrders, fetchRiders, fetchCustomers, fetchDashboard, fetchCustomerStats, fetchRiderStats, fetchStoreStats, fetchAllAnnouncements]);
 
-  // Auto-refresh dashboard every 30s
+  // Realtime: subscribe to orders, stores, riders for admin dashboard
+  const adminSubs = useMemo(() => {
+    if (!authed) return [];
+    return [
+      { table: "orders", event: "*" as const, callback: () => { fetchDashboard(); fetchOrders(); } },
+      { table: "stores", event: "*" as const, callback: () => { fetchStores(); fetchDashboard(); } },
+      { table: "riders", event: "*" as const, callback: () => { fetchRiders(); fetchDashboard(); } },
+    ];
+  }, [authed]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useRealtimeSubscription(adminSubs, {
+    channelName: "admin-dashboard",
+    enabled: authed,
+  });
+
+  // Refresh on reconnect
+  const { lastReconnect } = useRealtimeContext();
   useEffect(() => {
-    if (!authed || tab !== "dashboard") return;
-    const interval = setInterval(fetchDashboard, 30000);
-    return () => clearInterval(interval);
-  }, [authed, tab, fetchDashboard]);
+    if (lastReconnect && authed) fetchDashboard();
+  }, [lastReconnect]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function login() {
     if (password === "zerba-321") {

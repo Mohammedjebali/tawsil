@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { User, Bell, BellOff, Package, MapPin, Phone, Navigation, CheckCircle2, Wallet } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
+import { useRealtimeSubscription } from "@/lib/useRealtimeSubscription";
+import { useRealtimeContext } from "@/components/RealtimeProvider";
 import dynamic from "next/dynamic";
 const RiderMapView = dynamic(() => import("@/components/RiderMapView"), { ssr: false });
 
@@ -208,10 +210,31 @@ export default function RiderPage() {
   useEffect(() => {
     if (!ready) return;
     fetchOrders();
-    const interval = setInterval(fetchOrders, 4000); // fast poll so taken orders vanish quickly
-    return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
+
+  // Realtime: subscribe to orders table for new/updated orders
+  const riderSubs = useMemo(() => {
+    if (!ready) return [];
+    return [
+      {
+        table: "orders",
+        event: "*" as const,
+        callback: () => fetchOrders(),
+      },
+    ];
+  }, [ready]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useRealtimeSubscription(riderSubs, {
+    channelName: "rider-orders",
+    enabled: ready,
+  });
+
+  // Refresh on reconnect
+  const { lastReconnect } = useRealtimeContext();
+  useEffect(() => {
+    if (lastReconnect && ready) fetchOrders();
+  }, [lastReconnect]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch rider delivery count for fee notice
   useEffect(() => {

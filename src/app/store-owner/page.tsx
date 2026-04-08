@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Store, ClipboardList, Settings, Plus, Trash2, Edit3, Check, Clock, ChefHat, Package, ArrowLeft, ArrowRight, AlertCircle } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
 import { captureError } from "@/lib/sentry";
+import { useRealtimeSubscription } from "@/lib/useRealtimeSubscription";
+import { useRealtimeContext } from "@/components/RealtimeProvider";
 import Link from "next/link";
 
 
@@ -157,12 +159,34 @@ export default function StoreOwnerDashboard() {
     if (!silent) setOrdersLoading(false);
   }
 
-  // Poll orders every 5s so store owner sees new orders immediately
+  // Realtime: subscribe to store_orders and orders for this store
+  const storeOrderSubs = useMemo(() => {
+    if (!store) return [];
+    return [
+      {
+        table: "store_orders",
+        event: "*" as const,
+        filter: `store_id=eq.${store.id}`,
+        callback: () => loadOrders(store.id, true),
+      },
+      {
+        table: "orders",
+        event: "UPDATE" as const,
+        callback: () => loadOrders(store.id, true),
+      },
+    ];
+  }, [store?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useRealtimeSubscription(storeOrderSubs, {
+    channelName: store ? `store-owner-${store.id}` : undefined,
+    enabled: !!store,
+  });
+
+  // Refresh on reconnect after disconnect
+  const { lastReconnect } = useRealtimeContext();
   useEffect(() => {
-    if (!store) return;
-    const interval = setInterval(() => loadOrders(store.id, true), 5000);
-    return () => clearInterval(interval);
-  }, [store?.id]);
+    if (lastReconnect && store) loadOrders(store.id, true);
+  }, [lastReconnect]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function loadMenu(storeId: string) {
     try {

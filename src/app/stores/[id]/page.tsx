@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useMemo } from "react";
 import { ArrowLeft, ArrowRight, Plus, Minus, ShoppingCart, X, Star, Clock, MapPin, Phone, Trash2, Store as StoreIcon } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
+import { useRealtimeSubscription } from "@/lib/useRealtimeSubscription";
+import { useRealtimeContext } from "@/components/RealtimeProvider";
 import Link from "next/link";
 import { formatFee } from "@/lib/fees";
 
@@ -90,9 +92,33 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
 
   useEffect(() => {
     fetchStore();
-    const interval = setInterval(() => fetchStore(true), 30000);
-    return () => clearInterval(interval);
-  }, [id]);
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Realtime: subscribe to store_items for menu changes
+  const storeDetailSubs = useMemo(() => [
+    {
+      table: "store_items",
+      event: "*" as const,
+      filter: `store_id=eq.${id}`,
+      callback: () => fetchStore(true),
+    },
+    {
+      table: "stores",
+      event: "UPDATE" as const,
+      filter: `id=eq.${id}`,
+      callback: () => fetchStore(true),
+    },
+  ], [id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useRealtimeSubscription(storeDetailSubs, {
+    channelName: `store-detail-${id}`,
+  });
+
+  // Refresh on reconnect
+  const { lastReconnect } = useRealtimeContext();
+  useEffect(() => {
+    if (lastReconnect) fetchStore(true);
+  }, [lastReconnect]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function addToCart(item: MenuItem) {
     setCart((prev) => {

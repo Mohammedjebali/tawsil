@@ -6,6 +6,7 @@ import UpdateNotifier from "@/components/UpdateNotifier";
 import AppShell from "@/components/AppShell";
 import InstallPrompt from "@/components/InstallPrompt";
 import { AppWrapper } from "@/components/AppWrapper";
+import RealtimeProvider from "@/components/RealtimeProvider";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -58,9 +59,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body style={{ background: "#ffffff" }}>
         <LangProvider>
           <AppWrapper>
-            <UpdateNotifier />
-            <AppShell>{children}</AppShell>
-            <InstallPrompt />
+            <RealtimeProvider>
+              <UpdateNotifier />
+              <AppShell>{children}</AppShell>
+              <InstallPrompt />
+            </RealtimeProvider>
           </AppWrapper>
         </LangProvider>
       </body>

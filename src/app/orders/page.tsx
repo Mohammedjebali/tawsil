@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Package, MapPin, Clock, CheckCircle2, XCircle, Loader2, AlertTriangle } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
 import { supabaseClient } from "@/lib/supabase-client";
+import { useRealtimeSubscription } from "@/lib/useRealtimeSubscription";
+import { useRealtimeContext } from "@/components/RealtimeProvider";
 import Link from "next/link";
 
 interface Order {
@@ -46,36 +48,56 @@ export default function OrdersPage() {
   const [cancelling, setCancelling] = useState<string | null>(null);
   const [confirmCancel, setConfirmCancel] = useState<string | null>(null);
 
+  const userRef = useRef<{ user_id?: string; phone?: string } | null>(null);
+
   useEffect(() => {
     const saved = localStorage.getItem("tawsil_user");
     if (!saved) { window.location.href = "/login"; return; }
     const user = JSON.parse(saved);
     if (user.role !== "customer") { window.location.href = "/app"; return; }
 
-    // Use user_id from Supabase auth for secure order lookup (prevents data leaks)
     async function initOrders() {
       let userId = user.user_id;
       if (!userId) {
         const { data: { user: authUser } } = await supabaseClient.auth.getUser();
         userId = authUser?.id;
       }
+      userRef.current = { user_id: userId, phone: user.phone };
       if (userId) {
         fetchOrders(userId, user.phone);
-        const interval = setInterval(() => fetchOrders(userId, user.phone), 8000);
-        return () => clearInterval(interval);
       } else {
-        // Fallback for legacy sessions without user_id
         fetchOrdersByPhone(user.phone);
-        const interval = setInterval(() => fetchOrdersByPhone(user.phone), 8000);
-        return () => clearInterval(interval);
       }
     }
-
-    let cleanup: (() => void) | undefined;
-    initOrders().then(c => { cleanup = c; });
-    return () => { cleanup?.(); };
+    initOrders();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Realtime: subscribe to orders table for updates
+  const ordersSubs = useMemo(() => [
+    {
+      table: "orders",
+      event: "*" as const,
+      callback: () => {
+        const u = userRef.current;
+        if (!u) return;
+        if (u.user_id) fetchOrders(u.user_id, u.phone);
+        else if (u.phone) fetchOrdersByPhone(u.phone);
+      },
+    },
+  ], []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useRealtimeSubscription(ordersSubs, { channelName: "customer-orders" });
+
+  // Refresh on reconnect
+  const { lastReconnect } = useRealtimeContext();
+  useEffect(() => {
+    if (!lastReconnect) return;
+    const u = userRef.current;
+    if (!u) return;
+    if (u.user_id) fetchOrders(u.user_id, u.phone);
+    else if (u.phone) fetchOrdersByPhone(u.phone);
+  }, [lastReconnect]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function fetchOrders(userId: string, phone?: string) {
     try {
