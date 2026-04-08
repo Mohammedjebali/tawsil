@@ -4,8 +4,27 @@ import { getSupabase } from "@/lib/supabase-server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { subscription, rider_name, rider_phone, customer_phone } = await req.json();
+    const { subscription, rider_name, rider_phone, customer_phone, store_owner_id } = await req.json();
     const supabase = getSupabase();
+
+    // Store owner subscription
+    if (store_owner_id) {
+      const { data: existing } = await supabase
+        .from("push_subscriptions")
+        .select("id")
+        .eq("store_owner_id", store_owner_id)
+        .maybeSingle();
+
+      const { error } = existing
+        ? await supabase.from("push_subscriptions").update({ subscription }).eq("id", existing.id)
+        : await supabase.from("push_subscriptions").insert({ subscription, store_owner_id });
+
+      if (error) {
+        captureError(error, { context: "store_owner_push_subscribe", store_owner_id });
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+      return NextResponse.json({ ok: true });
+    }
 
     // Customer subscription: select-then-update/insert to avoid duplicates.
     // We cannot use .upsert() with onConflict because the unique index on

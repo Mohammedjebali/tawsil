@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
       estimated_amount: estimated_amount || null,
       distance_km: Math.round(distance_km * 100) / 100,
       delivery_fee,
-      status: "pending",
+      status: store_id ? "store_pending" : "pending",
     };
     if (user_id) orderRow.user_id = user_id;
 
@@ -89,19 +89,49 @@ export async function POST(req: NextRequest) {
 
     if (error) throw error;
 
-    // Notify riders via push directly (avoid localhost HTTP call on Vercel)
-    try {
-      const { data: subs } = await supabase.from("push_subscriptions").select("subscription");
-      if (subs && subs.length > 0 && process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) {
-        const payload = JSON.stringify({
-          title: "🛵 طلب جديد!",
-          body: `من ${data.store_name} — توصيل ${(data.delivery_fee / 1000).toFixed(3)} DT`,
-          data: { order_number: data.order_number },
+    // If this is a marketplace store order, create store_order and notify store owner
+    if (store_id) {
+      try {
+        // Create store_order
+        await supabase.from("store_orders").insert({
+          order_id: data.id,
+          store_id,
+          items: [],
+          subtotal: estimated_amount || 0,
+          status: "pending",
         });
-        await Promise.allSettled(subs.map((s) => webpush.sendNotification(s.subscription, payload)));
+
+        // Notify store owner via push
+        const { data: storeData } = await supabase.from("stores").select("owner_id").eq("id", store_id).single();
+        if (storeData?.owner_id) {
+          const { data: subs } = await supabase.from("push_subscriptions").select("subscription").eq("store_owner_id", storeData.owner_id);
+          if (subs && subs.length > 0 && process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) {
+            const payload = JSON.stringify({
+              title: "🛒 طلب جديد!",
+              body: `طلب من ${data.customer_name} — ${items_description}`,
+              data: { order_id: data.id, type: "store_order" },
+            });
+            await Promise.allSettled(subs.map((s) => webpush.sendNotification(s.subscription, payload)));
+          }
+        }
+      } catch (_) {
+        captureError(_);
       }
-    } catch (_) {
-      captureError(_);
+    } else {
+      // Regular order: notify riders directly
+      try {
+        const { data: subs } = await supabase.from("push_subscriptions").select("subscription");
+        if (subs && subs.length > 0 && process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) {
+          const payload = JSON.stringify({
+            title: "🛵 طلب جديد!",
+            body: `من ${data.store_name} — توصيل ${(data.delivery_fee / 1000).toFixed(3)} DT`,
+            data: { order_number: data.order_number },
+          });
+          await Promise.allSettled(subs.map((s) => webpush.sendNotification(s.subscription, payload)));
+        }
+      } catch (_) {
+        captureError(_);
+      }
     }
 
     return NextResponse.json({ order: data });

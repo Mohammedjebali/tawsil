@@ -29,8 +29,8 @@ interface Order {
   delivered_at: string | null;
 }
 
-const STEPS = ["pending", "accepted", "picked_up", "waiting_customer", "delivered"];
-const ACTIVE_STATUSES = ["pending", "accepted", "picked_up", "waiting_customer"];
+const STEPS = ["store_pending", "pending", "accepted", "picked_up", "waiting_customer", "delivered"];
+const ACTIVE_STATUSES = ["store_pending", "pending", "accepted", "picked_up", "waiting_customer"];
 
 function formatFee(m: number) { return `${(m/1000).toFixed(3)} DT`; }
 
@@ -50,6 +50,7 @@ function TrackContent() {
 
   const STATUS_LABELS: Record<string, string> = {
     pending: t("status_pending"),
+    store_pending: t("status_store_pending"),
     accepted: t("status_accepted"),
     picked_up: t("status_picked_up"),
     waiting_customer: t("status_waiting_customer"),
@@ -58,6 +59,7 @@ function TrackContent() {
   };
 
   const STATUS_COLORS: Record<string, string> = {
+    store_pending: "bg-purple-100 text-purple-700",
     pending: "bg-amber-100 text-amber-700",
     accepted: "bg-blue-100 text-blue-700",
     picked_up: "bg-indigo-100 text-indigo-700",

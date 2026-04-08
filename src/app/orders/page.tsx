@@ -21,7 +21,8 @@ interface Order {
 }
 
 const STATUS_COLOR: Record<string, string> = {
-  pending: "bg-amber-50 text-amber-700 border-amber-200",
+  pending: "bg-amber-50 text-amber-600 border-amber-200",
+  store_pending: "bg-purple-50 text-purple-700 border-purple-200",
   accepted: "bg-indigo-50 text-indigo-600 border-indigo-200",
   picked_up: "bg-purple-50 text-purple-700 border-purple-200",
   waiting_customer: "bg-amber-50 text-amber-700 border-amber-200",
@@ -164,7 +165,7 @@ export default function OrdersPage() {
                   <span className="text-xs text-slate-400 font-mono" dir="ltr">{order.order_number}</span>
                   <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${STATUS_COLOR[order.status] || STATUS_COLOR.pending}`}>
                     {STATUS_ICON[order.status]}
-                    {t(`status_${order.status}` as "status_pending" | "status_accepted" | "status_picked_up" | "status_waiting_customer" | "status_delivered" | "status_cancelled") || order.status}
+                    {t(`status_${order.status}` as "status_pending" | "status_store_pending" | "status_accepted" | "status_picked_up" | "status_waiting_customer" | "status_delivered" | "status_cancelled") || order.status}
                   </span>
                 </div>
 

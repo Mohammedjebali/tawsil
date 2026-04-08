@@ -26,7 +26,7 @@ function LoginContent() {
   const [riderLoading, setRiderLoading] = useState(false);
 
   // Store owner fields
-  const [soEmail, setSoEmail] = useState("");
+  const [soPhone, setSoPhone] = useState("");
   const [soPassword, setSoPassword] = useState("");
   const [showSoPw, setShowSoPw] = useState(false);
   const [soError, setSoError] = useState("");
@@ -126,19 +126,31 @@ function LoginContent() {
   }
 
   async function submitStoreOwner() {
-    if (!soEmail.trim() || !soPassword.trim()) return;
+    if (!soPhone.trim() || !soPassword.trim()) return;
     setSoLoading(true);
     setSoError("");
 
-    const { error: authError } = await supabaseClient.auth.signInWithPassword({ email: soEmail, password: soPassword });
+    try {
+      const res = await fetch("/api/store-owners/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "login", phone: soPhone.trim(), password: soPassword }),
+      });
 
-    if (authError) {
+      const data = await res.json();
+
+      if (!res.ok) {
+        setSoLoading(false);
+        setSoError(data.error || t("wrongCredentials"));
+        return;
+      }
+
+      localStorage.setItem("tawsil_store_owner", JSON.stringify(data.owner));
+      window.location.href = "/store-owner";
+    } catch {
       setSoLoading(false);
       setSoError(t("wrongCredentials"));
-      return;
     }
-
-    window.location.href = "/store-owner";
   }
 
   const inputStyle: React.CSSProperties = {
@@ -314,8 +326,8 @@ function LoginContent() {
         {tab === "store_owner" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div>
-              <label className="label">{t("email")}</label>
-              <input type="email" value={soEmail} onChange={(e) => setSoEmail(e.target.value)} dir="ltr" style={inputStyle} />
+              <label className="label">{t("phoneNumber")}</label>
+              <input type="tel" value={soPhone} onChange={(e) => setSoPhone(e.target.value)} dir="ltr" placeholder="+216 XX XXX XXX" style={inputStyle} />
             </div>
 
             <div>

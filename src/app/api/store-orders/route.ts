@@ -120,7 +120,7 @@ export async function PATCH(req: NextRequest) {
       .from("store_orders")
       .update(updates)
       .eq("id", id)
-      .select("*, orders(order_number, customer_name, customer_phone, user_id)")
+      .select("*, orders(order_number, customer_name, customer_phone, user_id, store_name, delivery_fee, items_description)")
       .single();
 
     if (error) throw error;
@@ -145,6 +145,35 @@ export async function PATCH(req: NextRequest) {
           );
         }
       } catch (_) {}
+    }
+
+    // When store marks order READY → notify riders
+    if (status === "ready") {
+      try {
+        // Also update the main order status to "pending" so riders see it
+        if (data?.order_id) {
+          await supabase.from("orders").update({ status: "pending" }).eq("id", data.order_id);
+        }
+
+        // Notify all riders
+        const { data: subs } = await supabase.from("push_subscriptions").select("subscription");
+        if (subs?.length && process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) {
+          const storeName = data?.orders?.store_name || "Store";
+          const deliveryFee = data?.orders?.delivery_fee || 1500;
+          const payload = JSON.stringify({
+            title: "🛵 طلب جديد!",
+            body: `من ${storeName} — توصيل ${(deliveryFee / 1000).toFixed(3)} DT`,
+            data: { order_number: data?.orders?.order_number },
+          });
+          await Promise.allSettled(
+            subs.map((s: { subscription: string }) =>
+              webpush.sendNotification(typeof s.subscription === "string" ? JSON.parse(s.subscription) : s.subscription, payload).catch(() => {})
+            )
+          );
+        }
+      } catch (_) {
+        captureError(_);
+      }
     }
 
     return NextResponse.json({ store_order: data });

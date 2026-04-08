@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Store, ClipboardList, Settings, Plus, Trash2, Edit3, Check, Clock, ChefHat, Package, ArrowLeft, ArrowRight, AlertCircle } from "lucide-react";
 import { useLang } from "@/components/LangProvider";
 import Link from "next/link";
-import { supabaseClient } from "@/lib/supabase-client";
+
 
 interface StoreData {
   id: string;
@@ -18,6 +19,7 @@ interface StoreData {
   opening_time: string | null;
   closing_time: string | null;
   delivery_fee: number;
+  logo_url?: string | null;
 }
 
 interface Category {
@@ -62,6 +64,7 @@ const CATEGORIES_LIST = ["restaurant", "grocery", "pharmacy", "bakery", "cafe", 
 
 export default function StoreOwnerDashboard() {
   const { t, isRtl } = useLang();
+  const router = useRouter();
   const BackArrow = isRtl ? ArrowRight : ArrowLeft;
 
   const [store, setStore] = useState<StoreData | null>(null);
@@ -88,14 +91,40 @@ export default function StoreOwnerDashboard() {
 
   useEffect(() => {
     loadStore();
+    registerStoreOwnerPush();
   }, []);
 
-  async function loadStore() {
-    const { data: authData } = await supabaseClient.auth.getUser();
-    if (!authData.user) { setUnauthenticated(true); setLoading(false); return; }
+  async function registerStoreOwnerPush() {
+    const saved = localStorage.getItem("tawsil_store_owner");
+    if (!saved) return;
+    let owner: { id: string } | null = null;
+    try { owner = JSON.parse(saved); } catch { return; }
+    if (!owner?.id) return;
 
     try {
-      const res = await fetch(`/api/stores?owner_id=${authData.user.id}`);
+      if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+      });
+      await fetch("/api/push/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subscription: sub.toJSON(), store_owner_id: owner.id }),
+      });
+    } catch {}
+  }
+
+  async function loadStore() {
+    const saved = localStorage.getItem("tawsil_store_owner");
+    if (!saved) { setUnauthenticated(true); setLoading(false); return; }
+
+    let owner: { id: string } | null = null;
+    try { owner = JSON.parse(saved); } catch { setUnauthenticated(true); setLoading(false); return; }
+
+    try {
+      const res = await fetch(`/api/stores?owner_id=${owner!.id}`);
       const data = await res.json();
 
       if (data.stores?.length > 0) {
@@ -195,6 +224,50 @@ export default function StoreOwnerDashboard() {
     } catch {}
   }
 
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+
+  async function uploadLogo(file: File) {
+    if (!store) return;
+    setUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("storeId", store.id);
+      formData.append("itemName", "logo");
+      const res = await fetch("/api/store-owners/upload", { method: "POST", body: formData });
+      if (res.ok) {
+        const data = await res.json();
+        await fetch(`/api/stores/${store.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ logo_url: data.url }),
+        });
+        loadStore();
+      }
+    } catch {}
+    setUploadingLogo(false);
+  }
+
+  async function uploadItemImg(itemId: string, file: File) {
+    if (!store) return;
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("storeId", store.id);
+      formData.append("itemName", itemId);
+      const res = await fetch("/api/store-owners/upload", { method: "POST", body: formData });
+      if (res.ok) {
+        const data = await res.json();
+        await fetch(`/api/stores/${store.id}/items/${itemId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image_url: data.url }),
+        });
+        loadMenu(store.id);
+      }
+    } catch {}
+  }
+
   async function saveSettings() {
     if (!store) return;
     setSavingSettings(true);
@@ -211,7 +284,7 @@ export default function StoreOwnerDashboard() {
           address: settings.address || null,
           opening_time: settings.opening_time || null,
           closing_time: settings.closing_time || null,
-          delivery_fee: parseInt(settings.delivery_fee) || 1500,
+          delivery_fee: 1500,
         }),
       });
       setSettingsMsg(t("profileSaved"));
@@ -283,9 +356,9 @@ export default function StoreOwnerDashboard() {
     <div className="max-w-2xl mx-auto px-4 py-6" dir={isRtl ? "rtl" : "ltr"}>
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
-        <Link href="/app" className="text-slate-500 hover:text-slate-700">
+        <button onClick={() => router.back()} className="text-slate-500 hover:text-slate-700">
           <BackArrow size={22} />
-        </Link>
+        </button>
         <div>
           <h1 className="text-xl font-bold text-slate-900">{store.name}</h1>
           <p className="text-xs text-slate-500">{t("storeOwnerDashboard")}</p>
@@ -450,6 +523,13 @@ export default function StoreOwnerDashboard() {
               <div className="space-y-2">
                 {menuItems.map((item) => (
                   <div key={item.id} className="card flex items-center gap-3 py-3">
+                    <label style={{ width: 40, height: 40, borderRadius: 10, border: "1px solid #E2E8F0", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, overflow: "hidden", background: "#F8FAFC" }}>
+                      {item.image_url
+                        ? <img src={item.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        : <Plus size={16} style={{ color: "#94A3B8" }} />
+                      }
+                      <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadItemImg(item.id, f); }} />
+                    </label>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm text-slate-900 truncate">{item.name}</p>
                       <p className="text-xs text-slate-500">
@@ -476,6 +556,21 @@ export default function StoreOwnerDashboard() {
       {/* Settings Tab */}
       {tab === "settings" && (
         <div className="space-y-4">
+          {/* Profile pic */}
+          <div className="flex items-center gap-4">
+            <label style={{ width: 72, height: 72, borderRadius: 16, border: "2px dashed #CBD5E1", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, overflow: "hidden", background: "#F8FAFC" }}>
+              {store?.logo_url
+                ? <img src={store.logo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                : <Store size={28} style={{ color: "#94A3B8" }} />
+              }
+              <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadLogo(f); }} />
+            </label>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "#0f172a" }}>{t("storeProfilePic")}</div>
+              <div style={{ fontSize: "0.75rem", color: "#94a3b8" }}>{uploadingLogo ? t("uploading") + "..." : t("clickToUpload")}</div>
+            </div>
+          </div>
+
           <div>
             <label className="label">{t("storeName")}</label>
             <input className="input w-full" value={settings.name} onChange={(e) => setSettings({ ...settings, name: e.target.value })} />
@@ -510,16 +605,6 @@ export default function StoreOwnerDashboard() {
               <input className="input w-full" type="time" value={settings.closing_time} onChange={(e) => setSettings({ ...settings, closing_time: e.target.value })} />
             </div>
           </div>
-          <div>
-            <label className="label">{t("storeDeliveryFee")}</label>
-            <input
-              className="input w-full"
-              type="number"
-              value={settings.delivery_fee}
-              onChange={(e) => setSettings({ ...settings, delivery_fee: e.target.value })}
-            />
-          </div>
-
           {settingsMsg && <p className="text-sm text-green-600">{settingsMsg}</p>}
 
           <button

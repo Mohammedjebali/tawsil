@@ -15,6 +15,7 @@ interface StoreItem {
   lat: number | null;
   lng: number | null;
   logo_url?: string | null;
+  has_items?: boolean;
 }
 
 interface UserProfile {
@@ -490,7 +491,15 @@ export default function OrderPage() {
                 return (
                   <button
                     key={store.id}
-                    onClick={() => { setSelectedStore(store); setCustomStore(""); setStep("details"); }}
+                    onClick={() => {
+                      if (store.has_items) {
+                        window.location.href = `/stores/${store.id}`;
+                      } else {
+                        setSelectedStore(store);
+                        setCustomStore("");
+                        setStep("details");
+                      }
+                    }}
                     className="card-hover"
                     style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", textAlign: isRtl ? "right" : "left", cursor: "pointer" }}
                   >

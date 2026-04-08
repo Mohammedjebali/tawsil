@@ -115,15 +115,18 @@ export default function StoreDetailPage({ params }: { params: Promise<{ id: stri
       const savedLng = localStorage.getItem("tawsil_lng");
 
       const itemsDesc = cart.map((c) => `${c.qty}x ${c.item.name}`).join(", ");
+      const customerName = user.name || user.firstName || user.email || "Customer";
+      const customerPhone = user.phone || "";
+      const customerAddress = savedAddr || store.address || "Address not provided";
 
       // 1. Create order in main orders table
       const orderRes = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customer_name: user.name || user.firstName || "Customer",
-          customer_phone: user.phone || "",
-          customer_address: savedAddr,
+          customer_name: customerName,
+          customer_phone: customerPhone,
+          customer_address: customerAddress,
           customer_lat: savedLat ? parseFloat(savedLat) : null,
           customer_lng: savedLng ? parseFloat(savedLng) : null,
           store_id: store.id,

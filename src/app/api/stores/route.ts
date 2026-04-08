@@ -27,6 +27,25 @@ export async function GET(req: NextRequest) {
     const { data, error } = await query;
     if (error) throw error;
 
+    // Add has_items flag for each store
+    if (data && data.length > 0) {
+      const storeIds = data.map((s: { id: string }) => s.id);
+      const { data: itemCounts } = await supabase
+        .from("store_items")
+        .select("store_id")
+        .in("store_id", storeIds)
+        .eq("is_available", true);
+
+      const itemMap: Record<string, number> = {};
+      for (const ic of itemCounts || []) {
+        itemMap[ic.store_id] = (itemMap[ic.store_id] || 0) + 1;
+      }
+
+      for (const store of data) {
+        (store as Record<string, unknown>).has_items = (itemMap[store.id] || 0) > 0;
+      }
+    }
+
     return NextResponse.json({ stores: data });
   } catch (err) {
     captureError(err);
