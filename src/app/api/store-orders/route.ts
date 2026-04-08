@@ -34,7 +34,8 @@ export async function GET(req: NextRequest) {
 
     // Manually join orders data (store_orders has no FK to orders)
     if (data && data.length > 0) {
-      const orderIds = [...new Set(data.map((so: { order_id: string }) => so.order_id))];
+      const orderIds = [...new Set(data.map((so: { order_id: string }) => so.order_id).filter(Boolean))];
+      if (orderIds.length === 0) return NextResponse.json({ store_orders: data });
       const { data: ordersData } = await supabase
         .from("orders")
         .select("id, order_number, customer_name, customer_phone, customer_address, status, created_at")

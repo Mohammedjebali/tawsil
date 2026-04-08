@@ -125,9 +125,10 @@ export default function StoreOwnerDashboard() {
 
     let owner: { id: string } | null = null;
     try { owner = JSON.parse(saved); } catch (e) { captureError(e); setUnauthenticated(true); setLoading(false); return; }
+    if (!owner?.id) { setUnauthenticated(true); setLoading(false); return; }
 
     try {
-      const res = await fetch(`/api/stores?owner_id=${owner!.id}`);
+      const res = await fetch(`/api/stores?owner_id=${owner.id}`);
       const data = await res.json();
 
       if (data.stores?.length > 0) {

@@ -132,7 +132,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         .eq("phone", body.rider_phone)
         .maybeSingle();
       if (riderData?.is_blocked) {
-        captureApiError("account_blocked", 403);
         return NextResponse.json(
           { error: "account_blocked", message: "Your account has been blocked. Contact support." },
           { status: 403 }
@@ -148,7 +147,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         .eq("rider_phone", body.rider_phone)
         .in("status", ["accepted", "picked_up", "waiting_customer"]);
       if (activeOrders && activeOrders.length > 0) {
-        captureApiError("rider_busy", 409);
         return NextResponse.json({ error: "rider_busy", message: "You already have an active order. Deliver it first before accepting a new one." }, { status: 409 });
       }
     }
@@ -164,8 +162,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       .single();
 
     if (!data) {
-      // Race condition — someone else changed the status first
-      captureApiError("order_conflict", 409);
+      // Race condition — someone else changed the status first (expected behavior)
       return NextResponse.json(
         { error: "order_conflict", message: body.status === "accepted" ? "Too late — another rider accepted this order first" : "Order status has changed. Please refresh." },
         { status: 409 }

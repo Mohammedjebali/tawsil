@@ -180,10 +180,8 @@ export default function AdminPage() {
         fetch("/api/admin/stores"),
         fetch("/api/admin/pending-stores"),
       ]);
-      const data = await res.json();
-      setStores(data.stores || []);
-      const pendingData = await pendingRes.json();
-      setPendingStores(pendingData.stores || []);
+      if (res.ok) { const data = await res.json(); setStores(data.stores || []); }
+      if (pendingRes.ok) { const pendingData = await pendingRes.json(); setPendingStores(pendingData.stores || []); }
     } catch {} finally { setStoreLoading(false); }
   }, []);
 
@@ -191,6 +189,7 @@ export default function AdminPage() {
     setOrdersLoading(true);
     try {
       const res = await fetch("/api/orders");
+      if (!res.ok) return;
       const data = await res.json();
       setOrders(data.orders || []);
     } catch {} finally { setOrdersLoading(false); }
@@ -200,6 +199,7 @@ export default function AdminPage() {
     setRidersLoading(true);
     try {
       const res = await fetch("/api/admin/riders");
+      if (!res.ok) return;
       const data = await res.json();
       setRiders(data.riders || []);
     } catch {} finally { setRidersLoading(false); }
@@ -209,6 +209,7 @@ export default function AdminPage() {
     setCustomersLoading(true);
     try {
       const res = await fetch("/api/customers");
+      if (!res.ok) return;
       const data = await res.json();
       setCustomers(data.customers || []);
     } catch {} finally { setCustomersLoading(false); }
@@ -218,6 +219,7 @@ export default function AdminPage() {
     setDashLoading(true);
     try {
       const res = await fetch("/api/admin/dashboard");
+      if (!res.ok) return;
       const data = await res.json();
       setDash(data);
       setLastUpdated(new Date());

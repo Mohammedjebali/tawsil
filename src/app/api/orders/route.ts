@@ -88,7 +88,13 @@ export async function POST(req: NextRequest) {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      // Client errors (invalid FK, bad UUID format) → 400, not 500
+      if (error.code === "23503" || error.code === "22P02" || error.code === "23514") {
+        return NextResponse.json({ error: error.message }, { status: 400 });
+      }
+      throw error;
+    }
 
     // If this is a marketplace store order, create store_order and notify store owner
     if (store_id) {

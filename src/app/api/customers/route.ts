@@ -1,4 +1,4 @@
-import { captureError, captureApiError } from "@/lib/sentry";
+import { captureError } from "@/lib/sentry";
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase-server";
 
@@ -46,13 +46,13 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    if (!first_name || !email || !phone) {
+    // Phone is optional for Google OAuth users (identified by user_id)
+    if (!first_name || !email || (!phone && !user_id)) {
       const missing = [
         !first_name && "first_name",
         !email && "email",
-        !phone && "phone",
+        !phone && !user_id && "phone",
       ].filter(Boolean).join(", ");
-      captureApiError(`Missing required fields: ${missing}`, 400);
       return NextResponse.json({ error: `Missing required fields: ${missing}` }, { status: 400 });
     }
 
@@ -80,7 +80,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Upsert by email — if email exists, update phone/name/user_id
-    const row: Record<string, unknown> = { first_name, last_name: last_name || "", email, phone, referral_code: referralCode };
+    const row: Record<string, unknown> = { first_name, last_name: last_name || "", email, referral_code: referralCode };
+    if (phone) row.phone = phone;
     if (user_id) row.user_id = user_id;
     if (validReferredBy) row.referred_by = validReferredBy;
 
@@ -174,7 +175,6 @@ export async function PATCH(req: NextRequest) {
     const { email, first_name, last_name, points_delta, claim_referral_bonus } = body;
 
     if (!email) {
-      captureApiError("Email is required", 400);
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 

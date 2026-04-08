@@ -5,6 +5,9 @@ import { getSupabase } from "@/lib/supabase-server";
 export async function POST(req: NextRequest) {
   try {
     const { subscription, rider_name, rider_phone, customer_phone, store_owner_id } = await req.json();
+    if (!subscription) {
+      return NextResponse.json({ error: "subscription is required" }, { status: 400 });
+    }
     const supabase = getSupabase();
 
     // Store owner subscription
@@ -54,14 +57,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    // Rider subscription: insert as before
-    const row: Record<string, unknown> = { subscription };
-    if (rider_name) row.rider_name = rider_name;
-    if (rider_phone) row.rider_phone = rider_phone;
-    const { error } = await supabase.from("push_subscriptions").insert(row);
-    if (error) {
-      captureError(error, { context: "rider_push_subscribe", rider_phone });
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    // Rider subscription: upsert by rider_phone to avoid duplicates
+    if (rider_phone) {
+      const { data: existing } = await supabase
+        .from("push_subscriptions")
+        .select("id")
+        .eq("rider_phone", rider_phone)
+        .maybeSingle();
+
+      const { error } = existing
+        ? await supabase.from("push_subscriptions").update({ subscription }).eq("id", existing.id)
+        : await supabase.from("push_subscriptions").insert({ subscription, rider_name: rider_name || null, rider_phone });
+
+      if (error) {
+        captureError(error, { context: "rider_push_subscribe", rider_phone });
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+    } else {
+      // Anonymous subscription (no phone)
+      const row: Record<string, unknown> = { subscription };
+      if (rider_name) row.rider_name = rider_name;
+      const { error } = await supabase.from("push_subscriptions").insert(row);
+      if (error) {
+        captureError(error, { context: "rider_push_subscribe_anon" });
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
     }
     return NextResponse.json({ ok: true });
   } catch (e) {
