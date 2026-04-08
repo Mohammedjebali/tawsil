@@ -31,10 +31,11 @@ export async function POST(req: NextRequest) {
     // customer_phone is a partial index (WHERE customer_phone IS NOT NULL)
     // which PostgREST does not support for upsert.
     if (customer_phone) {
+      const normalizedPhone = customer_phone.replace(/\s/g, "");
       const { data: existing } = await supabase
         .from("push_subscriptions")
         .select("id")
-        .eq("customer_phone", customer_phone)
+        .eq("customer_phone", normalizedPhone)
         .maybeSingle();
 
       const { error } = existing
@@ -44,7 +45,7 @@ export async function POST(req: NextRequest) {
             .eq("id", existing.id)
         : await supabase
             .from("push_subscriptions")
-            .insert({ subscription, customer_phone });
+            .insert({ subscription, customer_phone: normalizedPhone });
 
       if (error) {
         captureError(error, { context: "customer_push_subscribe", customer_phone });

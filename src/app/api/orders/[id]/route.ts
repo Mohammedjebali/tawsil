@@ -86,17 +86,31 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     // Notify customer via push when rider is waiting
     if (body.status === "waiting_customer" && data?.customer_phone) {
       try {
-        const { data: subs } = await supabase
+        // Try exact match first, then normalized match
+        let subsResult = await supabase
           .from("push_subscriptions")
           .select("subscription")
           .eq("customer_phone", data.customer_phone);
+        
+        if (!subsResult.data?.length) {
+          subsResult = await supabase
+            .from("push_subscriptions")
+            .select("subscription")
+            .eq("customer_phone", data.customer_phone.replace(/\s/g, ""));
+        }
+        
+        const subs = subsResult.data;
         if (subs && subs.length > 0 && process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) {
           const payload = JSON.stringify({
             title: "🛵 السائق في انتظارك!",
             body: "Your rider is waiting for you!",
             data: { order_number: data.order_number },
           });
-          await Promise.allSettled(subs.map((s) => webpush.sendNotification(s.subscription, payload)));
+          await Promise.allSettled(subs.map((s) => {
+            const sub = typeof s.subscription === "string" ? JSON.parse(s.subscription) : s.subscription;
+            if (!sub.endpoint) return Promise.resolve();
+            return webpush.sendNotification(sub, payload);
+          }));
         }
       } catch (_) {
         captureError(_);

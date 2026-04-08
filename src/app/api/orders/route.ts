@@ -121,7 +121,11 @@ export async function POST(req: NextRequest) {
               body: `طلب من ${data.customer_name} — ${items_description}`,
               data: { order_id: data.id, type: "store_order" },
             });
-            await Promise.allSettled(subs.map((s) => webpush.sendNotification(s.subscription, payload)));
+            await Promise.allSettled(subs.map((s) => {
+              const sub = typeof s.subscription === "string" ? JSON.parse(s.subscription) : s.subscription;
+              if (!sub.endpoint) return Promise.resolve();
+              return webpush.sendNotification(sub, payload);
+            }));
           }
         }
       } catch (_) {
@@ -137,7 +141,11 @@ export async function POST(req: NextRequest) {
             body: `من ${data.store_name} — توصيل ${(data.delivery_fee / 1000).toFixed(3)} DT`,
             data: { order_number: data.order_number },
           });
-          await Promise.allSettled(subs.map((s) => webpush.sendNotification(s.subscription, payload)));
+          await Promise.allSettled(subs.map((s) => {
+            const sub = typeof s.subscription === "string" ? JSON.parse(s.subscription) : s.subscription;
+            if (!sub.endpoint) return Promise.resolve();
+            return webpush.sendNotification(sub, payload);
+          }));
         }
       } catch (_) {
         captureError(_);
