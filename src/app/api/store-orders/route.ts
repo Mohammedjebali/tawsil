@@ -212,7 +212,7 @@ export async function PATCH(req: NextRequest) {
         }
 
         // Notify all riders
-        const { data: subs } = await supabase.from("push_subscriptions").select("subscription");
+        const { data: subs } = await supabase.from("push_subscriptions").select("subscription").not("rider_phone", "is", null);
         if (subs?.length && process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) {
           const storeName = data?.orders?.store_name || "Store";
           const deliveryFee = data?.orders?.delivery_fee || 1500;

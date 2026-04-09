@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
     } else {
       // Regular order: notify riders directly
       try {
-        const { data: subs } = await supabase.from("push_subscriptions").select("subscription");
+        const { data: subs } = await supabase.from("push_subscriptions").select("subscription").not("rider_phone", "is", null);
         if (subs && subs.length > 0 && process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) {
           const payload = JSON.stringify({
             title: "🛵 طلب جديد!",
