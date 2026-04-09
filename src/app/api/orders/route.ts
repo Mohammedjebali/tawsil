@@ -21,7 +21,12 @@ const TOWN_CENTER = { lat: 36.5333, lng: 10.5167 };
 export async function POST(req: NextRequest) {
   try {
     const supabase = getSupabase();
-    const body = await req.json();
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    }
     const {
       customer_name, customer_phone, customer_address,
       customer_lat, customer_lng,
@@ -61,10 +66,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const cLat = customer_lat || TOWN_CENTER.lat;
-    const cLng = customer_lng || TOWN_CENTER.lng;
-    const sLat = store_lat || TOWN_CENTER.lat;
-    const sLng = store_lng || TOWN_CENTER.lng;
+    const cLat = Number(customer_lat) || TOWN_CENTER.lat;
+    const cLng = Number(customer_lng) || TOWN_CENTER.lng;
+    const sLat = Number(store_lat) || TOWN_CENTER.lat;
+    const sLng = Number(store_lng) || TOWN_CENTER.lng;
 
     const distance_km = getDistanceKm(sLat, sLng, cLat, cLng);
     const delivery_fee = calculateDeliveryFee(distance_km);

@@ -12,7 +12,15 @@ function generateReferralCode(firstName: string): string {
 export async function POST(req: NextRequest) {
   try {
     const supabase = getSupabase();
-    const { first_name, last_name, email, phone, user_id, referred_by } = await req.json();
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    }
+    const { first_name, last_name, email, phone, user_id, referred_by } = body as {
+      first_name?: string; last_name?: string; email?: string; phone?: string; user_id?: string; referred_by?: string;
+    };
 
     console.log("[POST /api/customers]", {
       has_first_name: !!first_name,
@@ -46,13 +54,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Phone is optional for Google OAuth users (identified by user_id)
-    if (!first_name || !email || (!phone && !user_id)) {
-      const missing = [
-        !first_name && "first_name",
-        !email && "email",
-        !phone && !user_id && "phone",
-      ].filter(Boolean).join(", ");
+    // Phone is optional — Google OAuth users have email but may have no phone or user_id
+    if (!first_name || !email) {
+      const missing = [!first_name && "first_name", !email && "email"].filter(Boolean).join(", ");
       return NextResponse.json({ error: `Missing required fields: ${missing}` }, { status: 400 });
     }
 

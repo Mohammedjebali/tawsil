@@ -4,7 +4,19 @@ import { getSupabase } from "@/lib/supabase-server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { subscription, rider_name, rider_phone, customer_phone, store_owner_id } = await req.json();
+    let parsed: Record<string, unknown>;
+    try {
+      parsed = await req.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    }
+    const subscription = parsed.subscription;
+    const rider_name = parsed.rider_name != null ? String(parsed.rider_name) : undefined;
+    const rider_phone = parsed.rider_phone != null ? String(parsed.rider_phone) : undefined;
+    const store_owner_id = parsed.store_owner_id != null ? String(parsed.store_owner_id) : undefined;
+    const rawPhone = parsed.customer_phone;
+    const customer_phone = rawPhone != null ? String(rawPhone) : undefined;
+
     if (!subscription) {
       return NextResponse.json({ error: "subscription is required" }, { status: 400 });
     }

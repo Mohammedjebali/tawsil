@@ -14,12 +14,18 @@ try {
   }
 } catch (_) {}
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function GET(req: NextRequest) {
   try {
     const supabase = getSupabase();
     const url = req.nextUrl;
     const store_id = url.searchParams.get("store_id");
     const status = url.searchParams.get("status");
+
+    if (store_id && !UUID_RE.test(store_id)) {
+      return NextResponse.json({ error: "Invalid store_id format" }, { status: 400 });
+    }
 
     let query = supabase
       .from("store_orders")
