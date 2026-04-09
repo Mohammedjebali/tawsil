@@ -472,9 +472,9 @@ export default function StoreOwnerDashboard() {
           {/* Add category */}
           <div className="card">
             <h3 className="text-sm font-bold text-slate-700 mb-3">{t("addCategory")}</h3>
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <div style={{ display: "flex", flexDirection: "row", gap: 8, alignItems: "center", width: "100%" }}>
               <input
-                style={{ flex: 1, minHeight: 44, width: "100%", background: "#ffffff", border: "1px solid #E2E8F0", borderRadius: 10, padding: "0.75rem 1rem", fontSize: "1rem", color: "#0f172a", outline: "none" }}
+                style={{ flex: 1, minHeight: 44, background: "#ffffff", border: "1px solid #E2E8F0", borderRadius: 10, padding: 12, fontSize: "1rem", color: "#0f172a", outline: "none", boxSizing: "border-box" }}
                 placeholder={t("categoryName")}
                 value={newCatName}
                 onChange={(e) => setNewCatName(e.target.value)}
@@ -482,8 +482,7 @@ export default function StoreOwnerDashboard() {
               <button
                 onClick={addCategory}
                 disabled={addingCat || !newCatName.trim()}
-                className="btn-primary"
-                style={{ opacity: addingCat ? 0.6 : 1, padding: "0 16px" }}
+                style={{ width: 44, height: 44, minWidth: 44, background: "#6366f1", color: "#ffffff", border: "none", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", cursor: addingCat || !newCatName.trim() ? "not-allowed" : "pointer", opacity: addingCat ? 0.6 : 1, flexShrink: 0 }}
               >
                 <Plus size={18} />
               </button>
@@ -504,27 +503,27 @@ export default function StoreOwnerDashboard() {
             <h3 className="text-sm font-bold text-slate-700 mb-3">{t("addItem")}</h3>
             <div className="space-y-3">
               <input
-                className="input w-full"
+                style={{ display: "block", width: "100%", minHeight: 44, background: "#ffffff", border: "1px solid #E2E8F0", borderRadius: 10, padding: 12, fontSize: "1rem", color: "#0f172a", outline: "none", boxSizing: "border-box" }}
                 placeholder={t("itemName")}
                 value={newItem.name}
                 onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
               />
               <input
-                className="input w-full"
+                style={{ display: "block", width: "100%", minHeight: 44, background: "#ffffff", border: "1px solid #E2E8F0", borderRadius: 10, padding: 12, fontSize: "1rem", color: "#0f172a", outline: "none", boxSizing: "border-box" }}
                 placeholder={t("itemDescription")}
                 value={newItem.description}
                 onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
               />
               <div className="grid grid-cols-2 gap-3">
                 <input
-                  className="input w-full"
+                  style={{ display: "block", width: "100%", minHeight: 44, background: "#ffffff", border: "1px solid #E2E8F0", borderRadius: 10, padding: 12, fontSize: "1rem", color: "#0f172a", outline: "none", boxSizing: "border-box" }}
                   type="number"
                   placeholder={t("itemPrice")}
                   value={newItem.price}
                   onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
                 />
               <input
-                className="input w-full"
+                style={{ display: "block", width: "100%", minHeight: 44, background: "#ffffff", border: "1px solid #E2E8F0", borderRadius: 10, padding: 12, fontSize: "1rem", color: "#0f172a", outline: "none", boxSizing: "border-box" }}
                 placeholder={t("category") + " (" + t("leaveEmptyForUncategorized") + ")"}
                 value={newItem.category_id && categories.find(c => c.id === newItem.category_id)?.name || ""}
                 onChange={(e) => {
