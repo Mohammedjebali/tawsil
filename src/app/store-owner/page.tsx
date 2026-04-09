@@ -472,9 +472,10 @@ export default function StoreOwnerDashboard() {
           {/* Add category */}
           <div className="card">
             <h3 className="text-sm font-bold text-slate-700 mb-3">{t("addCategory")}</h3>
-            <div className="flex gap-2">
+            <div style={{ display: "flex", gap: 8, alignItems: "stretch" }}>
               <input
-                style={{ flex: 1, padding: "10px 14px", border: "1px solid #CBD5E1", borderRadius: 8, fontSize: "0.875rem", outline: "none", minWidth: 0, boxSizing: "border-box" as const }}
+                className="input"
+                style={{ flex: 1, minHeight: 44 }}
                 placeholder={t("categoryName")}
                 value={newCatName}
                 onChange={(e) => setNewCatName(e.target.value)}
@@ -482,8 +483,8 @@ export default function StoreOwnerDashboard() {
               <button
                 onClick={addCategory}
                 disabled={addingCat || !newCatName.trim()}
-                className="btn-primary px-4"
-                style={{ opacity: addingCat ? 0.6 : 1 }}
+                className="btn-primary"
+                style={{ opacity: addingCat ? 0.6 : 1, padding: "0 16px" }}
               >
                 <Plus size={18} />
               </button>
