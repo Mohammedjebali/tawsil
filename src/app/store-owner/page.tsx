@@ -472,10 +472,9 @@ export default function StoreOwnerDashboard() {
           {/* Add category */}
           <div className="card">
             <h3 className="text-sm font-bold text-slate-700 mb-3">{t("addCategory")}</h3>
-            <div style={{ display: "flex", gap: 8, alignItems: "stretch" }}>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <input
-                className="input"
-                style={{ flex: 1, minHeight: 44 }}
+                style={{ flex: 1, minHeight: 44, width: "100%", background: "#ffffff", border: "1px solid #E2E8F0", borderRadius: 10, padding: "0.75rem 1rem", fontSize: "1rem", color: "#0f172a", outline: "none" }}
                 placeholder={t("categoryName")}
                 value={newCatName}
                 onChange={(e) => setNewCatName(e.target.value)}
